@@ -1,0 +1,39 @@
+namespace MigrationExecutionAPI.Models;
+
+public class MigrationJob
+{
+    public int Id { get; set; }
+    public string RepositoryUrl { get; set; } = string.Empty;
+    public string Status { get; set; } = "Pending Plan Approval";
+    public string MigrationPlanJson { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string CreatedBy { get; set; } = string.Empty;
+
+    public string? BranchName { get; set; }
+    public string? PrUrl { get; set; }
+    public string? CommitHash { get; set; }
+
+    public string? TargetBranch { get; set; }
+    public string? TargetCommit { get; set; }
+
+    public ICollection<FileChange> FileChanges { get; set; } = new List<FileChange>();
+
+    public string? ExecutionReport { get; set; }
+    
+    public bool IsArchived { get; set; } = false;
+    public string? MergeCommitSha { get; set; }
+    public string? RevertPrUrl { get; set; }
+    public ICollection<JobLog> JobLogs { get; set; } = new List<JobLog>();
+}
+
+public class JobLog
+{
+    public int Id { get; set; }
+    public int MigrationJobId { get; set; }
+    public MigrationJob MigrationJob { get; set; } = null!;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string Level { get; set; } = "info"; // info, warning, error
+    public string Message { get; set; } = string.Empty;
+    public string? Phase { get; set; } 
+    public string? Details { get; set; }
+}
