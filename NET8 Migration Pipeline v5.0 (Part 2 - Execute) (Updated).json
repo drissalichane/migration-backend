@@ -686,9 +686,7 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ jobId: $('Execute Webhook').first().json.body.job_id, filePath: $json.filePath, targetContent: $json.targetContent, replacementContent: $json.replacementContent }) }}",
-        "options": {
-          "ignoreResponseCode": true
-        }
+        "options": {}
       },
       "id": "1144c87c-8c86-40aa-8c60-90995915a0ba",
       "name": "Error Fixer Replace",
@@ -697,7 +695,8 @@
       "position": [
         -30848,
         10432
-      ]
+      ],
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -752,8 +751,8 @@
           "conditions": [
             {
               "id": "1",
-              "leftValue": "={{ $json.success }}",
-              "rightValue": "={{ false }}",
+              "leftValue": "={{ $json.errorDescription ? true : false }}",
+              "rightValue": "={{ true }}",
               "operator": {
                 "type": "boolean",
                 "operation": "equals"
@@ -783,7 +782,7 @@
             },
             {
               "name": "api_error",
-              "stringValue": "={{ $json.message }}"
+              "stringValue": "={{ $json.errorDescription || $json.message }}"
             }
           ]
         },
