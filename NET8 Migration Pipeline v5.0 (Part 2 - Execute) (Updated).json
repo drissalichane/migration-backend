@@ -686,7 +686,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ jobId: $('Execute Webhook').first().json.body.job_id, filePath: $json.filePath, targetContent: $json.targetContent, replacementContent: $json.replacementContent }) }}",
-        "options": {}
+        "options": {
+          "ignoreResponseCode": true
+        }
       },
       "id": "1144c87c-8c86-40aa-8c60-90995915a0ba",
       "name": "Error Fixer Replace",
@@ -737,6 +739,133 @@
       "position": [
         -29752,
         10664
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "={{ false }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-check-success",
+      "name": "Check Error Fixer Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 3.2,
+      "position": [
+        -29750,
+        11000
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "failed_replace",
+              "stringValue": "={{ true }}"
+            },
+            {
+              "name": "api_error",
+              "stringValue": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-mark-failed",
+      "name": "Mark Replace Failed",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -29550,
+        10900
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let hasError = false;\nlet errorMessage = \"\";\ntry {\n  const errorItems = $('Mark Replace Failed').all();\n  if (errorItems && errorItems.length > 0) {\n    hasError = true;\n    errorMessage = errorItems.map(i => i.json.api_error).filter(e => e).join('\\n');\n  }\n} catch(e) {}\nreturn [{ json: { hasError, errorMessage } }];"
+      },
+      "id": "node-code-aggregate",
+      "name": "Aggregate Replace Errors",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -31000,
+        10500
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-any-errors",
+      "name": "Any Replace Errors?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 3.2,
+      "position": [
+        -30800,
+        10500
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "stdout",
+              "stringValue": "={{ 'API REPLACE ERROR(S):\\n' + $json.errorMessage + '\\n\\nThis means the targetContent you provided was found MULTIPLE TIMES in the file. You MUST provide a more specific targetContent string that includes more of the surrounding code so it matches EXACTLY ONE location.' }}"
+            },
+            {
+              "name": "exitCode",
+              "stringValue": "={{ 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-format-api-error",
+      "name": "Format API Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -30600,
+        10400
       ]
     }
   ],
@@ -1104,7 +1233,7 @@
       "main": [
         [
           {
-            "node": "Run Build",
+            "node": "Aggregate Replace Errors",
             "type": "main",
             "index": 0
           }
@@ -1140,7 +1269,7 @@
       "main": [
         [
           {
-            "node": "Error Fixer Loop",
+            "node": "Check Error Fixer Success",
             "type": "main",
             "index": 0
           }
@@ -1174,6 +1303,75 @@
         [
           {
             "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error Fixer Success": {
+      "main": [
+        [
+          {
+            "node": "Mark Replace Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Replace Failed": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Replace Errors": {
+      "main": [
+        [
+          {
+            "node": "Any Replace Errors?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Replace Errors?": {
+      "main": [
+        [
+          {
+            "node": "Format API Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Run Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Error": {
+      "main": [
+        [
+          {
+            "node": "Store Build Output",
             "type": "main",
             "index": 0
           }
