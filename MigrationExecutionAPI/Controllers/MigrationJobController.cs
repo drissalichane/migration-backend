@@ -377,7 +377,7 @@ public class MigrationJobController : ControllerBase
             var targetBranch = job.TargetBranch;
 
             var (branch, prUrl, commitHash) = await _githubService.CreatePullRequestAsync(
-                githubToken, owner, repoName, branchName, "Automated .NET 8 Migration", fileChangesToCommit, targetBranch);
+                githubToken, owner, repoName, branchName, "Automated .NET Migration", fileChangesToCommit, targetBranch);
 
             job.BranchName = branch;
             job.PrUrl = prUrl;
