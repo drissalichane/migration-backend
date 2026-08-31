@@ -767,7 +767,7 @@
       "id": "node-if-check-success",
       "name": "Check Error Fixer Success",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 3.2,
+      "typeVersion": 2,
       "position": [
         -29750,
         11000
@@ -837,7 +837,7 @@
       "id": "node-if-any-errors",
       "name": "Any Replace Errors?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 3.2,
+      "typeVersion": 2,
       "position": [
         -30800,
         10500
