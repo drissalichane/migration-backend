@@ -1,0 +1,69 @@
+/**
+ * Microsoft Outlook Node - Version 2
+ * Discriminator: resource=contact, operation=getAll
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** List and search calendars */
+export type MicrosoftOutlookV2ContactGetAllParams = {
+  resource: 'contact';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Output
+ * @default simple
+ */
+    output?: 'simple' | 'raw' | 'fields' | Expression<string>;
+/**
+ * The fields to add to the output
+ * @displayOptions.show { output: ["fields"] }
+ * @default []
+ */
+    fields?: Array<'createdDateTime' | 'lastModifiedDateTime' | 'changeKey' | 'categories' | 'parentFolderId' | 'birthday' | 'fileAs' | 'displayName' | 'givenName' | 'initials' | 'middleName' | 'nickName' | 'surname' | 'title' | 'yomiGivenName' | 'yomiSurname' | 'yomiCompanyName' | 'generation' | 'imAddresses' | 'jobTitle' | 'companyName' | 'department' | 'officeLocation' | 'profession' | 'businessHomePage' | 'assistantName' | 'manager' | 'homePhones' | 'mobilePhone' | 'businessPhones' | 'spouseName' | 'personalNotes' | 'children' | 'emailAddresses' | 'homeAddress' | 'businessAddress' | 'otherAddress'>;
+/**
+ * Filters
+ * @default {}
+ */
+    filters?: {
+    /** Filter Query
+     * @hint Search query to filter contacts. &lt;a href="https://learn.microsoft.com/en-us/graph/filter-query-parameter"&gt;More info&lt;/a&gt;.
+     */
+    custom?: string | Expression<string> | PlaceholderValue;
+    /** If contacts that you want to retrieve have multiple email addresses, you can enter them separated by commas
+     */
+    emailAddress?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftOutlookV2ContactGetAllOutput = {
+  '@odata.etag'?: string;
+  businessPhones?: Array<string>;
+  displayName?: string;
+  emailAddresses?: Array<{
+    address?: string;
+    name?: string;
+  }>;
+  id?: string;
+};
+
+export type MicrosoftOutlookV2ContactGetAllNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV2ContactGetAllParams>;
+  output?: Items<MicrosoftOutlookV2ContactGetAllOutput>;
+};

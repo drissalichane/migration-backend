@@ -1,0 +1,60 @@
+/**
+ * Strava Node - Version 1
+ * Discriminator: resource=activity, operation=create
+ */
+
+
+interface Credentials {
+  stravaOAuth2Api: CredentialReference;
+}
+
+/** Create a new activity */
+export type StravaV1ActivityCreateParams = {
+  resource: 'activity';
+  operation: 'create';
+/**
+ * The name of the activity
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Type of activity. For example - Run, Ride etc.
+ */
+    type?: string | Expression<string> | PlaceholderValue;
+/**
+ * ISO 8601 formatted date time
+ */
+    startDate?: string | Expression<string>;
+/**
+ * In seconds
+ * @default 0
+ */
+    elapsedTime?: number | Expression<number>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether to mark as commute
+     * @default false
+     */
+    commute?: boolean | Expression<boolean>;
+    /** Description of the activity
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** In meters
+     * @default 0
+     */
+    distance?: number | Expression<number>;
+    /** Whether to mark as a trainer activity
+     * @default false
+     */
+    trainer?: boolean | Expression<boolean>;
+  };
+};
+
+export type StravaV1ActivityCreateNode = {
+  type: 'n8n-nodes-base.strava';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StravaV1ActivityCreateParams>;
+};

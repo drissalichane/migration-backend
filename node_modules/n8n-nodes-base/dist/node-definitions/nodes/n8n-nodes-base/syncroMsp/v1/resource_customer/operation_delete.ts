@@ -1,0 +1,26 @@
+/**
+ * SyncroMSP Node - Version 1
+ * Discriminator: resource=customer, operation=delete
+ */
+
+
+interface Credentials {
+  syncroMspApi: CredentialReference;
+}
+
+/** Delete customer */
+export type SyncroMspV1CustomerDeleteParams = {
+  resource: 'customer';
+  operation: 'delete';
+/**
+ * Delete a specific customer by ID
+ */
+    customerId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SyncroMspV1CustomerDeleteNode = {
+  type: 'n8n-nodes-base.syncroMsp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SyncroMspV1CustomerDeleteParams>;
+};

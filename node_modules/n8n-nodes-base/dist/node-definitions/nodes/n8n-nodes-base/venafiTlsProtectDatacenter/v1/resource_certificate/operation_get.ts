@@ -1,0 +1,26 @@
+/**
+ * Venafi TLS Protect Datacenter Node - Version 1
+ * Discriminator: resource=certificate, operation=get
+ */
+
+
+interface Credentials {
+  venafiTlsProtectDatacenterApi: CredentialReference;
+}
+
+/** Retrieve a certificate */
+export type VenafiTlsProtectDatacenterV1CertificateGetParams = {
+  resource: 'certificate';
+  operation: 'get';
+/**
+ * A GUID that uniquely identifies the certificate
+ */
+    certificateId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type VenafiTlsProtectDatacenterV1CertificateGetNode = {
+  type: 'n8n-nodes-base.venafiTlsProtectDatacenter';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<VenafiTlsProtectDatacenterV1CertificateGetParams>;
+};

@@ -1,0 +1,37 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=contact, operation=delete
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a contact, which is an individual associated with an account */
+export type SalesforceV1ContactDeleteParams = {
+  resource: 'contact';
+  operation: 'delete';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+/**
+ * ID of contact that needs to be fetched
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SalesforceV1ContactDeleteOutput = {
+  success?: boolean;
+};
+
+export type SalesforceV1ContactDeleteNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1ContactDeleteParams>;
+  output?: Items<SalesforceV1ContactDeleteOutput>;
+};

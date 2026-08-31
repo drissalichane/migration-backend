@@ -1,0 +1,45 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=case, operation=addComment
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a case, which is a customer issue or problem */
+export type SalesforceV1CaseAddCommentParams = {
+  resource: 'case';
+  operation: 'addComment';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+/**
+ * ID of case that needs to be fetched
+ */
+    caseId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Text of the CaseComment. The maximum size of the comment body is 4,000 bytes. Label is Body.
+     */
+    commentBody?: string | Expression<string> | PlaceholderValue;
+    /** Whether the CaseComment is visible to customers in the Self-Service portal (true) or not (false)
+     * @default false
+     */
+    isPublished?: boolean | Expression<boolean>;
+  };
+};
+
+export type SalesforceV1CaseAddCommentNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1CaseAddCommentParams>;
+};

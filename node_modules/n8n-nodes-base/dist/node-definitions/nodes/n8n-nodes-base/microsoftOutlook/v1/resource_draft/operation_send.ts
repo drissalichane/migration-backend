@@ -1,0 +1,35 @@
+/**
+ * Microsoft Outlook Node - Version 1
+ * Discriminator: resource=draft, operation=send
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** Send an existing draft message */
+export type MicrosoftOutlookV1DraftSendParams = {
+  resource: 'draft';
+  operation: 'send';
+/**
+ * Message ID
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Email addresses of recipients. Mutiple can be set separated by comma.
+     */
+    recipients?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftOutlookV1DraftSendNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV1DraftSendParams>;
+};

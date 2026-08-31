@@ -1,0 +1,22 @@
+/**
+ * Notion Node - Version 1
+ * Discriminator: resource=databasePage, operation=get
+ */
+
+
+interface Credentials {
+  notionApi: CredentialReference;
+}
+
+/** Get a database */
+export type NotionV1DatabasePageGetParams = {
+  resource: 'databasePage';
+  operation: 'get';
+};
+
+export type NotionV1DatabasePageGetNode = {
+  type: 'n8n-nodes-base.notion';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NotionV1DatabasePageGetParams>;
+};

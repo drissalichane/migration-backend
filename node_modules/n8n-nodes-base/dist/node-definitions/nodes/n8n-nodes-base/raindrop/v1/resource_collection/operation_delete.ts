@@ -1,0 +1,25 @@
+/**
+ * Raindrop Node - Version 1
+ * Discriminator: resource=collection, operation=delete
+ */
+
+
+interface Credentials {
+  raindropOAuth2Api: CredentialReference;
+}
+
+export type RaindropV1CollectionDeleteParams = {
+  resource: 'collection';
+  operation: 'delete';
+/**
+ * The ID of the collection to delete
+ */
+    collectionId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type RaindropV1CollectionDeleteNode = {
+  type: 'n8n-nodes-base.raindrop';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<RaindropV1CollectionDeleteParams>;
+};

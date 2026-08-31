@@ -1,0 +1,26 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=agent, operation=get
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Retrieve an agent */
+export type FreshserviceV1AgentGetParams = {
+  resource: 'agent';
+  operation: 'get';
+/**
+ * ID of the agent to retrieve
+ */
+    agentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshserviceV1AgentGetNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1AgentGetParams>;
+};

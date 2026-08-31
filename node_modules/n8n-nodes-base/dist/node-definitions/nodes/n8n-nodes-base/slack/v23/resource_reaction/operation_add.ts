@@ -1,0 +1,42 @@
+/**
+ * Slack Node - Version 2.3
+ * Discriminator: resource=reaction, operation=add
+ */
+
+
+interface Credentials {
+  slackApi: CredentialReference;
+  slackOAuth2Api: CredentialReference;
+}
+
+/** Add a star to an item */
+export type SlackV23ReactionAddParams = {
+  resource: 'reaction';
+  operation: 'add';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The Slack channel to get the reactions from
+ * @default {"mode":"list","value":""}
+ */
+    channelId?: { __rl: true; mode: 'list' | 'id' | 'url'; value: string; cachedResultName?: string };
+/**
+ * Timestamp of the message to add, get or remove
+ */
+    timestamp: number | Expression<number>;
+/**
+ * Emoji code to use for the message reaction. Use emoji codes like +1, not an actual emoji like 👍. &lt;a target="_blank" href=" https://www.webfx.com/tools/emoji-cheat-sheet/"&gt;List of common emoji codes&lt;/a&gt;
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SlackV23ReactionAddOutput = {
+  ok?: boolean;
+};
+
+export type SlackV23ReactionAddNode = {
+  type: 'n8n-nodes-base.slack';
+  version: 2.3;
+  credentials?: Credentials;
+  config: NodeConfig<SlackV23ReactionAddParams>;
+  output?: Items<SlackV23ReactionAddOutput>;
+};

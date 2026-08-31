@@ -1,0 +1,41 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=search, operation=query
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Search records */
+export type SalesforceV1SearchQueryParams = {
+  resource: 'search';
+  operation: 'query';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+/**
+ * A SOQL query. An example query parameter string might look like: “SELECT+Name+FROM+MyObject”. If the SOQL query string is invalid, a MALFORMED_QUERY response is returned.
+ */
+    query?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SalesforceV1SearchQueryOutput = {
+  attributes?: {
+    type?: string;
+    url?: string;
+  };
+  Id?: string;
+};
+
+export type SalesforceV1SearchQueryNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1SearchQueryParams>;
+  output?: Items<SalesforceV1SearchQueryOutput>;
+};

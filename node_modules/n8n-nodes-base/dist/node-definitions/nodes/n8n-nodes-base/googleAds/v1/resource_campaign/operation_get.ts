@@ -1,0 +1,83 @@
+/**
+ * Google Ads Node - Version 1
+ * Discriminator: resource=campaign, operation=get
+ */
+
+
+interface Credentials {
+  googleAdsOAuth2Api: CredentialReference;
+}
+
+/** Get a specific campaign */
+export type GoogleAdsV1CampaignGetParams = {
+  resource: 'campaign';
+  operation: 'get';
+/**
+ * Manager Customer ID
+ */
+    managerCustomerId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Client Customer ID
+ */
+    clientCustomerId?: string | Expression<string> | PlaceholderValue;
+/**
+ * ID of the campaign
+ */
+    campaignId?: string | Expression<string> | PlaceholderValue;
+  requestOptions?: {
+    /** Batching
+     * @default {"batch":{}}
+     */
+    batching?: {
+        /** Batching
+     */
+    batch?: {
+      /** Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.
+       * @default 50
+       */
+      batchSize?: number | Expression<number>;
+      /** Time (in milliseconds) between each batch of requests. 0 for disabled.
+       * @default 1000
+       */
+      batchInterval?: number | Expression<number>;
+    };
+  };
+    /** Whether to accept the response even if SSL certificate validation is not possible
+     * @default false
+     */
+    allowUnauthorizedCerts?: boolean;
+    /** HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128
+     */
+    proxy?: string | Expression<string> | PlaceholderValue;
+    /** Time in ms to wait for the server to send response headers (and start the response body) before aborting the request
+     * @default 10000
+     */
+    timeout?: number | Expression<number>;
+  };
+};
+
+export type GoogleAdsV1CampaignGetOutput = {
+  advertisingChannelType?: string;
+  amountMicros?: string;
+  averageCost?: number;
+  averageCpm?: number;
+  costMicros?: string;
+  ctr?: number;
+  id?: string;
+  impressions?: string;
+  interactionRate?: number;
+  interactions?: string;
+  name?: string;
+  period?: string;
+  resourceName?: string;
+  status?: string;
+  videoViews?: string;
+};
+
+export type GoogleAdsV1CampaignGetNode = {
+  type: 'n8n-nodes-base.googleAds';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleAdsV1CampaignGetParams>;
+  output?: Items<GoogleAdsV1CampaignGetOutput>;
+};

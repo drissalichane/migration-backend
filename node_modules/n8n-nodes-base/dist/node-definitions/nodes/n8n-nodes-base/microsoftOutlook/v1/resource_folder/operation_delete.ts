@@ -1,0 +1,26 @@
+/**
+ * Microsoft Outlook Node - Version 1
+ * Discriminator: resource=folder, operation=delete
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** Delete a draft */
+export type MicrosoftOutlookV1FolderDeleteParams = {
+  resource: 'folder';
+  operation: 'delete';
+/**
+ * Folder ID
+ */
+    folderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MicrosoftOutlookV1FolderDeleteNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV1FolderDeleteParams>;
+};

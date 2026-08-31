@@ -1,0 +1,286 @@
+/**
+ * Telegram Node - Version 1.2
+ * Discriminator: resource=message, operation=editMessageText
+ */
+
+
+interface Credentials {
+  telegramApi: CredentialReference;
+}
+
+/** Edit a text message */
+export type TelegramV12MessageEditMessageTextParams = {
+  resource: 'message';
+  operation: 'editMessageText';
+/**
+ * The type of the message to edit
+ * @default message
+ */
+    messageType?: 'inlineMessage' | 'message' | Expression<string>;
+/**
+ * Unique identifier for the target chat or username, To find your chat ID ask @get_id_bot
+ * @displayOptions.show { messageType: ["message"] }
+ */
+    chatId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Unique identifier of the message to edit
+ * @displayOptions.show { messageType: ["message"] }
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Unique identifier of the inline message to edit
+ * @displayOptions.show { messageType: ["inlineMessage"] }
+ */
+    inlineMessageId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional interface options
+ * @default none
+ */
+    replyMarkup?: 'none' | 'inlineKeyboard' | Expression<string>;
+/**
+ * Text of the message to be sent
+ */
+    text?: string | Expression<string> | PlaceholderValue;
+/**
+ * Force Reply
+ * @displayOptions.show { replyMarkup: ["forceReply"] }
+ * @default {}
+ */
+    forceReply?: {
+    /** Whether to show reply interface to the user, as if they manually selected the bot‘s message and tapped ’Reply
+     * @default false
+     */
+    force_reply?: boolean | Expression<boolean>;
+    /** Whether to force reply from specific users only
+     * @default false
+     */
+    selective?: boolean | Expression<boolean>;
+  };
+/**
+ * Adds an inline keyboard that appears right next to the message it belongs to
+ * @displayOptions.show { replyMarkup: ["inlineKeyboard"] }
+ * @default {}
+ */
+    inlineKeyboard?: {
+        /** Rows
+     */
+    rows?: Array<{
+      /** The value to set
+       * @default {}
+       */
+      row?: {
+        /** Buttons
+     */
+    buttons?: Array<{
+      /** Label text on the button
+       */
+      text?: string | Expression<string> | PlaceholderValue;
+      /** Additional Fields
+       * @default {}
+       */
+      additionalFields?: {
+    /** Data to be sent in a callback query to the bot when button is pressed, 1-64 bytes
+     */
+    callback_data?: string | Expression<string> | PlaceholderValue;
+    /** Whether to send a Pay button
+     * @default false
+     */
+    pay?: boolean | Expression<boolean>;
+    /** If set, pressing the button will insert the bot‘s username and the specified inline query in the current chat's input field.Can be empty, in which case only the bot’s username will be inserted
+     */
+    switch_inline_query_current_chat?: string | Expression<string> | PlaceholderValue;
+    /** If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot‘s username and the specified inline query in the input field. Can be empty, in which case just the bot’s username will be inserted.
+     */
+    switch_inline_query?: string | Expression<string> | PlaceholderValue;
+    /** HTTP or tg:// URL to be opened when button is pressed
+     */
+    url?: string | Expression<string> | PlaceholderValue;
+    /** Launch the Telegram Web App
+     * @default {}
+     */
+    web_app?: {
+    /** An HTTPS URL of a Web App to be opened
+     */
+    url?: string | Expression<string> | PlaceholderValue;
+  };
+  };
+    }>;
+  };
+    }>;
+  };
+/**
+ * Adds a custom keyboard with reply options
+ * @displayOptions.show { replyMarkup: ["replyKeyboard"] }
+ * @default {}
+ */
+    replyKeyboard?: {
+        /** Rows
+     */
+    rows?: Array<{
+      /** The value to set
+       * @default {}
+       */
+      row?: {
+        /** Buttons
+     */
+    buttons?: Array<{
+      /** Text of the button. If none of the optional fields are used, it will be sent as a message when the button is pressed.
+       */
+      text?: string | Expression<string> | PlaceholderValue;
+      /** Additional Fields
+       * @default {}
+       */
+      additionalFields?: {
+    /** Whether the user's phone number will be sent as a contact when the button is pressed.Available in private chats only
+     * @default false
+     */
+    request_contact?: boolean | Expression<boolean>;
+    /** Whether the user's request_location
+     * @default false
+     */
+    request_location?: boolean | Expression<boolean>;
+    /** Launch the Telegram Web App
+     * @default {}
+     */
+    web_app?: {
+    /** An HTTPS URL of a Web App to be opened
+     */
+    url?: string | Expression<string> | PlaceholderValue;
+  };
+  };
+    }>;
+  };
+    }>;
+  };
+/**
+ * Reply Keyboard Options
+ * @displayOptions.show { replyMarkup: ["replyKeyboard"] }
+ * @default {}
+ */
+    replyKeyboardOptions?: {
+    /** Whether to request clients to resize the keyboard vertically for optimal fit
+     * @default false
+     */
+    resize_keyboard?: boolean | Expression<boolean>;
+    /** Whether to request clients to hide the keyboard as soon as it's been used
+     * @default false
+     */
+    one_time_keyboard?: boolean | Expression<boolean>;
+    /** Whether to show the keyboard to specific users only
+     * @default false
+     */
+    selective?: boolean | Expression<boolean>;
+  };
+/**
+ * Reply Keyboard Remove
+ * @displayOptions.show { replyMarkup: ["replyKeyboardRemove"] }
+ * @default {}
+ */
+    replyKeyboardRemove?: {
+    /** Whether to request clients to remove the custom keyboard
+     * @default false
+     */
+    remove_keyboard?: boolean | Expression<boolean>;
+    /** Whether to force reply from specific users only
+     * @default false
+     */
+    selective?: boolean | Expression<boolean>;
+  };
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether to include the phrase “This message was sent automatically with n8n” to the end of the message
+     * @displayOptions.show { /operation: ["sendMessage"] }
+     * @default true
+     */
+    appendAttribution?: boolean | Expression<boolean>;
+    /** Caption text to set, 0-1024 characters
+     * @displayOptions.show { /operation: ["sendAnimation", "sendAudio", "sendDocument", "sendPhoto", "sendVideo"] }
+     */
+    caption?: string | Expression<string> | PlaceholderValue;
+    /** Whether to send the message silently. Users will receive a notification with no sound.
+     * @default false
+     */
+    disable_notification?: boolean | Expression<boolean>;
+    /** Whether to disable link previews for links in this message
+     * @default false
+     */
+    disable_web_page_preview?: boolean | Expression<boolean>;
+    /** Duration of clip in seconds
+     * @displayOptions.show { /operation: ["sendAnimation", "sendAudio", "sendVideo"] }
+     * @default 0
+     */
+    duration?: number | Expression<number>;
+    /** File Name
+     * @displayOptions.show { /operation: ["sendAnimation", "sendAudio", "sendDocument", "sendPhoto", "sendVideo", "sendSticker"], /binaryData: [true] }
+     */
+    fileName?: string | Expression<string> | PlaceholderValue;
+    /** Height of the video
+     * @displayOptions.show { /operation: ["sendAnimation", "sendVideo"] }
+     * @default 0
+     */
+    height?: number | Expression<number>;
+    /** How to parse the text
+     * @default HTML
+     */
+    parse_mode?: 'Markdown' | 'MarkdownV2' | 'HTML' | Expression<string>;
+    /** Name of the performer
+     * @displayOptions.show { /operation: ["sendAudio"] }
+     */
+    performer?: string | Expression<string> | PlaceholderValue;
+    /** If the message is a reply, ID of the original message
+     * @default 0
+     */
+    reply_to_message_id?: number | Expression<number>;
+    /** The unique identifier of the forum topic
+     * @displayOptions.show { /operation: ["sendAnimation", "sendAudio", "sendChatAction", "sendDocument", "sendLocation", "sendMediaGroup", "sendMessage", "sendPhoto", "sendSticker", "sendVideo"] }
+     * @default 0
+     */
+    message_thread_id?: number | Expression<number>;
+    /** Title of the track
+     * @displayOptions.show { /operation: ["sendAudio"] }
+     */
+    title?: string | Expression<string> | PlaceholderValue;
+    /** Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail‘s width and height should not exceed 320.
+     * @displayOptions.show { /operation: ["sendAnimation", "sendAudio", "sendDocument", "sendVideo"] }
+     */
+    thumb?: string | Expression<string> | PlaceholderValue;
+    /** Width of the video
+     * @displayOptions.show { /operation: ["sendAnimation", "sendVideo"] }
+     * @default 0
+     */
+    width?: number | Expression<number>;
+  };
+};
+
+export type TelegramV12MessageEditMessageTextOutput = {
+  ok?: boolean;
+  result?: {
+    chat?: {
+      first_name?: string;
+      id?: number;
+      type?: string;
+      username?: string;
+    };
+    date?: number;
+    edit_date?: number;
+    from?: {
+      first_name?: string;
+      id?: number;
+      is_bot?: boolean;
+      username?: string;
+    };
+    message_id?: number;
+    text?: string;
+  };
+};
+
+export type TelegramV12MessageEditMessageTextNode = {
+  type: 'n8n-nodes-base.telegram';
+  version: 1.2;
+  credentials?: Credentials;
+  config: NodeConfig<TelegramV12MessageEditMessageTextParams>;
+  output?: Items<TelegramV12MessageEditMessageTextOutput>;
+};

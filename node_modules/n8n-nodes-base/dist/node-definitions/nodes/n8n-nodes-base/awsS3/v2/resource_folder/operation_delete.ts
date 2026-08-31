@@ -1,0 +1,32 @@
+/**
+ * AWS S3 Node - Version 2
+ * Discriminator: resource=folder, operation=delete
+ */
+
+
+interface Credentials {
+  aws: CredentialReference;
+  awsAssumeRole: CredentialReference;
+}
+
+/** Delete a bucket */
+export type AwsS3V2FolderDeleteParams = {
+  resource: 'folder';
+  operation: 'delete';
+  authentication?: 'iam' | 'assumeRole' | Expression<string>;
+/**
+ * Bucket Name
+ */
+    bucketName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Folder Key
+ */
+    folderKey?: string | Expression<string> | PlaceholderValue;
+};
+
+export type AwsS3V2FolderDeleteNode = {
+  type: 'n8n-nodes-base.awsS3';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<AwsS3V2FolderDeleteParams>;
+};

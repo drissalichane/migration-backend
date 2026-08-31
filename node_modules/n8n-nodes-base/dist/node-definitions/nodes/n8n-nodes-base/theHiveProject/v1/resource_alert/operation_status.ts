@@ -1,0 +1,30 @@
+/**
+ * TheHive 5 Node - Version 1
+ * Discriminator: resource=alert, operation=status
+ */
+
+
+interface Credentials {
+  theHiveProjectApi: CredentialReference;
+}
+
+export type TheHiveProjectV1AlertStatusParams = {
+  resource: 'alert';
+  operation: 'status';
+/**
+ * Alert
+ * @default {"mode":"list","value":""}
+ */
+    alertId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    status?: string | Expression<string>;
+};
+
+export type TheHiveProjectV1AlertStatusNode = {
+  type: 'n8n-nodes-base.theHiveProject';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TheHiveProjectV1AlertStatusParams>;
+};

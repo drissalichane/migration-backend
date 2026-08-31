@@ -1,0 +1,61 @@
+/**
+ * Zulip Node - Version 1
+ * Discriminator: resource=user, operation=update
+ */
+
+
+interface Credentials {
+  zulipApi: CredentialReference;
+}
+
+/** Update a message */
+export type ZulipV1UserUpdateParams = {
+  resource: 'user';
+  operation: 'update';
+/**
+ * The ID of user to update
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** The users full name
+     */
+    fullName?: string | Expression<string> | PlaceholderValue;
+    /** Whether the target user is an administrator
+     * @default false
+     */
+    isAdmin?: boolean | Expression<boolean>;
+    /** Whether the target user is a guest
+     * @default false
+     */
+    isGuest?: boolean | Expression<boolean>;
+    /** A dictionary containing the to be updated custom profile field data for the user
+     * @default {}
+     */
+    profileData?: {
+        /** Property
+     */
+    property?: Array<{
+      /** ID of custom profile data value
+       */
+      id?: string | Expression<string> | PlaceholderValue;
+      /** Value of custom profile data
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Role for the user
+     */
+    role?: 600 | 400 | 200 | 300 | 100 | Expression<number>;
+  };
+};
+
+export type ZulipV1UserUpdateNode = {
+  type: 'n8n-nodes-base.zulip';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZulipV1UserUpdateParams>;
+};

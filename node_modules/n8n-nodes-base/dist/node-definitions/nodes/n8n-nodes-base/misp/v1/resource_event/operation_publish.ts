@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=event, operation=publish
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1EventPublishParams = {
+  resource: 'event';
+  operation: 'publish';
+/**
+ * UUID or numeric ID of the event
+ */
+    eventId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1EventPublishNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1EventPublishParams>;
+};

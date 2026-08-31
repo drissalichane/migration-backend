@@ -1,0 +1,57 @@
+/**
+ * Databricks Node - Version 1
+ * Discriminator: resource=unityCatalog, operation=createFunction
+ */
+
+
+interface Credentials {
+  databricksApi: CredentialReference;
+  databricksOAuth2Api: CredentialReference;
+}
+
+/** Unified governance for data and AI. <a href="https://docs.databricks.com/data-governance/unity-catalog/index.html" target="_blank">Learn more</a>. */
+export type DatabricksV1UnityCatalogCreateFunctionParams = {
+  resource: 'unityCatalog';
+  operation: 'createFunction';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The catalog to use
+ * @default {"mode":"list","value":""}
+ */
+    catalogName?: { __rl: true; mode: 'list' | 'string'; value: string; cachedResultName?: string };
+/**
+ * The schema to use
+ * @default {"mode":"list","value":""}
+ */
+    schemaName?: { __rl: true; mode: 'list' | 'string'; value: string; cachedResultName?: string };
+/**
+ * Name of the function to create
+ */
+    functionName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Array of input parameters. Each parameter requires name, type_name, and type_text.
+ * @default []
+ */
+    inputParams?: IDataObject | string | Expression<string>;
+/**
+ * The return type of the function (e.g., STRING, INT, DOUBLE)
+ * @default STRING
+ */
+    returnType?: string | Expression<string> | PlaceholderValue;
+/**
+ * The language of the function body
+ * @default SQL
+ */
+    routineBody?: string | Expression<string> | PlaceholderValue;
+/**
+ * The function body (SQL expression)
+ */
+    routineDefinition?: string | Expression<string> | PlaceholderValue;
+};
+
+export type DatabricksV1UnityCatalogCreateFunctionNode = {
+  type: 'n8n-nodes-base.databricks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DatabricksV1UnityCatalogCreateFunctionParams>;
+};

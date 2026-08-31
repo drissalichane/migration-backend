@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=employee, operation=get
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1EmployeeGetParams = {
+  resource: 'employee';
+  operation: 'get';
+/**
+ * The ID of the employee to retrieve
+ */
+    employeeId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1EmployeeGetNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1EmployeeGetParams>;
+};

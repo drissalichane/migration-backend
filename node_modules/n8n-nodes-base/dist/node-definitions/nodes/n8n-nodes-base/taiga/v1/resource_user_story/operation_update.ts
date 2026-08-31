@@ -1,0 +1,77 @@
+/**
+ * Taiga Node - Version 1
+ * Discriminator: resource=userStory, operation=update
+ */
+
+
+interface Credentials {
+  taigaApi: CredentialReference;
+}
+
+/** Update an epic */
+export type TaigaV1UserStoryUpdateParams = {
+  resource: 'userStory';
+  operation: 'update';
+/**
+ * ID of the project to set the user story to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    projectId?: string | Expression<string>;
+/**
+ * ID of the user story to update
+ */
+    userStoryId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** ID of the user to assign the the user story to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    assigned_to?: string | Expression<string>;
+    /** Order of the user story in the backlog
+     * @default 1
+     */
+    backlog_order?: number | Expression<number>;
+    /** Reason why the user story is blocked. Requires "Is Blocked" toggle to be enabled.
+     */
+    blocked_note?: string | Expression<string> | PlaceholderValue;
+    /** Description
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** Whether the user story is blocked
+     * @default false
+     */
+    is_blocked?: boolean | Expression<boolean>;
+    /** Order of the user story in the kanban
+     * @default 1
+     */
+    kanban_order?: number | Expression<number>;
+    /** ID of the milestone of the user story. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    milestone?: string | Expression<string>;
+    /** Subject
+     */
+    subject?: string | Expression<string> | PlaceholderValue;
+    /** Order of the user story in the milestone
+     * @default 1
+     */
+    sprint_order?: number | Expression<number>;
+    /** ID of the status of the user story. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    status?: string | Expression<string>;
+    /** Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     * @default []
+     */
+    tags?: string[];
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    type?: string | Expression<string>;
+  };
+};
+
+export type TaigaV1UserStoryUpdateNode = {
+  type: 'n8n-nodes-base.taiga';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TaigaV1UserStoryUpdateParams>;
+};

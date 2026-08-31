@@ -1,0 +1,26 @@
+/**
+ * SeaTable Node - Version 2
+ * Discriminator: resource=asset, operation=getPublicURL
+ */
+
+
+interface Credentials {
+  seaTableApi: CredentialReference;
+}
+
+/** Get the public URL from asset path */
+export type SeaTableV2AssetGetPublicURLParams = {
+  resource: 'asset';
+  operation: 'getPublicURL';
+/**
+ * Asset Path
+ */
+    assetPath?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SeaTableV2AssetGetPublicURLNode = {
+  type: 'n8n-nodes-base.seaTable';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<SeaTableV2AssetGetPublicURLParams>;
+};

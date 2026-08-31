@@ -1,0 +1,28 @@
+/**
+ * Linear Node - Version 1
+ * Discriminator: resource=issue, operation=delete
+ */
+
+
+interface Credentials {
+  linearApi: CredentialReference;
+  linearOAuth2Api: CredentialReference;
+}
+
+/** Delete an issue */
+export type LinearV1IssueDeleteParams = {
+  resource: 'issue';
+  operation: 'delete';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Issue ID
+ */
+    issueId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type LinearV1IssueDeleteNode = {
+  type: 'n8n-nodes-base.linear';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<LinearV1IssueDeleteParams>;
+};

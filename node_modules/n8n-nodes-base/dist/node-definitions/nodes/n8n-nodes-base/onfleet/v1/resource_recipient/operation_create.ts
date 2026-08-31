@@ -1,0 +1,53 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=recipient, operation=create
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Create a new Onfleet admin */
+export type OnfleetV1RecipientCreateParams = {
+  resource: 'recipient';
+  operation: 'create';
+/**
+ * The recipient's complete name
+ */
+    recipientName?: string | Expression<string> | PlaceholderValue;
+/**
+ * A unique, valid phone number as per the organization's country if there's no leading + sign. If a phone number has a leading + sign, it will disregard the organization's country setting.
+ */
+    recipientPhone?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Notes for this recipient: these are global notes that should not be task- or destination-specific
+     */
+    recipientNotes?: string | Expression<string> | PlaceholderValue;
+    /** Whether this recipient has requested to skip SMS notifications
+     * @default false
+     */
+    recipientSkipSMSNotifications?: boolean | Expression<boolean>;
+  };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Whether to skip validation for this recipient's phone number
+     * @default false
+     */
+    recipientSkipPhoneNumberValidation?: boolean | Expression<boolean>;
+  };
+};
+
+export type OnfleetV1RecipientCreateNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1RecipientCreateParams>;
+};

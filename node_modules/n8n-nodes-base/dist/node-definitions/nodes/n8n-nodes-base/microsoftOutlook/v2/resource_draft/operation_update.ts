@@ -1,0 +1,151 @@
+/**
+ * Microsoft Outlook Node - Version 2
+ * Discriminator: resource=draft, operation=update
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** Update a calendar */
+export type MicrosoftOutlookV2DraftUpdateParams = {
+  resource: 'draft';
+  operation: 'update';
+/**
+ * Draft
+ * @default {"mode":"list","value":""}
+ */
+    draftId?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Comma-separated list of email addresses of BCC recipients
+     */
+    bccRecipients?: string | Expression<string> | PlaceholderValue;
+    /** Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     * @default []
+     */
+    categories?: string[];
+    /** Comma-separated list of email addresses of CC recipients
+     */
+    ccRecipients?: string | Expression<string> | PlaceholderValue;
+    /** Custom Headers
+     * @default {}
+     */
+    internetMessageHeaders?: {
+        /** Header
+     */
+    headers?: Array<{
+      /** Name of the header
+       */
+      name?: string | Expression<string> | PlaceholderValue;
+      /** Value to set for the header
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** The owner of the mailbox from which the message is sent. Must correspond to the actual mailbox used.
+     */
+    from?: string | Expression<string> | PlaceholderValue;
+    /** The importance of the message
+     * @default Normal
+     */
+    importance?: 'Low' | 'Normal' | 'High' | Expression<string>;
+    /** Whether the message must be marked as read
+     * @default false
+     */
+    isRead?: boolean | Expression<boolean>;
+    /** Message body content
+     */
+    bodyContent?: string | Expression<string> | PlaceholderValue;
+    /** Message body content type
+     * @default html
+     */
+    bodyContentType?: 'html' | 'Text' | Expression<string>;
+    /** Whether a read receipt is requested for the message
+     * @default false
+     */
+    isReadReceiptRequested?: boolean | Expression<boolean>;
+    /** Email address to use when replying
+     */
+    replyTo?: string | Expression<string> | PlaceholderValue;
+    /** The subject of the message
+     */
+    subject?: string | Expression<string> | PlaceholderValue;
+    /** Comma-separated list of email addresses of recipients
+     */
+    toRecipients?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftOutlookV2DraftUpdateOutput = {
+  '@odata.context'?: string;
+  '@odata.etag'?: string;
+  body?: {
+    content?: string;
+    contentType?: string;
+  };
+  bodyPreview?: string;
+  ccRecipients?: Array<{
+    emailAddress?: {
+      address?: string;
+      name?: string;
+    };
+  }>;
+  changeKey?: string;
+  conversationId?: string;
+  conversationIndex?: string;
+  createdDateTime?: string;
+  flag?: {
+    flagStatus?: string;
+  };
+  from?: {
+    emailAddress?: {
+      address?: string;
+      name?: string;
+    };
+  };
+  hasAttachments?: boolean;
+  id?: string;
+  importance?: string;
+  inferenceClassification?: string;
+  internetMessageId?: string;
+  isDraft?: boolean;
+  isRead?: boolean;
+  isReadReceiptRequested?: boolean;
+  lastModifiedDateTime?: string;
+  parentFolderId?: string;
+  receivedDateTime?: string;
+  replyTo?: Array<{
+    emailAddress?: {
+      address?: string;
+      name?: string;
+    };
+  }>;
+  sender?: {
+    emailAddress?: {
+      address?: string;
+      name?: string;
+    };
+  };
+  sentDateTime?: string;
+  subject?: string;
+  toRecipients?: Array<{
+    emailAddress?: {
+      address?: string;
+      name?: string;
+    };
+  }>;
+  webLink?: string;
+};
+
+export type MicrosoftOutlookV2DraftUpdateNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV2DraftUpdateParams>;
+  output?: Items<MicrosoftOutlookV2DraftUpdateOutput>;
+};

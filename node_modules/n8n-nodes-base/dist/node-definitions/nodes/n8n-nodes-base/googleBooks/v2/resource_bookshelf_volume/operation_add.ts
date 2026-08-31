@@ -1,0 +1,36 @@
+/**
+ * Google Books Node - Version 2
+ * Discriminator: resource=bookshelfVolume, operation=add
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleBooksOAuth2Api: CredentialReference;
+}
+
+/** Add a volume to a bookshelf */
+export type GoogleBooksV2BookshelfVolumeAddParams = {
+  resource: 'bookshelfVolume';
+  operation: 'add';
+/**
+ * Authentication
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * ID of the bookshelf
+ */
+    shelfId?: string | Expression<string> | PlaceholderValue;
+/**
+ * ID of the volume
+ */
+    volumeId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleBooksV2BookshelfVolumeAddNode = {
+  type: 'n8n-nodes-base.googleBooks';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleBooksV2BookshelfVolumeAddParams>;
+};

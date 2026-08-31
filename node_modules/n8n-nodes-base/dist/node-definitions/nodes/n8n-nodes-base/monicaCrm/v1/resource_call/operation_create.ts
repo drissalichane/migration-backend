@@ -1,0 +1,34 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=call, operation=create
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Create an activity */
+export type MonicaCrmV1CallCreateParams = {
+  resource: 'call';
+  operation: 'create';
+/**
+ * ID of the contact to associate the call with
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Date when the call happened
+ */
+    calledAt?: string | Expression<string>;
+/**
+ * Description of the call - max 100,000 characters
+ */
+    content?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1CallCreateNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1CallCreateParams>;
+};

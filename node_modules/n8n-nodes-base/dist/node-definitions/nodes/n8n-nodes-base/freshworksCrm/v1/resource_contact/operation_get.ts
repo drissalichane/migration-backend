@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=contact, operation=get
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Retrieve an account */
+export type FreshworksCrmV1ContactGetParams = {
+  resource: 'contact';
+  operation: 'get';
+/**
+ * ID of the contact to retrieve
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1ContactGetNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1ContactGetParams>;
+};

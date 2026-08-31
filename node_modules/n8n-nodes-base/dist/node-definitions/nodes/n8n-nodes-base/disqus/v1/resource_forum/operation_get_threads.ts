@@ -1,0 +1,61 @@
+/**
+ * Disqus Node - Version 1
+ * Discriminator: resource=forum, operation=getThreads
+ */
+
+
+interface Credentials {
+  disqusApi: CredentialReference;
+}
+
+/** Return a list of threads within a forum */
+export type DisqusV1ForumGetThreadsParams = {
+  resource: 'forum';
+  operation: 'getThreads';
+/**
+ * The short name(aka ID) of the forum to get Threads
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** You may specify relations to include with your response
+     * @default []
+     */
+    related?: Array<'author' | 'forum'>;
+    /** You may specify relations to include with your response
+     * @default []
+     */
+    include?: Array<'closed' | 'open' | 'killed'>;
+    /** You may specify order to sort your response
+     * @default asc
+     */
+    order?: 'asc' | 'desc' | Expression<string>;
+    /** Unix timestamp (or ISO datetime standard)
+     */
+    since?: string | Expression<string>;
+    /** Looks up a thread by ID. You may pass us the "ident" query type instead of an ID by including "forum". You may pass us the "link" query type to filter by URL. You must pass the "forum" if you do not have the Pro API Access addon.
+     */
+    thread?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type DisqusV1ForumGetThreadsNode = {
+  type: 'n8n-nodes-base.disqus';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DisqusV1ForumGetThreadsParams>;
+};

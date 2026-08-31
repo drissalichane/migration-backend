@@ -1,0 +1,25 @@
+/**
+ * Emelia Node - Version 1
+ * Discriminator: resource=campaign, operation=create
+ */
+
+
+interface Credentials {
+  emeliaApi: CredentialReference;
+}
+
+export type EmeliaV1CampaignCreateParams = {
+  resource: 'campaign';
+  operation: 'create';
+/**
+ * The name of the campaign to create
+ */
+    campaignName?: string | Expression<string> | PlaceholderValue;
+};
+
+export type EmeliaV1CampaignCreateNode = {
+  type: 'n8n-nodes-base.emelia';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<EmeliaV1CampaignCreateParams>;
+};

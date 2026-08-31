@@ -1,0 +1,31 @@
+/**
+ * HubSpot Node - Version 2.2
+ * Discriminator: resource=contact, operation=delete
+ */
+
+
+interface Credentials {
+  hubspotApi: CredentialReference;
+  hubspotAppToken: CredentialReference;
+  hubspotOAuth2Api: CredentialReference;
+}
+
+/** Delete a contact */
+export type HubspotV22ContactDeleteParams = {
+  resource: 'contact';
+  operation: 'delete';
+  authentication?: 'apiKey' | 'appToken' | 'oAuth2' | Expression<string>;
+/**
+ * This is not a contact's email but a number like 1485
+ * @hint To lookup a user by their email, use the Search operation
+ * @default {"mode":"list","value":""}
+ */
+    contactId?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+};
+
+export type HubspotV22ContactDeleteNode = {
+  type: 'n8n-nodes-base.hubspot';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<HubspotV22ContactDeleteParams>;
+};

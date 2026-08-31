@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=invoice, operation=delete
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1InvoiceDeleteParams = {
+  resource: 'invoice';
+  operation: 'delete';
+/**
+ * The ID of the invoice to delete
+ */
+    invoiceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1InvoiceDeleteNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1InvoiceDeleteParams>;
+};

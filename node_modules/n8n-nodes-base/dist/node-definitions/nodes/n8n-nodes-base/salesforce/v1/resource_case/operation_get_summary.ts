@@ -1,0 +1,28 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=case, operation=getSummary
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a case, which is a customer issue or problem */
+export type SalesforceV1CaseGetSummaryParams = {
+  resource: 'case';
+  operation: 'getSummary';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+};
+
+export type SalesforceV1CaseGetSummaryNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1CaseGetSummaryParams>;
+};

@@ -1,0 +1,30 @@
+/**
+ * Customer.io Node - Version 1
+ * Discriminator: resource=segment, operation=add
+ */
+
+
+interface Credentials {
+  customerIoApi: CredentialReference;
+}
+
+export type CustomerIoV1SegmentAddParams = {
+  resource: 'segment';
+  operation: 'add';
+/**
+ * The unique identifier of the segment
+ * @default 0
+ */
+    segmentId?: number | Expression<number>;
+/**
+ * A list of customer IDs to add to the segment
+ */
+    customerIds?: string | Expression<string> | PlaceholderValue;
+};
+
+export type CustomerIoV1SegmentAddNode = {
+  type: 'n8n-nodes-base.customerIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CustomerIoV1SegmentAddParams>;
+};

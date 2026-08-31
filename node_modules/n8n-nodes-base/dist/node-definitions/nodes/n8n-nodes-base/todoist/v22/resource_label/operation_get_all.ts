@@ -1,0 +1,24 @@
+/**
+ * Todoist Node - Version 2.2
+ * Discriminator: resource=label, operation=getAll
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Label resource */
+export type TodoistV22LabelGetAllParams = {
+  resource: 'label';
+  operation: 'getAll';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+};
+
+export type TodoistV22LabelGetAllNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV22LabelGetAllParams>;
+};

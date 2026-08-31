@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=task, operation=get
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Retrieve an account */
+export type FreshworksCrmV1TaskGetParams = {
+  resource: 'task';
+  operation: 'get';
+/**
+ * ID of the task to retrieve
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1TaskGetNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1TaskGetParams>;
+};

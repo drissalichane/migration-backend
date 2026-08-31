@@ -1,0 +1,49 @@
+/**
+ * Microsoft Outlook Node - Version 1
+ * Discriminator: resource=folder, operation=getChildren
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** Lists all child folders under the folder */
+export type MicrosoftOutlookV1FolderGetChildrenParams = {
+  resource: 'folder';
+  operation: 'getChildren';
+/**
+ * Folder ID
+ */
+    folderId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Fields the response will contain. Multiple can be added separated by ,.
+     */
+    fields?: string | Expression<string> | PlaceholderValue;
+    /** Microsoft Graph API OData $filter query. Information about the syntax can be found &lt;a href="https://docs.microsoft.com/en-us/graph/query-parameters#filter-parameter"&gt;here&lt;/a&gt;.
+     */
+    filter?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftOutlookV1FolderGetChildrenNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV1FolderGetChildrenParams>;
+};

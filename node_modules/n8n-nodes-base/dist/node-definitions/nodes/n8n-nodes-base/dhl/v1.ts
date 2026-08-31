@@ -1,0 +1,37 @@
+/**
+ * DHL Node - Version 1
+ * Consume DHL API
+ */
+
+
+export interface DhlV1Params {
+  resource?: unknown;
+/**
+ * Operation
+ * @displayOptions.show { resource: ["shipment"] }
+ * @default get
+ */
+    operation?: 'get';
+  trackingNumber?: string | Expression<string> | PlaceholderValue;
+  options?: {
+    /** DHL will return more detailed information on the shipment when you provide the Recipient's Postal Code - it acts as a verification step
+     */
+    recipientPostalCode?: string | Expression<string> | PlaceholderValue;
+  };
+}
+
+export interface DhlV1Credentials {
+  dhlApi: CredentialReference;
+}
+
+interface DhlV1NodeBase {
+  type: 'n8n-nodes-base.dhl';
+  version: 1;
+  credentials?: DhlV1Credentials;
+}
+
+export type DhlV1ParamsNode = DhlV1NodeBase & {
+  config: NodeConfig<DhlV1Params>;
+};
+
+export type DhlV1Node = DhlV1ParamsNode;

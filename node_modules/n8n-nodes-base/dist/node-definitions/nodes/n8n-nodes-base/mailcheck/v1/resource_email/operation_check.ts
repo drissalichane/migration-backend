@@ -1,0 +1,37 @@
+/**
+ * Mailcheck Node - Version 1
+ * Discriminator: resource=email, operation=check
+ */
+
+
+interface Credentials {
+  mailcheckApi: CredentialReference;
+}
+
+export type MailcheckV1EmailCheckParams = {
+  resource: 'email';
+  operation: 'check';
+/**
+ * Email address to check
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MailcheckV1EmailCheckOutput = {
+  email?: string;
+  githubUsername?: string;
+  isNotDisposable?: boolean;
+  isNotSmtpCatchAll?: boolean;
+  microsoftAccountExists?: boolean;
+  mxExists?: boolean;
+  smtpExists?: boolean;
+  trustRate?: number;
+};
+
+export type MailcheckV1EmailCheckNode = {
+  type: 'n8n-nodes-base.mailcheck';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MailcheckV1EmailCheckParams>;
+  output?: Items<MailcheckV1EmailCheckOutput>;
+};

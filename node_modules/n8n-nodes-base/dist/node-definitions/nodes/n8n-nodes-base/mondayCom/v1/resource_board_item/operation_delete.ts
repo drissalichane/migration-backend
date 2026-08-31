@@ -1,0 +1,33 @@
+/**
+ * Monday.com Node - Version 1
+ * Discriminator: resource=boardItem, operation=delete
+ */
+
+
+interface Credentials {
+  mondayComApi: CredentialReference;
+  mondayComOAuth2Api: CredentialReference;
+}
+
+/** Delete a group in a board */
+export type MondayComV1BoardItemDeleteParams = {
+  resource: 'boardItem';
+  operation: 'delete';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * Item's ID
+ */
+    itemId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MondayComV1BoardItemDeleteOutput = {
+  id?: string;
+};
+
+export type MondayComV1BoardItemDeleteNode = {
+  type: 'n8n-nodes-base.mondayCom';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MondayComV1BoardItemDeleteParams>;
+  output?: Items<MondayComV1BoardItemDeleteOutput>;
+};

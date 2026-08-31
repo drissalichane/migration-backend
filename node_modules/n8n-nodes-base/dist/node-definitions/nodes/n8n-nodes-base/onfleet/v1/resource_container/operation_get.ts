@@ -1,0 +1,30 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=container, operation=get
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Get container information */
+export type OnfleetV1ContainerGetParams = {
+  resource: 'container';
+  operation: 'get';
+/**
+ * Container Type
+ */
+    containerType?: 'organizations' | 'teams' | 'workers' | Expression<string>;
+/**
+ * The object ID according to the container chosen
+ */
+    containerId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OnfleetV1ContainerGetNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1ContainerGetParams>;
+};

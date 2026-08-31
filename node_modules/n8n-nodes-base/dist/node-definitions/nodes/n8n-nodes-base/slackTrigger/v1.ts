@@ -1,0 +1,55 @@
+/**
+ * Slack Trigger Node - Version 1
+ * Handle Slack events via webhooks
+ */
+
+
+export interface SlackTriggerV1Params {
+  authentication?: unknown;
+  trigger?: Array<'any_event' | 'app_mention' | 'file_public' | 'file_share' | 'message' | 'channel_created' | 'team_join' | 'reaction_added'>;
+/**
+ * Whether to watch for the event in the whole workspace, rather than a specific channel
+ * @displayOptions.show { trigger: ["any_event", "message", "reaction_added", "file_share", "app_mention"] }
+ * @default false
+ */
+    watchWorkspace?: boolean | Expression<boolean>;
+/**
+ * The Slack channel to listen to events from. Applies to events: Bot/App mention, File Shared, New Message Posted on Channel, Reaction Added.
+ * @displayOptions.show { watchWorkspace: [false] }
+ * @default {"mode":"list","value":""}
+ */
+    channelId?: { __rl: true; mode: 'list' | 'id' | 'url'; value: string; cachedResultName?: string };
+/**
+ * Whether to download the files and add it to the output
+ * @displayOptions.show { trigger: ["any_event", "file_share"] }
+ * @default false
+ */
+    downloadFiles?: boolean | Expression<boolean>;
+  options?: {
+    /** Whether to resolve the IDs to their respective names and return them
+     * @default false
+     */
+    resolveIds?: boolean | Expression<boolean>;
+    /** A comma-separated string of encoded user IDs. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    userIds?: string[];
+  };
+}
+
+export interface SlackTriggerV1Credentials {
+  slackApi: CredentialReference;
+}
+
+interface SlackTriggerV1NodeBase {
+  type: 'n8n-nodes-base.slackTrigger';
+  version: 1;
+  credentials?: SlackTriggerV1Credentials;
+  isTrigger: true;
+}
+
+export type SlackTriggerV1ParamsNode = SlackTriggerV1NodeBase & {
+  config: NodeConfig<SlackTriggerV1Params>;
+};
+
+export type SlackTriggerV1Node = SlackTriggerV1ParamsNode;

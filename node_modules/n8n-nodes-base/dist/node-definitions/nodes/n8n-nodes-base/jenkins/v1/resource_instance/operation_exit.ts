@@ -1,0 +1,22 @@
+/**
+ * Jenkins Node - Version 1
+ * Discriminator: resource=instance, operation=exit
+ */
+
+
+interface Credentials {
+  jenkinsApi: CredentialReference;
+}
+
+/** Shutdown Jenkins immediately */
+export type JenkinsV1InstanceExitParams = {
+  resource: 'instance';
+  operation: 'exit';
+};
+
+export type JenkinsV1InstanceExitNode = {
+  type: 'n8n-nodes-base.jenkins';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JenkinsV1InstanceExitParams>;
+};

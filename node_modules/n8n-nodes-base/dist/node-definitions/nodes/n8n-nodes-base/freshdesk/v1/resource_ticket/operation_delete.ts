@@ -1,0 +1,26 @@
+/**
+ * Freshdesk Node - Version 1
+ * Discriminator: resource=ticket, operation=delete
+ */
+
+
+interface Credentials {
+  freshdeskApi: CredentialReference;
+}
+
+/** Delete a ticket */
+export type FreshdeskV1TicketDeleteParams = {
+  resource: 'ticket';
+  operation: 'delete';
+/**
+ * Ticket ID
+ */
+    ticketId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshdeskV1TicketDeleteNode = {
+  type: 'n8n-nodes-base.freshdesk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshdeskV1TicketDeleteParams>;
+};

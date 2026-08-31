@@ -1,0 +1,40 @@
+/**
+ * Gmail Node - Version 2.2
+ * Discriminator: resource=label, operation=get
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  gmailOAuth2: CredentialReference;
+}
+
+export type GmailV22LabelGetParams = {
+  resource: 'label';
+  operation: 'get';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The ID of the label
+ */
+    labelId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GmailV22LabelGetOutput = {
+  id?: string;
+  labelListVisibility?: string;
+  messageListVisibility?: string;
+  messagesTotal?: number;
+  messagesUnread?: number;
+  name?: string;
+  threadsTotal?: number;
+  threadsUnread?: number;
+  type?: string;
+};
+
+export type GmailV22LabelGetNode = {
+  type: 'n8n-nodes-base.gmail';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<GmailV22LabelGetParams>;
+  output?: Items<GmailV22LabelGetOutput>;
+};

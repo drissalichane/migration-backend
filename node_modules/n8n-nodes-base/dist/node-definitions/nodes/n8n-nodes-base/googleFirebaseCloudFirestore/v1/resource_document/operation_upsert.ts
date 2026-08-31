@@ -1,0 +1,50 @@
+/**
+ * Google Cloud Firestore Node - Version 1
+ * Discriminator: resource=document, operation=upsert
+ */
+
+
+interface Credentials {
+  googleFirebaseCloudFirestoreOAuth2Api: CredentialReference;
+  googleApi: CredentialReference;
+}
+
+/** Create a new document, or update the current one if it already exists (upsert) */
+export type GoogleFirebaseCloudFirestoreV1DocumentUpsertParams = {
+  resource: 'document';
+  operation: 'upsert';
+  authentication?: 'googleFirebaseCloudFirestoreOAuth2Api' | 'serviceAccount' | Expression<string>;
+/**
+ * As displayed in firebase console URL. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    projectId?: string | Expression<string>;
+/**
+ * Usually the provided default value will work
+ * @default (default)
+ */
+    database?: string | Expression<string> | PlaceholderValue;
+/**
+ * Collection name
+ */
+    collection?: string | Expression<string> | PlaceholderValue;
+/**
+ * Name of the field in an input item that contains the document ID
+ */
+    updateKey?: string | Expression<string> | PlaceholderValue;
+/**
+ * Columns to insert
+ */
+    columns?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleFirebaseCloudFirestoreV1DocumentUpsertOutput = {
+  updateTime?: string;
+};
+
+export type GoogleFirebaseCloudFirestoreV1DocumentUpsertNode = {
+  type: 'n8n-nodes-base.googleFirebaseCloudFirestore';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleFirebaseCloudFirestoreV1DocumentUpsertParams>;
+  output?: Items<GoogleFirebaseCloudFirestoreV1DocumentUpsertOutput>;
+};

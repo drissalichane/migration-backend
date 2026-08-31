@@ -1,0 +1,32 @@
+/**
+ * Google Books Node - Version 2
+ * Discriminator: resource=bookshelfVolume, operation=clear
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleBooksOAuth2Api: CredentialReference;
+}
+
+/** Clears all volumes from a bookshelf */
+export type GoogleBooksV2BookshelfVolumeClearParams = {
+  resource: 'bookshelfVolume';
+  operation: 'clear';
+/**
+ * Authentication
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * ID of the bookshelf
+ */
+    shelfId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleBooksV2BookshelfVolumeClearNode = {
+  type: 'n8n-nodes-base.googleBooks';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleBooksV2BookshelfVolumeClearParams>;
+};

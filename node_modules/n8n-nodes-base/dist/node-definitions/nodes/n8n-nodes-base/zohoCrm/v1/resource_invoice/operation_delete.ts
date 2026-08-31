@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=invoice, operation=delete
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Delete an account */
+export type ZohoCrmV1InvoiceDeleteParams = {
+  resource: 'invoice';
+  operation: 'delete';
+/**
+ * ID of the invoice to delete
+ */
+    invoiceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1InvoiceDeleteNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1InvoiceDeleteParams>;
+};

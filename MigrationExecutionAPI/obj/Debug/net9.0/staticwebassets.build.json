@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "KiLAX1YAOSf7MhHNjteGKuaSOqaCoGN+FO09kDTiRrA=",
+  "Source": "MigrationExecutionAPI",
+  "BasePath": "_content/MigrationExecutionAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

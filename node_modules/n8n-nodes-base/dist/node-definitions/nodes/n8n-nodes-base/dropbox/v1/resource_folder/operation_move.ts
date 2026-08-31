@@ -1,0 +1,54 @@
+/**
+ * Dropbox Node - Version 1
+ * Discriminator: resource=folder, operation=move
+ */
+
+
+interface Credentials {
+  dropboxApi: CredentialReference;
+  dropboxOAuth2Api: CredentialReference;
+}
+
+/** Move a file */
+export type DropboxV1FolderMoveParams = {
+  resource: 'folder';
+  operation: 'move';
+/**
+ * Means of authenticating with the service
+ * @default accessToken
+ */
+    authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The path of file or folder to move
+ */
+    path?: string | Expression<string> | PlaceholderValue;
+/**
+ * The new path of file or folder
+ */
+    toPath?: string | Expression<string> | PlaceholderValue;
+};
+
+export type DropboxV1FolderMoveOutput = {
+  metadata?: {
+    '.tag'?: string;
+    id?: string;
+    name?: string;
+    parent_shared_folder_id?: string;
+    path_display?: string;
+    path_lower?: string;
+    sharing_info?: {
+      no_access?: boolean;
+      parent_shared_folder_id?: string;
+      read_only?: boolean;
+      traverse_only?: boolean;
+    };
+  };
+};
+
+export type DropboxV1FolderMoveNode = {
+  type: 'n8n-nodes-base.dropbox';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DropboxV1FolderMoveParams>;
+  output?: Items<DropboxV1FolderMoveOutput>;
+};

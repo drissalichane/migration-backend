@@ -1,0 +1,26 @@
+/**
+ * Twist Node - Version 1
+ * Discriminator: resource=channel, operation=unarchive
+ */
+
+
+interface Credentials {
+  twistOAuth2Api: CredentialReference;
+}
+
+/** Unarchive a channel */
+export type TwistV1ChannelUnarchiveParams = {
+  resource: 'channel';
+  operation: 'unarchive';
+/**
+ * The ID of the channel
+ */
+    channelId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TwistV1ChannelUnarchiveNode = {
+  type: 'n8n-nodes-base.twist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwistV1ChannelUnarchiveParams>;
+};

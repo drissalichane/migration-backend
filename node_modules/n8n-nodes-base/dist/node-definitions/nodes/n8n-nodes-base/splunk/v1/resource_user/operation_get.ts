@@ -1,0 +1,26 @@
+/**
+ * Splunk Node - Version 1
+ * Discriminator: resource=user, operation=get
+ */
+
+
+interface Credentials {
+  splunkApi: CredentialReference;
+}
+
+/** Retrieve a search configuration */
+export type SplunkV1UserGetParams = {
+  resource: 'user';
+  operation: 'get';
+/**
+ * ID of the user to retrieve
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SplunkV1UserGetNode = {
+  type: 'n8n-nodes-base.splunk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SplunkV1UserGetParams>;
+};

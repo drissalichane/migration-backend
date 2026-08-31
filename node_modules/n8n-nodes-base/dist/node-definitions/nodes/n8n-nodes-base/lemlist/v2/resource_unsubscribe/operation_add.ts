@@ -1,0 +1,25 @@
+/**
+ * Lemlist Node - Version 2
+ * Discriminator: resource=unsubscribe, operation=add
+ */
+
+
+interface Credentials {
+  lemlistApi: CredentialReference;
+}
+
+export type LemlistV2UnsubscribeAddParams = {
+  resource: 'unsubscribe';
+  operation: 'add';
+/**
+ * Email to add to the unsubscribes
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+};
+
+export type LemlistV2UnsubscribeAddNode = {
+  type: 'n8n-nodes-base.lemlist';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<LemlistV2UnsubscribeAddParams>;
+};

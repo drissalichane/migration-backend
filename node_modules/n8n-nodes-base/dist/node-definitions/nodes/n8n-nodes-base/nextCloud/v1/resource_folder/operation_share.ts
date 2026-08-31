@@ -1,0 +1,67 @@
+/**
+ * Nextcloud Node - Version 1
+ * Discriminator: resource=folder, operation=share
+ */
+
+
+interface Credentials {
+  nextCloudApi: CredentialReference;
+  nextCloudOAuth2Api: CredentialReference;
+}
+
+/** Share a file */
+export type NextCloudV1FolderShareParams = {
+  resource: 'folder';
+  operation: 'share';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The file path of the file to share. Has to contain the full path. The path should start with "/".
+ */
+    path?: string | Expression<string> | PlaceholderValue;
+/**
+ * The share permissions to set
+ * @default 0
+ */
+    shareType?: 7 | 4 | 1 | 3 | 0 | Expression<number>;
+/**
+ * The ID of the circle to share with
+ * @displayOptions.show { shareType: [7] }
+ */
+    circleId?: string | Expression<string> | PlaceholderValue;
+/**
+ * The Email address to share with
+ * @displayOptions.show { shareType: [4] }
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+/**
+ * The ID of the group to share with
+ * @displayOptions.show { shareType: [1] }
+ */
+    groupId?: string | Expression<string> | PlaceholderValue;
+/**
+ * The user to share with
+ * @displayOptions.show { shareType: [0] }
+ */
+    user?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Optional search string
+     * @displayOptions.show { /shareType: [3] }
+     */
+    password?: string | Expression<string> | PlaceholderValue;
+    /** The share permissions to set
+     * @default 1
+     */
+    permissions?: 31 | 4 | 8 | 1 | 2 | Expression<number>;
+  };
+};
+
+export type NextCloudV1FolderShareNode = {
+  type: 'n8n-nodes-base.nextCloud';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NextCloudV1FolderShareParams>;
+};

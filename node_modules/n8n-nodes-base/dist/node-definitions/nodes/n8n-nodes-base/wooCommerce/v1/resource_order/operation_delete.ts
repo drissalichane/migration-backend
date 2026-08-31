@@ -1,0 +1,26 @@
+/**
+ * WooCommerce Node - Version 1
+ * Discriminator: resource=order, operation=delete
+ */
+
+
+interface Credentials {
+  wooCommerceApi: CredentialReference;
+}
+
+/** Delete a customer */
+export type WooCommerceV1OrderDeleteParams = {
+  resource: 'order';
+  operation: 'delete';
+/**
+ * Order ID
+ */
+    orderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type WooCommerceV1OrderDeleteNode = {
+  type: 'n8n-nodes-base.wooCommerce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<WooCommerceV1OrderDeleteParams>;
+};

@@ -1,0 +1,30 @@
+/**
+ * Intercom Node - Version 1
+ * Discriminator: resource=lead, operation=delete
+ */
+
+
+interface Credentials {
+  intercomApi: CredentialReference;
+}
+
+/** Leads are useful for representing logged-out users of your application */
+export type IntercomV1LeadDeleteParams = {
+  resource: 'lead';
+  operation: 'delete';
+/**
+ * Delete By
+ */
+    deleteBy?: 'id' | 'userId' | Expression<string>;
+/**
+ * Delete by value
+ */
+    value?: string | Expression<string> | PlaceholderValue;
+};
+
+export type IntercomV1LeadDeleteNode = {
+  type: 'n8n-nodes-base.intercom';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<IntercomV1LeadDeleteParams>;
+};

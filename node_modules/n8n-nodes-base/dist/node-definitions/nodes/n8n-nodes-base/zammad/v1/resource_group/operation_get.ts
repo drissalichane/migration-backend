@@ -1,0 +1,28 @@
+/**
+ * Zammad Node - Version 1
+ * Discriminator: resource=group, operation=get
+ */
+
+
+interface Credentials {
+  zammadBasicAuthApi: CredentialReference;
+  zammadTokenAuthApi: CredentialReference;
+}
+
+/** Retrieve a group */
+export type ZammadV1GroupGetParams = {
+  resource: 'group';
+  operation: 'get';
+  authentication?: 'basicAuth' | 'tokenAuth' | Expression<string>;
+/**
+ * Group to retrieve. Specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZammadV1GroupGetNode = {
+  type: 'n8n-nodes-base.zammad';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZammadV1GroupGetParams>;
+};

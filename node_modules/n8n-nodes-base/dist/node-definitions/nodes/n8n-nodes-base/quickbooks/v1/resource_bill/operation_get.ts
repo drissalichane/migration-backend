@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=bill, operation=get
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1BillGetParams = {
+  resource: 'bill';
+  operation: 'get';
+/**
+ * The ID of the bill to retrieve
+ */
+    billId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1BillGetNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1BillGetParams>;
+};

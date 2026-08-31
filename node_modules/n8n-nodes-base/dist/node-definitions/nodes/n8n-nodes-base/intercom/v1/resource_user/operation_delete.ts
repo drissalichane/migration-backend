@@ -1,0 +1,26 @@
+/**
+ * Intercom Node - Version 1
+ * Discriminator: resource=user, operation=delete
+ */
+
+
+interface Credentials {
+  intercomApi: CredentialReference;
+}
+
+/** The Users resource is the primary way of interacting with Intercom */
+export type IntercomV1UserDeleteParams = {
+  resource: 'user';
+  operation: 'delete';
+/**
+ * The Intercom defined ID representing the Lead
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type IntercomV1UserDeleteNode = {
+  type: 'n8n-nodes-base.intercom';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<IntercomV1UserDeleteParams>;
+};

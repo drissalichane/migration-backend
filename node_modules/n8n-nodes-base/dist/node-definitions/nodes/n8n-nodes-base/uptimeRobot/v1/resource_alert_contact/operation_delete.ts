@@ -1,0 +1,26 @@
+/**
+ * UptimeRobot Node - Version 1
+ * Discriminator: resource=alertContact, operation=delete
+ */
+
+
+interface Credentials {
+  uptimeRobotApi: CredentialReference;
+}
+
+/** Delete a monitor */
+export type UptimeRobotV1AlertContactDeleteParams = {
+  resource: 'alertContact';
+  operation: 'delete';
+/**
+ * The ID of the alert contact
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type UptimeRobotV1AlertContactDeleteNode = {
+  type: 'n8n-nodes-base.uptimeRobot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<UptimeRobotV1AlertContactDeleteParams>;
+};

@@ -1,0 +1,28 @@
+/**
+ * Zendesk Node - Version 1
+ * Discriminator: resource=ticketField, operation=get
+ */
+
+
+interface Credentials {
+  zendeskApi: CredentialReference;
+  zendeskOAuth2Api: CredentialReference;
+}
+
+/** Manage system and custom ticket fields */
+export type ZendeskV1TicketFieldGetParams = {
+  resource: 'ticketField';
+  operation: 'get';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Ticket Field ID
+ */
+    ticketFieldId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZendeskV1TicketFieldGetNode = {
+  type: 'n8n-nodes-base.zendesk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZendeskV1TicketFieldGetParams>;
+};

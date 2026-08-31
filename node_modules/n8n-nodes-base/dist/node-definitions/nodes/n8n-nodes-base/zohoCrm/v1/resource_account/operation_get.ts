@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=account, operation=get
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Get an account */
+export type ZohoCrmV1AccountGetParams = {
+  resource: 'account';
+  operation: 'get';
+/**
+ * ID of the account to retrieve. Can be found at the end of the URL.
+ */
+    accountId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1AccountGetNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1AccountGetParams>;
+};

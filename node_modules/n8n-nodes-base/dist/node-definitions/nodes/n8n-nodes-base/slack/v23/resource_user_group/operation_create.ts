@@ -1,0 +1,48 @@
+/**
+ * Slack Node - Version 2.3
+ * Discriminator: resource=userGroup, operation=create
+ */
+
+
+interface Credentials {
+  slackApi: CredentialReference;
+  slackOAuth2Api: CredentialReference;
+}
+
+/** Initiates a public or private channel-based conversation */
+export type SlackV23UserGroupCreateParams = {
+  resource: 'userGroup';
+  operation: 'create';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * A name for the User Group. Must be unique among User Groups.
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    Options?: {
+    /** A comma-separated string of encoded channel IDs for which the User Group uses as a default. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    channelIds?: string[];
+    /** A short description of the User Group
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** A mention handle. Must be unique among channels, users and User Groups.
+     */
+    handle?: string | Expression<string> | PlaceholderValue;
+    /** Whether to include the number of users in each User Group
+     * @default true
+     */
+    include_count?: boolean | Expression<boolean>;
+  };
+};
+
+export type SlackV23UserGroupCreateNode = {
+  type: 'n8n-nodes-base.slack';
+  version: 2.3;
+  credentials?: Credentials;
+  config: NodeConfig<SlackV23UserGroupCreateParams>;
+};

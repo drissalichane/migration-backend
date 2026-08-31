@@ -1,0 +1,26 @@
+/**
+ * Zulip Node - Version 1
+ * Discriminator: resource=stream, operation=delete
+ */
+
+
+interface Credentials {
+  zulipApi: CredentialReference;
+}
+
+/** Delete a message */
+export type ZulipV1StreamDeleteParams = {
+  resource: 'stream';
+  operation: 'delete';
+/**
+ * ID of stream to delete
+ */
+    streamId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZulipV1StreamDeleteNode = {
+  type: 'n8n-nodes-base.zulip';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZulipV1StreamDeleteParams>;
+};

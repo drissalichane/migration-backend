@@ -1,0 +1,36 @@
+/**
+ * Google Docs Node - Version 1
+ * Discriminator: resource=document, operation=get
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleDocsOAuth2Api: CredentialReference;
+}
+
+export type GoogleDocsV1DocumentGetParams = {
+  resource: 'document';
+  operation: 'get';
+/**
+ * Authentication
+ * @default serviceAccount
+ */
+    authentication?: 'serviceAccount' | 'oAuth2' | Expression<string>;
+/**
+ * The ID in the document URL (or just paste the whole URL)
+ */
+    documentURL?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return a simplified version of the response instead of the raw data
+ * @default true
+ */
+    simple?: boolean | Expression<boolean>;
+};
+
+export type GoogleDocsV1DocumentGetNode = {
+  type: 'n8n-nodes-base.googleDocs';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleDocsV1DocumentGetParams>;
+};

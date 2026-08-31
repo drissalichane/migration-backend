@@ -1,0 +1,68 @@
+/**
+ * CrateDB Node - Version 1
+ * Add and update data in CrateDB
+ */
+
+
+export interface CrateDbV1Params {
+  operation?: 'executeQuery' | 'insert' | 'update';
+/**
+ * The SQL query to execute. You can use n8n expressions or $1 and $2 in conjunction with query parameters.
+ * @displayOptions.show { operation: ["executeQuery"] }
+ */
+    query?: string;
+/**
+ * Name of the schema the table belongs to
+ * @displayOptions.show { operation: ["insert"] }
+ * @default doc
+ */
+    schema?: string | Expression<string> | PlaceholderValue;
+/**
+ * Name of the table in which to insert data to
+ * @displayOptions.show { operation: ["insert"] }
+ */
+    table?: string | Expression<string> | PlaceholderValue;
+/**
+ * Comma-separated list of the properties which should used as columns for the new rows
+ * @displayOptions.show { operation: ["insert"] }
+ */
+    columns?: string | Expression<string> | PlaceholderValue;
+/**
+ * Comma-separated list of the properties which decides which rows in the database should be updated. Normally that would be "id".
+ * @displayOptions.show { operation: ["update"] }
+ * @default id
+ */
+    updateKey?: string | Expression<string> | PlaceholderValue;
+/**
+ * Comma-separated list of the fields that the operation will return
+ * @displayOptions.show { operation: ["insert", "update"] }
+ * @default *
+ */
+    returnFields?: string | Expression<string> | PlaceholderValue;
+  additionalFields?: {
+    /** The way queries should be sent to database. Can be used in conjunction with &lt;b&gt;Continue on Fail&lt;/b&gt;. See &lt;a href="https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.cratedb/"&gt;the docs&lt;/a&gt; for more examples.
+     * @default multiple
+     */
+    mode?: 'independently' | 'multiple' | Expression<string>;
+    /** Comma-separated list of properties which should be used as query parameters
+     * @displayOptions.show { /operation: ["executeQuery"] }
+     */
+    queryParams?: string | Expression<string> | PlaceholderValue;
+  };
+}
+
+export interface CrateDbV1Credentials {
+  crateDb: CredentialReference;
+}
+
+interface CrateDbV1NodeBase {
+  type: 'n8n-nodes-base.crateDb';
+  version: 1;
+  credentials?: CrateDbV1Credentials;
+}
+
+export type CrateDbV1ParamsNode = CrateDbV1NodeBase & {
+  config: NodeConfig<CrateDbV1Params>;
+};
+
+export type CrateDbV1Node = CrateDbV1ParamsNode;

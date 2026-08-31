@@ -1,0 +1,53 @@
+/**
+ * Webflow Node - Version 2
+ * Discriminator: resource=item, operation=getAll
+ */
+
+
+interface Credentials {
+  webflowOAuth2Api: CredentialReference;
+}
+
+export type WebflowV2ItemGetAllParams = {
+  resource: 'item';
+  operation: 'getAll';
+/**
+ * ID of the site containing the collection whose items to operate on. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    siteId?: string | Expression<string>;
+/**
+ * ID of the collection whose items to operate on. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    collectionId?: string | Expression<string>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+};
+
+export type WebflowV2ItemGetAllOutput = {
+  createdOn?: string;
+  fieldData?: {
+    name?: string;
+    slug?: string;
+  };
+  id?: string;
+  isArchived?: boolean;
+  isDraft?: boolean;
+  lastUpdated?: string;
+};
+
+export type WebflowV2ItemGetAllNode = {
+  type: 'n8n-nodes-base.webflow';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<WebflowV2ItemGetAllParams>;
+  output?: Items<WebflowV2ItemGetAllOutput>;
+};

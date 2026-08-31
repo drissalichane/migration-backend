@@ -1,0 +1,22 @@
+/**
+ * Home Assistant Node - Version 1
+ * Discriminator: resource=config, operation=get
+ */
+
+
+interface Credentials {
+  homeAssistantApi: CredentialReference;
+}
+
+/** Get the configuration */
+export type HomeAssistantV1ConfigGetParams = {
+  resource: 'config';
+  operation: 'get';
+};
+
+export type HomeAssistantV1ConfigGetNode = {
+  type: 'n8n-nodes-base.homeAssistant';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HomeAssistantV1ConfigGetParams>;
+};

@@ -1,0 +1,35 @@
+/**
+ * TheHive 5 Node - Version 1
+ * Discriminator: resource=alert, operation=promote
+ */
+
+
+interface Credentials {
+  theHiveProjectApi: CredentialReference;
+}
+
+export type TheHiveProjectV1AlertPromoteParams = {
+  resource: 'alert';
+  operation: 'promote';
+/**
+ * Alert
+ * @default {"mode":"list","value":""}
+ */
+    alertId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    caseTemplate?: string | Expression<string>;
+  };
+};
+
+export type TheHiveProjectV1AlertPromoteNode = {
+  type: 'n8n-nodes-base.theHiveProject';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TheHiveProjectV1AlertPromoteParams>;
+};

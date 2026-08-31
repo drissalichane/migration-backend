@@ -1,0 +1,40 @@
+/**
+ * YouTube Node - Version 1
+ * Discriminator: resource=playlistItem, operation=get
+ */
+
+
+interface Credentials {
+  youTubeOAuth2Api: CredentialReference;
+}
+
+/** Retrieve a channel */
+export type YouTubeV1PlaylistItemGetParams = {
+  resource: 'playlistItem';
+  operation: 'get';
+/**
+ * Playlist Item ID
+ */
+    playlistItemId?: string | Expression<string> | PlaceholderValue;
+/**
+ * The fields parameter specifies a comma-separated list of one or more playlistItem resource properties that the API response will include
+ * @default ["*"]
+ */
+    part?: Array<'*' | 'contentDetails' | 'id' | 'snippet' | 'status'>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** The onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value
+     */
+    onBehalfOfContentOwner?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type YouTubeV1PlaylistItemGetNode = {
+  type: 'n8n-nodes-base.youTube';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<YouTubeV1PlaylistItemGetParams>;
+};

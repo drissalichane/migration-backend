@@ -1,0 +1,50 @@
+/**
+ * Databricks Node - Version 1
+ * Discriminator: resource=files, operation=listDirectory
+ */
+
+
+interface Credentials {
+  databricksApi: CredentialReference;
+  databricksOAuth2Api: CredentialReference;
+}
+
+/** Manage files in Unity Catalog volumes. <a href="https://docs.databricks.com/api/workspace/files" target="_blank">Learn more</a>. */
+export type DatabricksV1FilesListDirectoryParams = {
+  resource: 'files';
+  operation: 'listDirectory';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * Full path to the volume in format: catalog.schema.volume
+ */
+    volumePath?: string | Expression<string> | PlaceholderValue;
+/**
+ * Path to directory within the volume (e.g. "folder1" or "folder1/subfolder"). Leave empty to list the volume root. Do not include leading slash.
+ */
+    directoryPath?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Number of files to return per page
+     * @default 1000
+     */
+    pageSize?: number | Expression<number>;
+    /** Token for the next page of results
+     */
+    pageToken?: string | Expression<string> | PlaceholderValue;
+    /** Whether to overwrite an existing file
+     * @displayOptions.show { /operation: ["uploadFile"] }
+     * @default false
+     */
+    overwrite?: boolean | Expression<boolean>;
+  };
+};
+
+export type DatabricksV1FilesListDirectoryNode = {
+  type: 'n8n-nodes-base.databricks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DatabricksV1FilesListDirectoryParams>;
+};

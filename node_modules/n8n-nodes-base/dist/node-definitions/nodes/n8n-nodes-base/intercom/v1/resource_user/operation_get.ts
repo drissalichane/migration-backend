@@ -1,0 +1,30 @@
+/**
+ * Intercom Node - Version 1
+ * Discriminator: resource=user, operation=get
+ */
+
+
+interface Credentials {
+  intercomApi: CredentialReference;
+}
+
+/** The Users resource is the primary way of interacting with Intercom */
+export type IntercomV1UserGetParams = {
+  resource: 'user';
+  operation: 'get';
+/**
+ * The property to select the user by
+ */
+    selectBy?: 'id' | 'userId' | Expression<string>;
+/**
+ * View by value
+ */
+    value?: string | Expression<string> | PlaceholderValue;
+};
+
+export type IntercomV1UserGetNode = {
+  type: 'n8n-nodes-base.intercom';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<IntercomV1UserGetParams>;
+};

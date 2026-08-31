@@ -1,0 +1,22 @@
+/**
+ * SeaTable Node - Version 2
+ * Discriminator: resource=base, operation=metadata
+ */
+
+
+interface Credentials {
+  seaTableApi: CredentialReference;
+}
+
+/** Get the complete metadata of the base */
+export type SeaTableV2BaseMetadataParams = {
+  resource: 'base';
+  operation: 'metadata';
+};
+
+export type SeaTableV2BaseMetadataNode = {
+  type: 'n8n-nodes-base.seaTable';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<SeaTableV2BaseMetadataParams>;
+};

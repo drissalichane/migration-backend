@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=estimate, operation=delete
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1EstimateDeleteParams = {
+  resource: 'estimate';
+  operation: 'delete';
+/**
+ * The ID of the estimate to delete
+ */
+    estimateId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1EstimateDeleteNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1EstimateDeleteParams>;
+};

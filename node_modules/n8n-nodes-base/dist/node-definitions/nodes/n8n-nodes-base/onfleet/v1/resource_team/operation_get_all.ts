@@ -1,0 +1,45 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=team, operation=getAll
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Get many Onfleet admins */
+export type OnfleetV1TeamGetAllParams = {
+  resource: 'team';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 64
+ */
+    limit?: number | Expression<number>;
+};
+
+export type OnfleetV1TeamGetAllOutput = {
+  enableSelfAssignment?: boolean;
+  id?: string;
+  managers?: Array<string>;
+  name?: string;
+  tasks?: Array<string>;
+  timeCreated?: number;
+  timeLastModified?: number;
+  workers?: Array<string>;
+};
+
+export type OnfleetV1TeamGetAllNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1TeamGetAllParams>;
+  output?: Items<OnfleetV1TeamGetAllOutput>;
+};

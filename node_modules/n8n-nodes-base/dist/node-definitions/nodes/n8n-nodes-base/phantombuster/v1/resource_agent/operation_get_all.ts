@@ -1,0 +1,33 @@
+/**
+ * Phantombuster Node - Version 1
+ * Discriminator: resource=agent, operation=getAll
+ */
+
+
+interface Credentials {
+  phantombusterApi: CredentialReference;
+}
+
+/** Get many agents of the current user's organization */
+export type PhantombusterV1AgentGetAllParams = {
+  resource: 'agent';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 25
+ */
+    limit?: number | Expression<number>;
+};
+
+export type PhantombusterV1AgentGetAllNode = {
+  type: 'n8n-nodes-base.phantombuster';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PhantombusterV1AgentGetAllParams>;
+};

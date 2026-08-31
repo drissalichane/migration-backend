@@ -1,0 +1,33 @@
+/**
+ * Mautic Node - Version 1
+ * Discriminator: resource=company, operation=get
+ */
+
+
+interface Credentials {
+  mauticApi: CredentialReference;
+  mauticOAuth2Api: CredentialReference;
+}
+
+/** Create or modify a company */
+export type MauticV1CompanyGetParams = {
+  resource: 'company';
+  operation: 'get';
+  authentication?: 'credentials' | 'oAuth2' | Expression<string>;
+/**
+ * The ID of the company to return
+ */
+    companyId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return a simplified version of the response instead of the raw data
+ * @default true
+ */
+    simple?: boolean | Expression<boolean>;
+};
+
+export type MauticV1CompanyGetNode = {
+  type: 'n8n-nodes-base.mautic';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MauticV1CompanyGetParams>;
+};

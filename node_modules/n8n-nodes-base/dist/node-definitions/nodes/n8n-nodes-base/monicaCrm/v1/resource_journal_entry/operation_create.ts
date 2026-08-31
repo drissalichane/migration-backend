@@ -1,0 +1,30 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=journalEntry, operation=create
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Create an activity */
+export type MonicaCrmV1JournalEntryCreateParams = {
+  resource: 'journalEntry';
+  operation: 'create';
+/**
+ * Title of the journal entry - max 250 characters
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+/**
+ * Content of the journal entry - max 100,000 characters
+ */
+    post?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1JournalEntryCreateNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1JournalEntryCreateParams>;
+};

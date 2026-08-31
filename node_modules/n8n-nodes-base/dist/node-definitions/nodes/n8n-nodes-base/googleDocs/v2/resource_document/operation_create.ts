@@ -1,0 +1,48 @@
+/**
+ * Google Docs Node - Version 2
+ * Discriminator: resource=document, operation=create
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleDocsOAuth2Api: CredentialReference;
+}
+
+export type GoogleDocsV2DocumentCreateParams = {
+  resource: 'document';
+  operation: 'create';
+/**
+ * Authentication
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @default myDrive
+ */
+    driveId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    folderId?: string | Expression<string>;
+/**
+ * Title
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleDocsV2DocumentCreateOutput = {
+  id?: string;
+  kind?: string;
+  mimeType?: string;
+  name?: string;
+};
+
+export type GoogleDocsV2DocumentCreateNode = {
+  type: 'n8n-nodes-base.googleDocs';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleDocsV2DocumentCreateParams>;
+  output?: Items<GoogleDocsV2DocumentCreateOutput>;
+};

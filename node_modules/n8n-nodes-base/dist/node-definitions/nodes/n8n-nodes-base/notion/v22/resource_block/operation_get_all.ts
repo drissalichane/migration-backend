@@ -1,0 +1,69 @@
+/**
+ * Notion Node - Version 2.2
+ * Discriminator: resource=block, operation=getAll
+ */
+
+
+interface Credentials {
+  notionApi: CredentialReference;
+}
+
+/** Get many child blocks */
+export type NotionV22BlockGetAllParams = {
+  resource: 'block';
+  operation: 'getAll';
+/**
+ * The Notion Block to get all children from, when using 'By URL' mode make sure to use the URL of the block itself, you can find it in block parameters in Notion under 'Copy link to block'
+ * @default {"mode":"url","value":""}
+ */
+    blockId?: { __rl: true; mode: 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Also Fetch Nested Blocks
+ * @default false
+ */
+    fetchNestedBlocks?: boolean | Expression<boolean>;
+/**
+ * Simplify Output
+ * @default true
+ */
+    simplifyOutput?: boolean | Expression<boolean>;
+};
+
+export type NotionV22BlockGetAllOutput = {
+  archived?: boolean;
+  content?: string;
+  has_children?: boolean;
+  id?: string;
+  in_trash?: boolean;
+  last_edited_by?: {
+    id?: string;
+    object?: string;
+  };
+  object?: string;
+  parent?: {
+    page_id?: string;
+    type?: string;
+  };
+  parent_id?: string;
+  root_id?: string;
+  type?: string;
+};
+
+export type NotionV22BlockGetAllNode = {
+  type: 'n8n-nodes-base.notion';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<NotionV22BlockGetAllParams>;
+  output?: Items<NotionV22BlockGetAllOutput>;
+};

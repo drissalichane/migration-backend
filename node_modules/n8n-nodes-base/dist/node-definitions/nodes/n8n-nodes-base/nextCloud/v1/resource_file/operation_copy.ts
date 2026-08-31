@@ -1,0 +1,32 @@
+/**
+ * Nextcloud Node - Version 1
+ * Discriminator: resource=file, operation=copy
+ */
+
+
+interface Credentials {
+  nextCloudApi: CredentialReference;
+  nextCloudOAuth2Api: CredentialReference;
+}
+
+/** Copy a file */
+export type NextCloudV1FileCopyParams = {
+  resource: 'file';
+  operation: 'copy';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The path of file or folder to copy. The path should start with "/".
+ */
+    path?: string | Expression<string> | PlaceholderValue;
+/**
+ * The destination path of file or folder. The path should start with "/".
+ */
+    toPath?: string | Expression<string> | PlaceholderValue;
+};
+
+export type NextCloudV1FileCopyNode = {
+  type: 'n8n-nodes-base.nextCloud';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NextCloudV1FileCopyParams>;
+};

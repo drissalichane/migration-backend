@@ -1,0 +1,37 @@
+/**
+ * Strava Node - Version 1
+ * Discriminator: resource=activity, operation=getZones
+ */
+
+
+interface Credentials {
+  stravaOAuth2Api: CredentialReference;
+}
+
+/** Get all activity zones */
+export type StravaV1ActivityGetZonesParams = {
+  resource: 'activity';
+  operation: 'getZones';
+/**
+ * ID or email of activity
+ */
+    activityId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+};
+
+export type StravaV1ActivityGetZonesNode = {
+  type: 'n8n-nodes-base.strava';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StravaV1ActivityGetZonesParams>;
+};

@@ -1,0 +1,72 @@
+/**
+ * Twist Node - Version 1
+ * Discriminator: resource=thread, operation=update
+ */
+
+
+interface Credentials {
+  twistOAuth2Api: CredentialReference;
+}
+
+/** Update a channel */
+export type TwistV1ThreadUpdateParams = {
+  resource: 'thread';
+  operation: 'update';
+/**
+ * The ID of the thread
+ */
+    threadId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Actions
+     * @default {}
+     */
+    actionsUi?: {
+        /** Action
+     */
+    actionValues?: Array<{
+      /** The action of the button
+       */
+      action?: 'open_url' | 'prefill_message' | 'send_reply' | Expression<string>;
+      /** The text for the action button
+       */
+      button_text?: string | Expression<string> | PlaceholderValue;
+      /** The text for the action button
+       * @displayOptions.show { action: ["send_reply", "prefill_message"] }
+       */
+      message?: string | Expression<string> | PlaceholderValue;
+      /** The type of the button. (Currently only &lt;code&gt;action&lt;/code&gt; is available).
+       */
+      type?: 'action' | Expression<string>;
+      /** URL to redirect
+       * @displayOptions.show { action: ["open_url"] }
+       */
+      url?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Name of the property that holds the binary data. Multiple can be defined separated by comma.
+     * @default data
+     */
+    binaryProperties?: string | Expression<string> | PlaceholderValue;
+    /** The content of the thread
+     */
+    content?: string | Expression<string> | PlaceholderValue;
+    /** The users that are directly mentioned. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    direct_mentions?: string[];
+    /** The title of the thread (1 &lt; length &lt; 300)
+     */
+    title?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TwistV1ThreadUpdateNode = {
+  type: 'n8n-nodes-base.twist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwistV1ThreadUpdateParams>;
+};

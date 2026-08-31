@@ -1,0 +1,26 @@
+/**
+ * One Simple API Node - Version 1
+ * Discriminator: resource=utility, operation=validateEmail
+ */
+
+
+interface Credentials {
+  oneSimpleApi: CredentialReference;
+}
+
+/** Validate an email address */
+export type OneSimpleApiV1UtilityValidateEmailParams = {
+  resource: 'utility';
+  operation: 'validateEmail';
+/**
+ * Email Address
+ */
+    emailAddress?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OneSimpleApiV1UtilityValidateEmailNode = {
+  type: 'n8n-nodes-base.oneSimpleApi';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OneSimpleApiV1UtilityValidateEmailParams>;
+};

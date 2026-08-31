@@ -1,0 +1,30 @@
+/**
+ * Sendy Node - Version 1
+ * Discriminator: resource=subscriber, operation=remove
+ */
+
+
+interface Credentials {
+  sendyApi: CredentialReference;
+}
+
+/** Unsubscribe user from a list */
+export type SendyV1SubscriberRemoveParams = {
+  resource: 'subscriber';
+  operation: 'remove';
+/**
+ * Email address of the subscriber
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+/**
+ * The list ID you want to subscribe a user to. This encrypted & hashed ID can be found under View all lists section named ID.
+ */
+    listId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SendyV1SubscriberRemoveNode = {
+  type: 'n8n-nodes-base.sendy';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SendyV1SubscriberRemoveParams>;
+};

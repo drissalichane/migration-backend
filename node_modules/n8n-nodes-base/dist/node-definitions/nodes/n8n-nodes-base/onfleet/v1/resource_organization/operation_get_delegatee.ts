@@ -1,0 +1,26 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=organization, operation=getDelegatee
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Retrieve the details of an organization with which you are connected */
+export type OnfleetV1OrganizationGetDelegateeParams = {
+  resource: 'organization';
+  operation: 'getDelegatee';
+/**
+ * The ID of the delegatees for lookup
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OnfleetV1OrganizationGetDelegateeNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1OrganizationGetDelegateeParams>;
+};

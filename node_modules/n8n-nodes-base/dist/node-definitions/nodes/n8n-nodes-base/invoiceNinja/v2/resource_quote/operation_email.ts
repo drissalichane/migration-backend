@@ -1,0 +1,31 @@
+/**
+ * Invoice Ninja Node - Version 2
+ * Discriminator: resource=quote, operation=email
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Email an invoice */
+export type InvoiceNinjaV2QuoteEmailParams = {
+  resource: 'quote';
+  operation: 'email';
+/**
+ * API Version
+ * @default v5
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Quote ID
+ */
+    quoteId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type InvoiceNinjaV2QuoteEmailNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV2QuoteEmailParams>;
+};

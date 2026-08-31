@@ -1,0 +1,26 @@
+/**
+ * ConvertKit Node - Version 1
+ * Discriminator: resource=customField, operation=create
+ */
+
+
+interface Credentials {
+  convertKitApi: CredentialReference;
+}
+
+/** Create a field */
+export type ConvertKitV1CustomFieldCreateParams = {
+  resource: 'customField';
+  operation: 'create';
+/**
+ * The label of the custom field
+ */
+    label?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ConvertKitV1CustomFieldCreateNode = {
+  type: 'n8n-nodes-base.convertKit';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ConvertKitV1CustomFieldCreateParams>;
+};

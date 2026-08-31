@@ -1,0 +1,26 @@
+/**
+ * Zulip Node - Version 1
+ * Discriminator: resource=user, operation=deactivate
+ */
+
+
+interface Credentials {
+  zulipApi: CredentialReference;
+}
+
+/** Deactivate a user */
+export type ZulipV1UserDeactivateParams = {
+  resource: 'user';
+  operation: 'deactivate';
+/**
+ * The ID of user to deactivate
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZulipV1UserDeactivateNode = {
+  type: 'n8n-nodes-base.zulip';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZulipV1UserDeactivateParams>;
+};

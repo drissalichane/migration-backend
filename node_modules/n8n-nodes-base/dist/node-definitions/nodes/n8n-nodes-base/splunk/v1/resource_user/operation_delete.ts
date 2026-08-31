@@ -1,0 +1,26 @@
+/**
+ * Splunk Node - Version 1
+ * Discriminator: resource=user, operation=delete
+ */
+
+
+interface Credentials {
+  splunkApi: CredentialReference;
+}
+
+/** Delete a search configuration */
+export type SplunkV1UserDeleteParams = {
+  resource: 'user';
+  operation: 'delete';
+/**
+ * ID of the user to delete
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SplunkV1UserDeleteNode = {
+  type: 'n8n-nodes-base.splunk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SplunkV1UserDeleteParams>;
+};

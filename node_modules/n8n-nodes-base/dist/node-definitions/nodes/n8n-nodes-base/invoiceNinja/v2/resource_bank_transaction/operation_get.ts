@@ -1,0 +1,31 @@
+/**
+ * Invoice Ninja Node - Version 2
+ * Discriminator: resource=bank_transaction, operation=get
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Get data of a client */
+export type InvoiceNinjaV2BankTransactionGetParams = {
+  resource: 'bank_transaction';
+  operation: 'get';
+/**
+ * API Version
+ * @default v5
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Bank Transaction ID
+ */
+    bankTransactionId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type InvoiceNinjaV2BankTransactionGetNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV2BankTransactionGetParams>;
+};

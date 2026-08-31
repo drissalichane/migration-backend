@@ -1,0 +1,148 @@
+/**
+ * Stripe Node - Version 1
+ * Discriminator: resource=customer, operation=create
+ */
+
+
+interface Credentials {
+  stripeApi: CredentialReference;
+}
+
+/** Create a charge */
+export type StripeV1CustomerCreateParams = {
+  resource: 'customer';
+  operation: 'create';
+/**
+ * Full name or business name of the customer to create
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Address of the customer to create
+     * @default {}
+     */
+    address?: {
+        /** Details
+     */
+    details?: {
+      /** Address line 1 (e.g. street, PO Box, or company name)
+       */
+      line1?: string | Expression<string> | PlaceholderValue;
+      /** Address line 2 (e.g. apartment, suite, unit, or building)
+       */
+      line2?: string | Expression<string> | PlaceholderValue;
+      /** City, district, suburb, town, or village
+       */
+      city?: string | Expression<string> | PlaceholderValue;
+      /** State, county, province, or region
+       */
+      state?: string | Expression<string> | PlaceholderValue;
+      /** Two-letter country code (&lt;a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2"&gt;ISO 3166-1 alpha-2&lt;/a&gt;)
+       */
+      country?: string | Expression<string> | PlaceholderValue;
+      /** ZIP or postal code
+       */
+      postal_code?: string | Expression<string> | PlaceholderValue;
+    };
+  };
+    /** Arbitrary text to describe the customer to create
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** Email of the customer to create
+     */
+    email?: string | Expression<string> | PlaceholderValue;
+    /** Set of key-value pairs to attach to the customer to create
+     * @default {}
+     */
+    metadata?: {
+        /** Metadata Properties
+     */
+    metadataProperties?: Array<{
+      /** Key
+       */
+      key?: string | Expression<string> | PlaceholderValue;
+      /** Value
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Telephone number of the customer to create
+     */
+    phone?: string | Expression<string> | PlaceholderValue;
+    /** Shipping information for the customer
+     * @default {}
+     */
+    shipping?: {
+        /** Shipping Properties
+     */
+    shippingProperties?: Array<{
+      /** Recipient Name
+       */
+      name?: string | Expression<string> | PlaceholderValue;
+      /** Recipient Address
+       * @default {}
+       */
+      address?: {
+        /** Details
+     */
+    details?: {
+      /** Address line 1 (e.g. street, PO Box, or company name)
+       */
+      line1?: string | Expression<string> | PlaceholderValue;
+      /** Address line 2 (e.g. apartment, suite, unit, or building)
+       */
+      line2?: string | Expression<string> | PlaceholderValue;
+      /** City, district, suburb, town, or village
+       */
+      city?: string | Expression<string> | PlaceholderValue;
+      /** State, county, province, or region
+       */
+      state?: string | Expression<string> | PlaceholderValue;
+      /** Two-letter country code (&lt;a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2"&gt;ISO 3166-1 alpha-2&lt;/a&gt;)
+       */
+      country?: string | Expression<string> | PlaceholderValue;
+      /** ZIP or postal code
+       */
+      postal_code?: string | Expression<string> | PlaceholderValue;
+    };
+  };
+      /** Recipient Phone
+       */
+      phone?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+  };
+};
+
+export type StripeV1CustomerCreateOutput = {
+  balance?: number;
+  created?: number;
+  currency?: null;
+  default_source?: null;
+  delinquent?: boolean;
+  discount?: null;
+  id?: string;
+  invoice_prefix?: string;
+  invoice_settings?: {
+    custom_fields?: null;
+    default_payment_method?: null;
+    footer?: null;
+    rendering_options?: null;
+  };
+  livemode?: boolean;
+  next_invoice_sequence?: number;
+  object?: string;
+  tax_exempt?: string;
+  test_clock?: null;
+};
+
+export type StripeV1CustomerCreateNode = {
+  type: 'n8n-nodes-base.stripe';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StripeV1CustomerCreateParams>;
+  output?: Items<StripeV1CustomerCreateOutput>;
+};

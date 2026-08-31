@@ -1,0 +1,26 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=journalEntry, operation=get
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Retrieve an activity */
+export type MonicaCrmV1JournalEntryGetParams = {
+  resource: 'journalEntry';
+  operation: 'get';
+/**
+ * ID of the journal entry to retrieve
+ */
+    journalId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1JournalEntryGetNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1JournalEntryGetParams>;
+};

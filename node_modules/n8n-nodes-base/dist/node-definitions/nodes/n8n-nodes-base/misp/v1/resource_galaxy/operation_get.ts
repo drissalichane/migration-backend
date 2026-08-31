@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=galaxy, operation=get
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1GalaxyGetParams = {
+  resource: 'galaxy';
+  operation: 'get';
+/**
+ * UUID or numeric ID of the galaxy
+ */
+    galaxyId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1GalaxyGetNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1GalaxyGetParams>;
+};

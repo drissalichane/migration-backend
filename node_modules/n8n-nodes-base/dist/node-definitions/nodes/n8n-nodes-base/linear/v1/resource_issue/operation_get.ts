@@ -1,0 +1,45 @@
+/**
+ * Linear Node - Version 1
+ * Discriminator: resource=issue, operation=get
+ */
+
+
+interface Credentials {
+  linearApi: CredentialReference;
+  linearOAuth2Api: CredentialReference;
+}
+
+/** Get an issue */
+export type LinearV1IssueGetParams = {
+  resource: 'issue';
+  operation: 'get';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Issue ID
+ */
+    issueId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type LinearV1IssueGetOutput = {
+  createdAt?: string;
+  creator?: {
+    displayName?: string;
+    id?: string;
+  };
+  id?: string;
+  identifier?: string;
+  priority?: number;
+  state?: {
+    id?: string;
+    name?: string;
+  };
+  title?: string;
+};
+
+export type LinearV1IssueGetNode = {
+  type: 'n8n-nodes-base.linear';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<LinearV1IssueGetParams>;
+  output?: Items<LinearV1IssueGetOutput>;
+};

@@ -1,0 +1,40 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=note, operation=create
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Create an activity */
+export type MonicaCrmV1NoteCreateParams = {
+  resource: 'note';
+  operation: 'create';
+/**
+ * ID of the contact to associate the note with
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Body of the note - max 100,000 characters
+ */
+    body?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether the note has been favorited
+     * @default false
+     */
+    isFavorited?: boolean | Expression<boolean>;
+  };
+};
+
+export type MonicaCrmV1NoteCreateNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1NoteCreateParams>;
+};

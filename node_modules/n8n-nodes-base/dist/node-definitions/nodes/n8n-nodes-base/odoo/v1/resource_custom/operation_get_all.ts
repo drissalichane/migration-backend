@@ -1,0 +1,73 @@
+/**
+ * Odoo Node - Version 1
+ * Discriminator: resource=custom, operation=getAll
+ */
+
+
+interface Credentials {
+  odooApi: CredentialReference;
+}
+
+/** Get many items */
+export type OdooV1CustomGetAllParams = {
+  resource: 'custom';
+  operation: 'getAll';
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    customResource?: string | Expression<string>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     * @default []
+     */
+    fieldsList?: string[];
+  };
+/**
+ * Filter request by applying filters
+ * @default {}
+ */
+    filterRequest?: {
+        /** Filter
+     */
+    filter?: Array<{
+      /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+       */
+      fieldName?: string | Expression<string>;
+      /** Specify an operator
+       * @default equal
+       */
+      operator?: 'notEqual' | 'lesserThen' | 'lesserOrEqual' | 'equal' | 'greaterThen' | 'greaterOrEqual' | 'childOf' | 'in' | 'like' | 'notIn' | Expression<string>;
+      /** Specify value for comparison
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+};
+
+export type OdooV1CustomGetAllOutput = {
+  id?: number;
+  name?: string;
+};
+
+export type OdooV1CustomGetAllNode = {
+  type: 'n8n-nodes-base.odoo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OdooV1CustomGetAllParams>;
+  output?: Items<OdooV1CustomGetAllOutput>;
+};

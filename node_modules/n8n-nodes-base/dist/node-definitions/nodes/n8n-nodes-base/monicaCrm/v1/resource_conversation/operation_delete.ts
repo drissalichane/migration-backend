@@ -1,0 +1,26 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=conversation, operation=delete
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Delete an activity */
+export type MonicaCrmV1ConversationDeleteParams = {
+  resource: 'conversation';
+  operation: 'delete';
+/**
+ * ID of the conversation to delete
+ */
+    conversationId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1ConversationDeleteNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1ConversationDeleteParams>;
+};

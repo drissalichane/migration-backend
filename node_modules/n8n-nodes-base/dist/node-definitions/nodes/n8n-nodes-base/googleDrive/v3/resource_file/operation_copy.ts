@@ -1,0 +1,71 @@
+/**
+ * Google Drive Node - Version 3
+ * Discriminator: resource=file, operation=copy
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleDriveOAuth2Api: CredentialReference;
+}
+
+/** Create a copy of an existing file */
+export type GoogleDriveV3FileCopyParams = {
+  resource: 'file';
+  operation: 'copy';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The file to copy
+ * @default {"mode":"list","value":""}
+ */
+    fileId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * The name of the new file. If not set, “Copy of {original file name}” will be used.
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to copy the file in the same folder as the original file
+ * @default true
+ */
+    sameFolder?: boolean | Expression<boolean>;
+/**
+ * The drive where to save the copied file
+ * @displayOptions.show { sameFolder: [false] }
+ * @default {"mode":"list","value":"My Drive"}
+ */
+    driveId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * The folder where to save the copied file
+ * @displayOptions.show { sameFolder: [false] }
+ * @default {"mode":"list","value":"root","cachedResultName":"/ (Root folder)"}
+ */
+    folderId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Whether the options to copy, print, or download this file, should be disabled for readers and commenters
+     * @default false
+     */
+    copyRequiresWriterPermission?: boolean | Expression<boolean>;
+    /** A short description of the file
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type GoogleDriveV3FileCopyOutput = {
+  id?: string;
+  kind?: string;
+  mimeType?: string;
+  name?: string;
+};
+
+export type GoogleDriveV3FileCopyNode = {
+  type: 'n8n-nodes-base.googleDrive';
+  version: 3;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleDriveV3FileCopyParams>;
+  output?: Items<GoogleDriveV3FileCopyOutput>;
+};

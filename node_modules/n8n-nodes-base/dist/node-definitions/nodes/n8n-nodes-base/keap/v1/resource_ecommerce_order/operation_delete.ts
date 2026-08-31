@@ -1,0 +1,26 @@
+/**
+ * Keap Node - Version 1
+ * Discriminator: resource=ecommerceOrder, operation=delete
+ */
+
+
+interface Credentials {
+  keapOAuth2Api: CredentialReference;
+}
+
+/** Delete an contact */
+export type KeapV1EcommerceOrderDeleteParams = {
+  resource: 'ecommerceOrder';
+  operation: 'delete';
+/**
+ * Order ID
+ */
+    orderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type KeapV1EcommerceOrderDeleteNode = {
+  type: 'n8n-nodes-base.keap';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<KeapV1EcommerceOrderDeleteParams>;
+};

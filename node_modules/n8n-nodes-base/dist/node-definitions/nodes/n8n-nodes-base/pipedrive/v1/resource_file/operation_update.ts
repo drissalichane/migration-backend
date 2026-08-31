@@ -1,0 +1,41 @@
+/**
+ * Pipedrive Node - Version 1
+ * Discriminator: resource=file, operation=update
+ */
+
+
+interface Credentials {
+  pipedriveApi: CredentialReference;
+  pipedriveOAuth2Api: CredentialReference;
+}
+
+/** Update an activity */
+export type PipedriveV1FileUpdateParams = {
+  resource: 'file';
+  operation: 'update';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * ID of the file to update
+ * @default 0
+ */
+    fileId?: number | Expression<number>;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** The updated visible name of the file
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** The updated description of the file
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type PipedriveV1FileUpdateNode = {
+  type: 'n8n-nodes-base.pipedrive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PipedriveV1FileUpdateParams>;
+};

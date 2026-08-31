@@ -1,0 +1,39 @@
+/**
+ * HubSpot Node - Version 1
+ * Discriminator: resource=company, operation=get
+ */
+
+
+interface Credentials {
+  hubspotApi: CredentialReference;
+  hubspotAppToken: CredentialReference;
+  hubspotOAuth2Api: CredentialReference;
+}
+
+/** Get a contact */
+export type HubspotV1CompanyGetParams = {
+  resource: 'company';
+  operation: 'get';
+  authentication?: 'apiKey' | 'appToken' | 'oAuth2' | Expression<string>;
+/**
+ * Unique identifier for a particular company
+ */
+    companyId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether to return any merge history if the company has been previously merged with another company record. Defaults to false.
+     * @default false
+     */
+    includeMergeAudits?: boolean | Expression<boolean>;
+  };
+};
+
+export type HubspotV1CompanyGetNode = {
+  type: 'n8n-nodes-base.hubspot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HubspotV1CompanyGetParams>;
+};

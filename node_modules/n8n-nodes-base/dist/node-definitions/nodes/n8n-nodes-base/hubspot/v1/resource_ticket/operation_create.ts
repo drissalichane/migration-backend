@@ -1,0 +1,75 @@
+/**
+ * HubSpot Node - Version 1
+ * Discriminator: resource=ticket, operation=create
+ */
+
+
+interface Credentials {
+  hubspotApi: CredentialReference;
+  hubspotAppToken: CredentialReference;
+  hubspotOAuth2Api: CredentialReference;
+}
+
+/** Create a company */
+export type HubspotV1TicketCreateParams = {
+  resource: 'ticket';
+  operation: 'create';
+  authentication?: 'apiKey' | 'appToken' | 'oAuth2' | Expression<string>;
+/**
+ * The ID of the pipeline the ticket is in. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    pipelineId?: string | Expression<string>;
+/**
+ * The ID of the pipeline the ticket is in. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    stageId?: string | Expression<string>;
+/**
+ * The ID of the pipeline the ticket is in
+ */
+    ticketName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Companies associated with the ticket. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    associatedCompanyIds?: string[];
+    /** Contacts associated with the ticket. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    associatedContactIds?: string[];
+    /** Main reason customer reached out for help. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    category?: string | Expression<string>;
+    /** The date the ticket was closed
+     */
+    closeDate?: string | Expression<string>;
+    /** The date the ticket was created
+     */
+    createDate?: string | Expression<string>;
+    /** Description of the ticket
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** The level of attention needed on the ticket. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    priority?: string | Expression<string>;
+    /** The action taken to resolve the ticket. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    resolution?: string | Expression<string>;
+    /** Channel where ticket was originally submitted. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    source?: string | Expression<string>;
+    /** The user from your team that the ticket is assigned to. You can assign additional users to a ticket record by creating a custom HubSpot user property. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    ticketOwnerId?: string | Expression<string>;
+  };
+};
+
+export type HubspotV1TicketCreateNode = {
+  type: 'n8n-nodes-base.hubspot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HubspotV1TicketCreateParams>;
+};

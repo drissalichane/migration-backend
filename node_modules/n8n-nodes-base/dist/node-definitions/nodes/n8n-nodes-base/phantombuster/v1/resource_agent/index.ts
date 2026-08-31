@@ -1,0 +1,24 @@
+/**
+ * Phantombuster - Agent Resource
+ * Re-exports all operation types for this resource.
+ */
+
+import type { PhantombusterV1AgentDeleteNode } from './operation_delete';
+import type { PhantombusterV1AgentGetNode } from './operation_get';
+import type { PhantombusterV1AgentGetAllNode } from './operation_get_all';
+import type { PhantombusterV1AgentGetOutputNode } from './operation_get_output';
+import type { PhantombusterV1AgentLaunchNode } from './operation_launch';
+
+export * from './operation_delete';
+export * from './operation_get';
+export * from './operation_get_all';
+export * from './operation_get_output';
+export * from './operation_launch';
+
+export type PhantombusterV1AgentNode =
+  | PhantombusterV1AgentDeleteNode
+  | PhantombusterV1AgentGetNode
+  | PhantombusterV1AgentGetAllNode
+  | PhantombusterV1AgentGetOutputNode
+  | PhantombusterV1AgentLaunchNode
+  ;

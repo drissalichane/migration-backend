@@ -1,0 +1,121 @@
+/**
+ * Trello Node - Version 1
+ * Discriminator: resource=cardComment, operation=create
+ */
+
+
+interface Credentials {
+  trelloApi: CredentialReference;
+}
+
+/** Create a new attachment for a card */
+export type TrelloV1CardCommentCreateParams = {
+  resource: 'cardComment';
+  operation: 'create';
+/**
+ * The ID of the card
+ * @default {"mode":"list","value":""}
+ */
+    cardId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Text of the comment
+ */
+    text?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TrelloV1CardCommentCreateOutput = {
+  appCreator?: {
+    id?: string;
+  };
+  data?: {
+    board?: {
+      id?: string;
+      name?: string;
+      shortLink?: string;
+    };
+    card?: {
+      id?: string;
+      idShort?: number;
+      name?: string;
+      shortLink?: string;
+    };
+    list?: {
+      id?: string;
+      name?: string;
+    };
+    text?: string;
+  };
+  date?: string;
+  display?: {
+    entities?: {
+      card?: {
+        hideIfContext?: boolean;
+        id?: string;
+        shortLink?: string;
+        text?: string;
+        type?: string;
+      };
+      comment?: {
+        text?: string;
+        type?: string;
+      };
+      contextOn?: {
+        hideIfContext?: boolean;
+        idContext?: string;
+        translationKey?: string;
+        type?: string;
+      };
+      memberCreator?: {
+        id?: string;
+        text?: string;
+        type?: string;
+        username?: string;
+      };
+    };
+    translationKey?: string;
+  };
+  entities?: Array<{
+    hideIfContext?: boolean;
+    id?: string;
+    idContext?: string;
+    shortLink?: string;
+    text?: string;
+    type?: string;
+    username?: string;
+  }>;
+  id?: string;
+  idMemberCreator?: string;
+  limits?: {
+    reactions?: {
+      perAction?: {
+        disableAt?: number;
+        status?: string;
+        warnAt?: number;
+      };
+      uniquePerAction?: {
+        disableAt?: number;
+        status?: string;
+        warnAt?: number;
+      };
+    };
+  };
+  memberCreator?: {
+    activityBlocked?: boolean;
+    avatarHash?: string;
+    avatarUrl?: string;
+    fullName?: string;
+    id?: string;
+    initials?: string;
+    nonPublicAvailable?: boolean;
+    username?: string;
+  };
+  type?: string;
+};
+
+export type TrelloV1CardCommentCreateNode = {
+  type: 'n8n-nodes-base.trello';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TrelloV1CardCommentCreateParams>;
+  output?: Items<TrelloV1CardCommentCreateOutput>;
+};

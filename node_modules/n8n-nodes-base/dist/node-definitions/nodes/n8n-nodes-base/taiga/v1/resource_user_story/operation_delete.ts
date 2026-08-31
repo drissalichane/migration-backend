@@ -1,0 +1,26 @@
+/**
+ * Taiga Node - Version 1
+ * Discriminator: resource=userStory, operation=delete
+ */
+
+
+interface Credentials {
+  taigaApi: CredentialReference;
+}
+
+/** Delete an epic */
+export type TaigaV1UserStoryDeleteParams = {
+  resource: 'userStory';
+  operation: 'delete';
+/**
+ * ID of the user story to delete
+ */
+    userStoryId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TaigaV1UserStoryDeleteNode = {
+  type: 'n8n-nodes-base.taiga';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TaigaV1UserStoryDeleteParams>;
+};

@@ -1,0 +1,53 @@
+/**
+ * MongoDB Node - Version 1
+ * Discriminator: resource=document, operation=findOneAndUpdate
+ */
+
+
+interface Credentials {
+  mongoDb: CredentialReference;
+}
+
+/** Find and update documents */
+export type MongoDbV1DocumentFindOneAndUpdateParams = {
+  resource: 'document';
+  operation: 'findOneAndUpdate';
+/**
+ * MongoDB Collection
+ */
+    collection?: string | Expression<string> | PlaceholderValue;
+/**
+ * Name of the property which decides which rows in the database should be updated. Normally that would be "id".
+ * @default id
+ */
+    updateKey?: string | Expression<string> | PlaceholderValue;
+/**
+ * Comma-separated list of the fields to be included into the new document
+ */
+    fields?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to perform an insert if no documents match the update key
+ * @default false
+ */
+    upsert?: boolean | Expression<boolean>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Comma-separated list of fields that will be parsed as Mongo Date type
+     */
+    dateFields?: string | Expression<string> | PlaceholderValue;
+    /** Whether to use dot notation to access date fields
+     * @default false
+     */
+    useDotNotation?: boolean | Expression<boolean>;
+  };
+};
+
+export type MongoDbV1DocumentFindOneAndUpdateNode = {
+  type: 'n8n-nodes-base.mongoDb';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MongoDbV1DocumentFindOneAndUpdateParams>;
+};

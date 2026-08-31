@@ -1,0 +1,104 @@
+/**
+ * Merge Node - Version 3.2
+ * Discriminator: mode=combine
+ */
+
+
+/** Merge matching items together */
+export type MergeV32CombineParams = {
+  mode: 'combine';
+/**
+ * How input data should be merged
+ * @default combineByFields
+ */
+    combineBy?: 'combineByFields' | 'combineByPosition' | 'combineAll';
+/**
+ * Options
+ * @displayOptions.show { combineBy: ["combineAll", "combineByFields", "combineByPosition"] }
+ * @default {}
+ */
+    options?: {
+    /** Clash Handling
+     * @default {"values":{"resolveClash":"preferLast","mergeMode":"deepMerge","overrideEmpty":false}}
+     */
+    clashHandling?: {
+        /** Values
+     */
+    values?: {
+      /** When Field Values Clash
+       */
+      resolveClash?: string | Expression<string>;
+      /** Merging Nested Fields
+       * @hint How to merge when there are sub-fields below the top-level ones
+       * @displayOptions.show { resolveClash: [{"_cnd":{"not":"addSuffix"}}] }
+       * @default deepMerge
+       */
+      mergeMode?: 'deepMerge' | 'shallowMerge' | Expression<string>;
+      /** Whether to override the preferred input version for a field if it is empty and the other version isn't. Here 'empty' means undefined, null or an empty string.
+       * @displayOptions.show { resolveClash: [{"_cnd":{"not":"addSuffix"}}] }
+       * @default false
+       */
+      overrideEmpty?: boolean | Expression<boolean>;
+    };
+  };
+    /** Whether to tolerate small type differences when comparing fields. E.g. the number 3 and the string '3' are treated as the same.
+     * @default false
+     */
+    fuzzyCompare?: boolean | Expression<boolean>;
+  };
+/**
+ * Whether name(s) of field to match are different in input 1 and input 2
+ * @displayOptions.show { combineBy: ["combineByFields"] }
+ * @default false
+ */
+    advanced?: boolean | Expression<boolean>;
+/**
+ * Specify the fields to use for matching input items
+ * @hint Drag or type the input field name
+ * @displayOptions.show { advanced: [false], combineBy: ["combineByFields"] }
+ */
+    fieldsToMatchString?: string | Expression<string> | PlaceholderValue;
+/**
+ * Specify the fields to use for matching input items
+ * @displayOptions.show { advanced: [true], combineBy: ["combineByFields"] }
+ * @default {"values":[{"field1":"","field2":""}]}
+ */
+    mergeByFields?: {
+        /** Values
+     */
+    values?: Array<{
+      /** Input 1 Field
+       * @hint Drag or type the input field name
+       */
+      field1?: string | Expression<string> | PlaceholderValue;
+      /** Input 2 Field
+       * @hint Drag or type the input field name
+       */
+      field2?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+/**
+ * How to select the items to send to output
+ * @displayOptions.show { combineBy: ["combineByFields"] }
+ * @default keepMatches
+ */
+    joinMode?: 'keepMatches' | 'keepNonMatches' | 'keepEverything' | 'enrichInput1' | 'enrichInput2' | Expression<string>;
+/**
+ * Output Data From
+ * @displayOptions.show { joinMode: ["keepMatches", "keepNonMatches"], combineBy: ["combineByFields"] }
+ * @default both
+ */
+    outputDataFrom?: 'both' | 'input1' | 'input2' | Expression<string>;
+/**
+ * The number of data inputs you want to merge. The node waits for all connected inputs to be executed.
+ * @displayOptions.show { combineBy: ["combineByPosition"] }
+ * @default 2
+ */
+    numberInputs?: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+};
+
+export type MergeV32CombineNode = {
+  type: 'n8n-nodes-base.merge';
+  version: 3.2;
+  config: NodeConfig<MergeV32CombineParams>;
+};

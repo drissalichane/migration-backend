@@ -1,0 +1,31 @@
+/**
+ * Strava Node - Version 1
+ * Discriminator: resource=activity, operation=getStreams
+ */
+
+
+interface Credentials {
+  stravaOAuth2Api: CredentialReference;
+}
+
+/** Get activity streams */
+export type StravaV1ActivityGetStreamsParams = {
+  resource: 'activity';
+  operation: 'getStreams';
+/**
+ * ID or email of activity
+ */
+    activityId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Desired stream types to return
+ * @default []
+ */
+    keys?: Array<'altitude' | 'cadence' | 'distance' | 'grade_smooth' | 'heartrate' | 'latlng' | 'moving' | 'temp' | 'time' | 'velocity_smooth' | 'watts'>;
+};
+
+export type StravaV1ActivityGetStreamsNode = {
+  type: 'n8n-nodes-base.strava';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StravaV1ActivityGetStreamsParams>;
+};

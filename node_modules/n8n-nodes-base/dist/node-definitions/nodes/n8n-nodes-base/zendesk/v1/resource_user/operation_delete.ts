@@ -1,0 +1,28 @@
+/**
+ * Zendesk Node - Version 1
+ * Discriminator: resource=user, operation=delete
+ */
+
+
+interface Credentials {
+  zendeskApi: CredentialReference;
+  zendeskOAuth2Api: CredentialReference;
+}
+
+/** Manage users */
+export type ZendeskV1UserDeleteParams = {
+  resource: 'user';
+  operation: 'delete';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * User ID
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZendeskV1UserDeleteNode = {
+  type: 'n8n-nodes-base.zendesk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZendeskV1UserDeleteParams>;
+};

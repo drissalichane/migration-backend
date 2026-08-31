@@ -1,0 +1,31 @@
+/**
+ * Invoice Ninja Node - Version 2
+ * Discriminator: resource=expense, operation=get
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Get data of a client */
+export type InvoiceNinjaV2ExpenseGetParams = {
+  resource: 'expense';
+  operation: 'get';
+/**
+ * API Version
+ * @default v5
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Expense ID
+ */
+    expenseId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type InvoiceNinjaV2ExpenseGetNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV2ExpenseGetParams>;
+};

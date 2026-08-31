@@ -1,0 +1,62 @@
+/**
+ * Todoist Node - Version 2.1
+ * Discriminator: resource=reminder, operation=update
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Reminder resource */
+export type TodoistV21ReminderUpdateParams = {
+  resource: 'reminder';
+  operation: 'update';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Reminder ID
+ */
+    reminderId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    reminderUpdateFields?: {
+    /** When the reminder should trigger
+     * @default {}
+     */
+    due?: {
+    /** Human-readable date and time
+     */
+    string?: string | Expression<string> | PlaceholderValue;
+    /** Specific date in YYYY-MM-DD format
+     */
+    date?: string | Expression<string> | PlaceholderValue;
+    /** Specific date and time
+     */
+    datetime?: string | Expression<string>;
+    /** Timezone for the reminder
+     */
+    timezone?: string | Expression<string> | PlaceholderValue;
+  };
+    /** The reminder type
+     * @default absolute
+     */
+    type?: 'absolute' | 'relative' | Expression<string>;
+    /** Minutes before the task due date
+     * @default 0
+     */
+    minute_offset?: number | Expression<number>;
+    /** User ID to notify (for shared tasks)
+     */
+    notify_uid?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TodoistV21ReminderUpdateNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV21ReminderUpdateParams>;
+};

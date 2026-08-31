@@ -1,0 +1,44 @@
+/**
+ * Mindee Node - Version 2
+ * Consume Mindee API
+ */
+
+
+export interface MindeeV2Params {
+/**
+ * Which Mindee API Version to use
+ * @default 3
+ */
+    apiVersion?: 1 | 3 | 4 | Expression<number>;
+  resource?: 'invoice' | 'receipt';
+  operation?: 'predict';
+/**
+ * Input Binary Field
+ * @hint The name of the input binary field containing the file to be uploaded
+ * @displayOptions.show { operation: ["predict"], resource: ["receipt", "invoice"] }
+ * @default data
+ */
+    binaryPropertyName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return the data exactly in the way it got received from the API
+ * @default false
+ */
+    rawData?: boolean | Expression<boolean>;
+}
+
+export interface MindeeV2Credentials {
+  mindeeReceiptApi: CredentialReference;
+  mindeeInvoiceApi: CredentialReference;
+}
+
+interface MindeeV2NodeBase {
+  type: 'n8n-nodes-base.mindee';
+  version: 2;
+  credentials?: MindeeV2Credentials;
+}
+
+export type MindeeV2ParamsNode = MindeeV2NodeBase & {
+  config: NodeConfig<MindeeV2Params>;
+};
+
+export type MindeeV2Node = MindeeV2ParamsNode;

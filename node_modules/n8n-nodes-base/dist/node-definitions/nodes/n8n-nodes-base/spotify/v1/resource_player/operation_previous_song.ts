@@ -1,0 +1,22 @@
+/**
+ * Spotify Node - Version 1
+ * Discriminator: resource=player, operation=previousSong
+ */
+
+
+interface Credentials {
+  spotifyOAuth2Api: CredentialReference;
+}
+
+/** Skip to your previous song */
+export type SpotifyV1PlayerPreviousSongParams = {
+  resource: 'player';
+  operation: 'previousSong';
+};
+
+export type SpotifyV1PlayerPreviousSongNode = {
+  type: 'n8n-nodes-base.spotify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SpotifyV1PlayerPreviousSongParams>;
+};

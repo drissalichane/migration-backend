@@ -1,0 +1,39 @@
+/**
+ * Trello Node - Version 1
+ * Discriminator: resource=label, operation=update
+ */
+
+
+interface Credentials {
+  trelloApi: CredentialReference;
+}
+
+/** Update a board */
+export type TrelloV1LabelUpdateParams = {
+  resource: 'label';
+  operation: 'update';
+/**
+ * The ID of the label to update
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Name of the label
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** The color for the label
+     * @default null
+     */
+    color?: 'black' | 'blue' | 'green' | 'lime' | 'null' | 'orange' | 'pink' | 'purple' | 'red' | 'sky' | 'yellow' | Expression<string>;
+  };
+};
+
+export type TrelloV1LabelUpdateNode = {
+  type: 'n8n-nodes-base.trello';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TrelloV1LabelUpdateParams>;
+};

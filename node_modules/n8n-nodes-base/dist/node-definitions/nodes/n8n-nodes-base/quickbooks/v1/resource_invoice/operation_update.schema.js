@@ -1,0 +1,23 @@
+/**
+ * QuickBooks Online Node - Version 1 - Zod Schema
+ * Discriminator: resource=invoice, operation=update
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('invoice'),
+      operation: z.literal('update'),
+      invoiceId: stringOrExpression.optional(),
+      updateFields: z.object({ BillAddr: z.unknown().optional(), BillEmail: stringOrExpression.optional(), CustomerMemo: stringOrExpression.optional(), CustomFields: z.unknown().optional(), DocNumber: stringOrExpression.optional(), DueDate: stringOrExpression.optional(), EmailStatus: z.union([z.literal('NotSet'), z.literal('NeedToSend'), z.literal('EmailSent'), expressionSchema]).optional(), PrintStatus: z.union([z.literal('NotSet'), z.literal('NeedToPrint'), z.literal('PrintComplete'), expressionSchema]).optional(), ShipAddr: stringOrExpression.optional(), TxnDate: stringOrExpression.optional() }).optional(),
+    }).optional(),
+  });
+};

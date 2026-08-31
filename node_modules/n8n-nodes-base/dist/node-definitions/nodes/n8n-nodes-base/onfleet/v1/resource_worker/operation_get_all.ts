@@ -1,0 +1,71 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=worker, operation=getAll
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Get many Onfleet admins */
+export type OnfleetV1WorkerGetAllParams = {
+  resource: 'worker';
+  operation: 'getAll';
+/**
+ * Whether to search for only those workers who are currently within a certain target area
+ * @default false
+ */
+    byLocation?: boolean | Expression<boolean>;
+/**
+ * The longitude component of the coordinate pair
+ * @displayOptions.show { byLocation: [true] }
+ * @default 0
+ */
+    longitude?: number | Expression<number>;
+/**
+ * The latitude component of the coordinate pair
+ * @displayOptions.show { byLocation: [true] }
+ * @default 0
+ */
+    latitude?: number | Expression<number>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 64
+ */
+    limit?: number | Expression<number>;
+/**
+ * Filters
+ * @displayOptions.show { byLocation: [true] }
+ * @default {}
+ */
+    filters?: {
+    /** The length in meters of the radius of the spherical area in which to look for workers. Defaults to 1000 if missing. Maximum value is 10000.
+     * @default 1000
+     */
+    radius?: number | Expression<number>;
+  };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** A list of fields to show in the response, if all are not desired
+     * @default []
+     */
+    filter?: Array<'accountStatus' | 'activeTask' | 'capacity' | 'delayTime' | 'displayName' | 'imageUrl' | 'location' | 'metadata' | 'name' | 'onDuty' | 'organization' | 'phone' | 'tasks' | 'teams' | 'timeCreated' | 'timeLastModified' | 'timeLastSeen' | 'userData' | 'vehicle' | 'id'>;
+  };
+};
+
+export type OnfleetV1WorkerGetAllNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1WorkerGetAllParams>;
+};

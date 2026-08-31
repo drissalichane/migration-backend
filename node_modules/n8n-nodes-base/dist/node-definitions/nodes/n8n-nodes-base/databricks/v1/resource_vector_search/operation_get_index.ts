@@ -1,0 +1,28 @@
+/**
+ * Databricks Node - Version 1
+ * Discriminator: resource=vectorSearch, operation=getIndex
+ */
+
+
+interface Credentials {
+  databricksApi: CredentialReference;
+  databricksOAuth2Api: CredentialReference;
+}
+
+/** Semantic search with vector embeddings. <a href="https://docs.databricks.com/generative-ai/vector-search.html" target="_blank">Learn more</a>. */
+export type DatabricksV1VectorSearchGetIndexParams = {
+  resource: 'vectorSearch';
+  operation: 'getIndex';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * Name of the vector search index
+ */
+    indexName?: string | Expression<string> | PlaceholderValue;
+};
+
+export type DatabricksV1VectorSearchGetIndexNode = {
+  type: 'n8n-nodes-base.databricks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DatabricksV1VectorSearchGetIndexParams>;
+};

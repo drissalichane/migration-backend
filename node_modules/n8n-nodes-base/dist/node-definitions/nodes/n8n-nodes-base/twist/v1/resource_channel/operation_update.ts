@@ -1,0 +1,46 @@
+/**
+ * Twist Node - Version 1
+ * Discriminator: resource=channel, operation=update
+ */
+
+
+interface Credentials {
+  twistOAuth2Api: CredentialReference;
+}
+
+/** Update a channel */
+export type TwistV1ChannelUpdateParams = {
+  resource: 'channel';
+  operation: 'update';
+/**
+ * The ID of the channel
+ */
+    channelId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** The color of the channel
+     * @default 0
+     */
+    color?: 6 | 1 | 4 | 0 | 7 | 9 | 5 | 11 | 8 | 3 | 2 | 10 | Expression<number>;
+    /** The description of the channel
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** The name of the channel
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** Whether the channel will be marked as public
+     * @default false
+     */
+    public?: boolean | Expression<boolean>;
+  };
+};
+
+export type TwistV1ChannelUpdateNode = {
+  type: 'n8n-nodes-base.twist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwistV1ChannelUpdateParams>;
+};

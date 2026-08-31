@@ -1,0 +1,25 @@
+/**
+ * Wise Node - Version 1
+ * Discriminator: resource=transfer, operation=delete
+ */
+
+
+interface Credentials {
+  wiseApi: CredentialReference;
+}
+
+export type WiseV1TransferDeleteParams = {
+  resource: 'transfer';
+  operation: 'delete';
+/**
+ * ID of the transfer to delete
+ */
+    transferId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type WiseV1TransferDeleteNode = {
+  type: 'n8n-nodes-base.wise';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<WiseV1TransferDeleteParams>;
+};

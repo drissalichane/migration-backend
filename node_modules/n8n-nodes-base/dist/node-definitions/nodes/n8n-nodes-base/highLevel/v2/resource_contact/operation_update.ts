@@ -1,0 +1,150 @@
+/**
+ * HighLevel Node - Version 2
+ * Discriminator: resource=contact, operation=update
+ */
+
+
+interface Credentials {
+  highLevelOAuth2Api: CredentialReference;
+}
+
+export type HighLevelV2ContactUpdateParams = {
+  resource: 'contact';
+  operation: 'update';
+/**
+ * Contact ID
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Address
+     */
+    address1?: string | Expression<string> | PlaceholderValue;
+    /** City
+     */
+    city?: string | Expression<string> | PlaceholderValue;
+    /** Custom Fields
+     * @default {}
+     */
+    customFields?: {
+        /** Value
+     */
+    values?: Array<{
+      /** Choose from the list, or specify an ID using an expression
+       */
+      fieldId?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+      /** Field Value
+       */
+      fieldValue?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Whether automated/manual outbound messages are permitted to go out or not. True means NO outbound messages are permitted.
+     * @default false
+     */
+    dnd?: boolean | Expression<boolean>;
+    /** Email
+     */
+    email?: string | Expression<string> | PlaceholderValue;
+    /** First Name
+     */
+    firstName?: string | Expression<string> | PlaceholderValue;
+    /** Last Name
+     */
+    lastName?: string | Expression<string> | PlaceholderValue;
+    /** The full name of the contact, will be overwritten by 'First Name' and 'Last Name' if set
+     * @default e.g. John Deo
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** Phone number has to start with a valid &lt;a href="https://en.wikipedia.org/wiki/List_of_country_calling_codes"&gt;country code&lt;/a&gt; leading with + sign
+     */
+    phone?: string | Expression<string> | PlaceholderValue;
+    /** Postal Code
+     */
+    postalCode?: string | Expression<string> | PlaceholderValue;
+    /** State
+     */
+    state?: string | Expression<string> | PlaceholderValue;
+    /** Tags
+     * @hint Comma separated list of tags, array of strings can be set in expression
+     */
+    tags?: string | Expression<string> | PlaceholderValue;
+    /** Choose from the list, or specify a timezone using an expression
+     */
+    timezone?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+    /** Website
+     */
+    website?: string | Expression<string> | PlaceholderValue;
+  };
+  requestOptions?: {
+    /** Batching
+     * @default {"batch":{}}
+     */
+    batching?: {
+        /** Batching
+     */
+    batch?: {
+      /** Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.
+       * @default 50
+       */
+      batchSize?: number | Expression<number>;
+      /** Time (in milliseconds) between each batch of requests. 0 for disabled.
+       * @default 1000
+       */
+      batchInterval?: number | Expression<number>;
+    };
+  };
+    /** Whether to accept the response even if SSL certificate validation is not possible
+     * @default false
+     */
+    allowUnauthorizedCerts?: boolean;
+    /** HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128
+     */
+    proxy?: string | Expression<string> | PlaceholderValue;
+    /** Time in ms to wait for the server to send response headers (and start the response body) before aborting the request
+     * @default 10000
+     */
+    timeout?: number | Expression<number>;
+  };
+};
+
+export type HighLevelV2ContactUpdateOutput = {
+  additionalPhones?: Array<{
+    phone?: string;
+  }>;
+  country?: string;
+  createdBy?: {
+    channel?: string;
+    source?: string;
+    sourceId?: string;
+    timestamp?: string;
+  };
+  customFields?: Array<{
+    id?: string;
+  }>;
+  dateAdded?: string;
+  dateUpdated?: string;
+  email?: string;
+  emailLowerCase?: string;
+  firstName?: string;
+  firstNameLowerCase?: string;
+  followers?: Array<string>;
+  fullNameLowerCase?: string;
+  id?: string;
+  lastName?: string;
+  lastNameLowerCase?: string;
+  locationId?: string;
+  phone?: string;
+  tags?: Array<string>;
+  type?: string;
+};
+
+export type HighLevelV2ContactUpdateNode = {
+  type: 'n8n-nodes-base.highLevel';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<HighLevelV2ContactUpdateParams>;
+  output?: Items<HighLevelV2ContactUpdateOutput>;
+};

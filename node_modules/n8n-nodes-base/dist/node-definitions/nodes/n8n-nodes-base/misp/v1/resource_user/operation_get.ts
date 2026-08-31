@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=user, operation=get
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1UserGetParams = {
+  resource: 'user';
+  operation: 'get';
+/**
+ * Numeric ID of the user
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1UserGetNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1UserGetParams>;
+};

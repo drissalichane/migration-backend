@@ -1,0 +1,26 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=assetType, operation=get
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Retrieve an agent */
+export type FreshserviceV1AssetTypeGetParams = {
+  resource: 'assetType';
+  operation: 'get';
+/**
+ * ID of the asset type to retrieve
+ */
+    assetTypeId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshserviceV1AssetTypeGetNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1AssetTypeGetParams>;
+};

@@ -1,0 +1,42 @@
+/**
+ * Contentful Node - Version 1
+ * Discriminator: resource=locale, operation=getAll
+ */
+
+
+interface Credentials {
+  contentfulApi: CredentialReference;
+}
+
+export type ContentfulV1LocaleGetAllParams = {
+  resource: 'locale';
+  operation: 'getAll';
+/**
+ * Pick where your data comes from, delivery or preview API
+ * @default deliveryApi
+ */
+    source?: 'deliveryApi' | 'previewApi' | Expression<string>;
+/**
+ * The ID for the Contentful environment (e.g. master, staging, etc.). Depending on your plan, you might not have environments. In that case use "master".
+ * @default master
+ */
+    environmentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+};
+
+export type ContentfulV1LocaleGetAllNode = {
+  type: 'n8n-nodes-base.contentful';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ContentfulV1LocaleGetAllParams>;
+};

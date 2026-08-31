@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=attribute, operation=delete
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1AttributeDeleteParams = {
+  resource: 'attribute';
+  operation: 'delete';
+/**
+ * UUID or numeric ID of the attribute
+ */
+    attributeId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1AttributeDeleteNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1AttributeDeleteParams>;
+};

@@ -1,0 +1,31 @@
+/**
+ * Salesmate Node - Version 1
+ * Discriminator: resource=activity, operation=get
+ */
+
+
+interface Credentials {
+  salesmateApi: CredentialReference;
+}
+
+/** Get a company */
+export type SalesmateV1ActivityGetParams = {
+  resource: 'activity';
+  operation: 'get';
+/**
+ * Activity ID
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether the data should include the fields details
+ * @default false
+ */
+    rawData?: boolean | Expression<boolean>;
+};
+
+export type SalesmateV1ActivityGetNode = {
+  type: 'n8n-nodes-base.salesmate';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesmateV1ActivityGetParams>;
+};

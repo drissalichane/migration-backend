@@ -1,0 +1,26 @@
+/**
+ * Odoo Node - Version 1
+ * Discriminator: resource=note, operation=delete
+ */
+
+
+interface Credentials {
+  odooApi: CredentialReference;
+}
+
+/** Delete an item */
+export type OdooV1NoteDeleteParams = {
+  resource: 'note';
+  operation: 'delete';
+/**
+ * Note ID
+ */
+    noteId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OdooV1NoteDeleteNode = {
+  type: 'n8n-nodes-base.odoo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OdooV1NoteDeleteParams>;
+};

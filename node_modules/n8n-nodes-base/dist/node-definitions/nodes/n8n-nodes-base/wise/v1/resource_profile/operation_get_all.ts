@@ -1,0 +1,21 @@
+/**
+ * Wise Node - Version 1
+ * Discriminator: resource=profile, operation=getAll
+ */
+
+
+interface Credentials {
+  wiseApi: CredentialReference;
+}
+
+export type WiseV1ProfileGetAllParams = {
+  resource: 'profile';
+  operation: 'getAll';
+};
+
+export type WiseV1ProfileGetAllNode = {
+  type: 'n8n-nodes-base.wise';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<WiseV1ProfileGetAllParams>;
+};

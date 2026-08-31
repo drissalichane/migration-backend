@@ -1,0 +1,30 @@
+/**
+ * Stripe Node - Version 1
+ * Discriminator: resource=source, operation=delete
+ */
+
+
+interface Credentials {
+  stripeApi: CredentialReference;
+}
+
+/** Delete a customer */
+export type StripeV1SourceDeleteParams = {
+  resource: 'source';
+  operation: 'delete';
+/**
+ * ID of the customer whose source to delete
+ */
+    customerId?: string | Expression<string> | PlaceholderValue;
+/**
+ * ID of the source to delete
+ */
+    sourceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type StripeV1SourceDeleteNode = {
+  type: 'n8n-nodes-base.stripe';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StripeV1SourceDeleteParams>;
+};

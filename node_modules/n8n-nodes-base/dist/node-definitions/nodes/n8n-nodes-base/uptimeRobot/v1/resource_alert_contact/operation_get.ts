@@ -1,0 +1,26 @@
+/**
+ * UptimeRobot Node - Version 1
+ * Discriminator: resource=alertContact, operation=get
+ */
+
+
+interface Credentials {
+  uptimeRobotApi: CredentialReference;
+}
+
+/** Get account details */
+export type UptimeRobotV1AlertContactGetParams = {
+  resource: 'alertContact';
+  operation: 'get';
+/**
+ * The ID of the alert contact
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type UptimeRobotV1AlertContactGetNode = {
+  type: 'n8n-nodes-base.uptimeRobot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<UptimeRobotV1AlertContactGetParams>;
+};

@@ -1,0 +1,30 @@
+/**
+ * Microsoft Teams Node - Version 1
+ * Discriminator: resource=channel, operation=delete
+ */
+
+
+interface Credentials {
+  microsoftTeamsOAuth2Api: CredentialReference;
+}
+
+/** Delete a channel */
+export type MicrosoftTeamsV1ChannelDeleteParams = {
+  resource: 'channel';
+  operation: 'delete';
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    teamId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    channelId?: string | Expression<string>;
+};
+
+export type MicrosoftTeamsV1ChannelDeleteNode = {
+  type: 'n8n-nodes-base.microsoftTeams';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftTeamsV1ChannelDeleteParams>;
+};

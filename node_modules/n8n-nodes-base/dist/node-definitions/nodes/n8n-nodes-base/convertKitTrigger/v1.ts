@@ -1,0 +1,54 @@
+/**
+ * ConvertKit Trigger Node - Version 1
+ * Handle ConvertKit events via webhooks
+ */
+
+
+export interface ConvertKitTriggerV1Params {
+/**
+ * The events that can trigger the webhook and whether they are enabled
+ */
+    event?: 'formSubscribe' | 'linkClick' | 'productPurchase' | 'purchaseCreate' | 'courseComplete' | 'courseSubscribe' | 'subscriberActivate' | 'subscriberUnsubscribe' | 'tagAdd' | 'tagRemove' | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @displayOptions.show { event: ["formSubscribe"] }
+ */
+    formId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @displayOptions.show { event: ["courseSubscribe", "courseComplete"] }
+ */
+    courseId?: string | Expression<string>;
+/**
+ * The URL of the initiating link
+ * @displayOptions.show { event: ["linkClick"] }
+ */
+    link?: string | Expression<string> | PlaceholderValue;
+/**
+ * Product ID
+ * @displayOptions.show { event: ["productPurchase"] }
+ */
+    productId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @displayOptions.show { event: ["tagAdd", "tagRemove"] }
+ */
+    tagId?: string | Expression<string>;
+}
+
+export interface ConvertKitTriggerV1Credentials {
+  convertKitApi: CredentialReference;
+}
+
+interface ConvertKitTriggerV1NodeBase {
+  type: 'n8n-nodes-base.convertKitTrigger';
+  version: 1;
+  credentials?: ConvertKitTriggerV1Credentials;
+  isTrigger: true;
+}
+
+export type ConvertKitTriggerV1ParamsNode = ConvertKitTriggerV1NodeBase & {
+  config: NodeConfig<ConvertKitTriggerV1Params>;
+};
+
+export type ConvertKitTriggerV1Node = ConvertKitTriggerV1ParamsNode;

@@ -1,0 +1,41 @@
+/**
+ * Invoice Ninja Node - Version 1
+ * Discriminator: resource=payment, operation=get
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Get data of a client */
+export type InvoiceNinjaV1PaymentGetParams = {
+  resource: 'payment';
+  operation: 'get';
+/**
+ * API Version
+ * @default v4
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Payment ID
+ */
+    paymentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Include
+     * @default client
+     */
+    include?: 'client' | Expression<string>;
+  };
+};
+
+export type InvoiceNinjaV1PaymentGetNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV1PaymentGetParams>;
+};

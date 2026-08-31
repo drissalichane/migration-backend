@@ -1,0 +1,82 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=employee, operation=create
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1EmployeeCreateParams = {
+  resource: 'employee';
+  operation: 'create';
+/**
+ * Family Name
+ */
+    FamilyName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Given Name
+ */
+    GivenName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether the employee is currently enabled for use by QuickBooks
+     * @default false
+     */
+    Active?: boolean | Expression<boolean>;
+    /** Billable Time
+     * @default false
+     */
+    BillableTime?: boolean | Expression<boolean>;
+    /** Display Name
+     */
+    DisplayName?: string | Expression<string> | PlaceholderValue;
+    /** Billing Address
+     * @default {}
+     */
+    BillAddr?: {
+        /** Details
+     */
+    details?: {
+      /** City
+       */
+      City?: string | Expression<string> | PlaceholderValue;
+      /** Line 1
+       */
+      Line1?: string | Expression<string> | PlaceholderValue;
+      /** Postal Code
+       */
+      PostalCode?: string | Expression<string> | PlaceholderValue;
+      /** Latitude
+       */
+      Lat?: string | Expression<string> | PlaceholderValue;
+      /** Longitude
+       */
+      Long?: string | Expression<string> | PlaceholderValue;
+      /** Country Subdivision Code
+       */
+      CountrySubDivisionCode?: string | Expression<string> | PlaceholderValue;
+    };
+  };
+    /** Primary Phone
+     */
+    PrimaryPhone?: string | Expression<string> | PlaceholderValue;
+    /** Name of the employee as printed on a check
+     */
+    PrintOnCheckName?: string | Expression<string> | PlaceholderValue;
+    /** Social Security Number
+     */
+    SSN?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type QuickbooksV1EmployeeCreateNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1EmployeeCreateParams>;
+};

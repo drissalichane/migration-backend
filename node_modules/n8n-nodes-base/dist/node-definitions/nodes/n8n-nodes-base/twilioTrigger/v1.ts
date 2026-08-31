@@ -1,0 +1,26 @@
+/**
+ * Twilio Trigger Node - Version 1
+ * Starts the workflow on a Twilio update
+ */
+
+
+export interface TwilioTriggerV1Params {
+  updates?: Array<'com.twilio.messaging.inbound-message.received' | 'com.twilio.voice.insights.call-summary.complete'>;
+}
+
+export interface TwilioTriggerV1Credentials {
+  twilioApi: CredentialReference;
+}
+
+interface TwilioTriggerV1NodeBase {
+  type: 'n8n-nodes-base.twilioTrigger';
+  version: 1;
+  credentials?: TwilioTriggerV1Credentials;
+  isTrigger: true;
+}
+
+export type TwilioTriggerV1ParamsNode = TwilioTriggerV1NodeBase & {
+  config: NodeConfig<TwilioTriggerV1Params>;
+};
+
+export type TwilioTriggerV1Node = TwilioTriggerV1ParamsNode;

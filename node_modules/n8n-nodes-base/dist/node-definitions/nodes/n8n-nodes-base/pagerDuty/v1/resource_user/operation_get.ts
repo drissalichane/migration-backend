@@ -1,0 +1,28 @@
+/**
+ * PagerDuty Node - Version 1
+ * Discriminator: resource=user, operation=get
+ */
+
+
+interface Credentials {
+  pagerDutyApi: CredentialReference;
+  pagerDutyOAuth2Api: CredentialReference;
+}
+
+/** Get an incident */
+export type PagerDutyV1UserGetParams = {
+  resource: 'user';
+  operation: 'get';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Unique identifier for the user
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type PagerDutyV1UserGetNode = {
+  type: 'n8n-nodes-base.pagerDuty';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PagerDutyV1UserGetParams>;
+};

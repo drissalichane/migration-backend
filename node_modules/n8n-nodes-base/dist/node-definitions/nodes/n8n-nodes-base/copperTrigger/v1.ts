@@ -1,0 +1,33 @@
+/**
+ * Copper Trigger Node - Version 1
+ * Handle Copper events via webhooks
+ */
+
+
+export interface CopperTriggerV1Params {
+/**
+ * The resource which will fire the event
+ */
+    resource?: 'company' | 'lead' | 'opportunity' | 'person' | 'project' | 'task';
+/**
+ * The event to listen to
+ */
+    event?: 'delete' | 'new' | 'update' | Expression<string>;
+}
+
+export interface CopperTriggerV1Credentials {
+  copperApi: CredentialReference;
+}
+
+interface CopperTriggerV1NodeBase {
+  type: 'n8n-nodes-base.copperTrigger';
+  version: 1;
+  credentials?: CopperTriggerV1Credentials;
+  isTrigger: true;
+}
+
+export type CopperTriggerV1ParamsNode = CopperTriggerV1NodeBase & {
+  config: NodeConfig<CopperTriggerV1Params>;
+};
+
+export type CopperTriggerV1Node = CopperTriggerV1ParamsNode;

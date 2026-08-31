@@ -1,0 +1,25 @@
+/**
+ * Copper Node - Version 1
+ * Discriminator: resource=person, operation=delete
+ */
+
+
+interface Credentials {
+  copperApi: CredentialReference;
+}
+
+export type CopperV1PersonDeleteParams = {
+  resource: 'person';
+  operation: 'delete';
+/**
+ * ID of the person to delete
+ */
+    personId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type CopperV1PersonDeleteNode = {
+  type: 'n8n-nodes-base.copper';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CopperV1PersonDeleteParams>;
+};

@@ -1,0 +1,39 @@
+/**
+ * Redis Trigger Node - Version 1
+ * Subscribe to redis channel
+ */
+
+
+export interface RedisTriggerV1Params {
+/**
+ * Channels to subscribe to, multiple channels be defined with comma. Wildcard character(*) is supported.
+ */
+    channels?: string | Expression<string> | PlaceholderValue;
+  options?: {
+    /** Whether to try to parse the message to an object
+     * @default false
+     */
+    jsonParseBody?: boolean | Expression<boolean>;
+    /** Whether to return only the message property
+     * @default false
+     */
+    onlyMessage?: boolean | Expression<boolean>;
+  };
+}
+
+export interface RedisTriggerV1Credentials {
+  redis: CredentialReference;
+}
+
+interface RedisTriggerV1NodeBase {
+  type: 'n8n-nodes-base.redisTrigger';
+  version: 1;
+  credentials?: RedisTriggerV1Credentials;
+  isTrigger: true;
+}
+
+export type RedisTriggerV1ParamsNode = RedisTriggerV1NodeBase & {
+  config: NodeConfig<RedisTriggerV1Params>;
+};
+
+export type RedisTriggerV1Node = RedisTriggerV1ParamsNode;

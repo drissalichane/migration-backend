@@ -1,0 +1,62 @@
+/**
+ * Zendesk Node - Version 1
+ * Discriminator: resource=organization, operation=create
+ */
+
+
+interface Credentials {
+  zendeskApi: CredentialReference;
+  zendeskOAuth2Api: CredentialReference;
+}
+
+/** Manage organizations */
+export type ZendeskV1OrganizationCreateParams = {
+  resource: 'organization';
+  operation: 'create';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Name
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Details about the organization, such as the address
+     */
+    details?: string | Expression<string> | PlaceholderValue;
+    /** Comma-separated domain names associated with this organization
+     */
+    domain_names?: string | Expression<string> | PlaceholderValue;
+    /** Notes
+     */
+    notes?: string | Expression<string> | PlaceholderValue;
+    /** Values of custom fields in the organization's profile
+     * @default {}
+     */
+    organizationFieldsUi?: {
+        /** Field
+     */
+    organizationFieldValues?: Array<{
+      /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+       */
+      field?: string | Expression<string>;
+      /** Value
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** IDs of tags applied to this organization. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    tags?: string[];
+  };
+};
+
+export type ZendeskV1OrganizationCreateNode = {
+  type: 'n8n-nodes-base.zendesk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZendeskV1OrganizationCreateParams>;
+};

@@ -1,0 +1,51 @@
+/**
+ * Intercom Node - Version 1
+ * Discriminator: resource=user, operation=getAll
+ */
+
+
+interface Credentials {
+  intercomApi: CredentialReference;
+}
+
+/** The Users resource is the primary way of interacting with Intercom */
+export type IntercomV1UserGetAllParams = {
+  resource: 'user';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Filters
+ * @default {}
+ */
+    filters?: {
+    /** Company ID representing the user
+     */
+    company_id?: string | Expression<string> | PlaceholderValue;
+    /** The email address of the user
+     */
+    email?: string | Expression<string> | PlaceholderValue;
+    /** Segment representing the user
+     */
+    segment_id?: string | Expression<string> | PlaceholderValue;
+    /** Tag representing the user
+     */
+    tag_id?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type IntercomV1UserGetAllNode = {
+  type: 'n8n-nodes-base.intercom';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<IntercomV1UserGetAllParams>;
+};

@@ -1,0 +1,33 @@
+/**
+ * Paddle Node - Version 1
+ * Discriminator: resource=product, operation=getAll
+ */
+
+
+interface Credentials {
+  paddleApi: CredentialReference;
+}
+
+/** Get many coupons */
+export type PaddleV1ProductGetAllParams = {
+  resource: 'product';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+};
+
+export type PaddleV1ProductGetAllNode = {
+  type: 'n8n-nodes-base.paddle';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PaddleV1ProductGetAllParams>;
+};

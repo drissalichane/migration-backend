@@ -1,0 +1,99 @@
+/**
+ * Google Drive Node - Version 3
+ * Discriminator: resource=file, operation=createFromText
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleDriveOAuth2Api: CredentialReference;
+}
+
+/** Create a file from a provided text */
+export type GoogleDriveV3FileCreateFromTextParams = {
+  resource: 'file';
+  operation: 'createFromText';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The text to create the file with
+ */
+    content?: string | Expression<string> | PlaceholderValue;
+/**
+ * The name of the file you want to create. If not specified, 'Untitled' will be used.
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * The drive where to create the new file
+ * @default {"mode":"list","value":"My Drive"}
+ */
+    driveId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * The folder where to create the new file
+ * @default {"mode":"list","value":"root","cachedResultName":"/ (Root folder)"}
+ */
+    folderId?: { __rl: true; mode: 'list' | 'url' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** A collection of arbitrary key-value pairs which are private to the requesting app
+     * @default {}
+     */
+    appPropertiesUi?: {
+        /** APP Property
+     */
+    appPropertyValues?: Array<{
+      /** Name of the key to add
+       */
+      key?: string | Expression<string> | PlaceholderValue;
+      /** Value to set for the key
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** A collection of arbitrary key-value pairs which are visible to all apps
+     * @default {}
+     */
+    propertiesUi?: {
+        /** Property
+     */
+    propertyValues?: Array<{
+      /** Name of the key to add
+       */
+      key?: string | Expression<string> | PlaceholderValue;
+      /** Value to set for the key
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Whether to set the 'keepForever' field in the new head revision. This is only applicable to files with binary content in Google Drive. Only 200 revisions for the file can be kept forever. If the limit is reached, try deleting pinned revisions.
+     * @default false
+     */
+    keepRevisionForever?: boolean | Expression<boolean>;
+    /** A language hint for OCR processing during image import (ISO 639-1 code)
+     */
+    ocrLanguage?: string | Expression<string> | PlaceholderValue;
+    /** Whether to use the uploaded content as indexable text
+     * @default false
+     */
+    useContentAsIndexableText?: boolean | Expression<boolean>;
+    /** Whether to create a Google Document (instead of the .txt default format)
+     * @hint Google Docs API has to be enabled in the &lt;a href="https://console.developers.google.com/apis/library/docs.googleapis.com" target="_blank"&gt;Google API Console&lt;/a&gt;.
+     * @default false
+     */
+    convertToGoogleDocument?: boolean | Expression<boolean>;
+  };
+};
+
+export type GoogleDriveV3FileCreateFromTextOutput = {
+  id?: string;
+};
+
+export type GoogleDriveV3FileCreateFromTextNode = {
+  type: 'n8n-nodes-base.googleDrive';
+  version: 3;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleDriveV3FileCreateFromTextParams>;
+  output?: Items<GoogleDriveV3FileCreateFromTextOutput>;
+};

@@ -1,0 +1,61 @@
+/**
+ * Unleashed Software Node - Version 1
+ * Discriminator: resource=stockOnHand, operation=getAll
+ */
+
+
+interface Credentials {
+  unleashedSoftwareApi: CredentialReference;
+}
+
+/** Get many sales orders */
+export type UnleashedSoftwareV1StockOnHandGetAllParams = {
+  resource: 'stockOnHand';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Filters
+ * @default {}
+ */
+    filters?: {
+    /** Returns the stock on hand for a specific date
+     */
+    asAtDate?: string | Expression<string>;
+    /** Whether the AvailableQty will also include the quantity that can be assembled
+     * @default false
+     */
+    IsAssembled?: boolean | Expression<boolean>;
+    /** Returns stock on hand values modified after a specific date
+     */
+    modifiedSince?: string | Expression<string>;
+    /** Orders the list by a specific column, by default the list is ordered by productCode
+     */
+    orderBy?: string | Expression<string> | PlaceholderValue;
+    /** Returns products with the specific Product Guid. You can enter multiple product IDs separated by commas.
+     */
+    productId?: string | Expression<string> | PlaceholderValue;
+    /** Returns stock on hand for a specific warehouse code
+     */
+    warehouseCode?: string | Expression<string> | PlaceholderValue;
+    /** Returns stock on hand for a specific warehouse name
+     */
+    warehouseName?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type UnleashedSoftwareV1StockOnHandGetAllNode = {
+  type: 'n8n-nodes-base.unleashedSoftware';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<UnleashedSoftwareV1StockOnHandGetAllParams>;
+};

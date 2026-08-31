@@ -1,0 +1,26 @@
+/**
+ * Magento 2 Node - Version 1
+ * Discriminator: resource=customer, operation=get
+ */
+
+
+interface Credentials {
+  magento2Api: CredentialReference;
+}
+
+/** Get a customer */
+export type Magento2V1CustomerGetParams = {
+  resource: 'customer';
+  operation: 'get';
+/**
+ * Customer ID
+ */
+    customerId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type Magento2V1CustomerGetNode = {
+  type: 'n8n-nodes-base.magento2';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<Magento2V1CustomerGetParams>;
+};

@@ -1,0 +1,26 @@
+/**
+ * Keap Node - Version 1
+ * Discriminator: resource=ecommerceOrder, operation=get
+ */
+
+
+interface Credentials {
+  keapOAuth2Api: CredentialReference;
+}
+
+/** Retrieve an contact */
+export type KeapV1EcommerceOrderGetParams = {
+  resource: 'ecommerceOrder';
+  operation: 'get';
+/**
+ * Order ID
+ */
+    orderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type KeapV1EcommerceOrderGetNode = {
+  type: 'n8n-nodes-base.keap';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<KeapV1EcommerceOrderGetParams>;
+};

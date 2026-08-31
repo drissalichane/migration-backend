@@ -1,0 +1,46 @@
+/**
+ * Sentry.io Node - Version 1
+ * Discriminator: resource=project, operation=create
+ */
+
+
+interface Credentials {
+  sentryIoOAuth2Api: CredentialReference;
+  sentryIoApi: CredentialReference;
+  sentryIoServerApi: CredentialReference;
+}
+
+/** Create an organization */
+export type SentryIoV1ProjectCreateParams = {
+  resource: 'project';
+  operation: 'create';
+  authentication?: 'accessToken' | 'oAuth2' | 'accessTokenServer' | Expression<string>;
+/**
+ * The slug of the organization the events belong to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    organizationSlug?: string | Expression<string>;
+/**
+ * The slug of the team to create a new project for. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    teamSlug?: string | Expression<string>;
+/**
+ * The name for the new project
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Optionally a slug for the new project. If it’s not provided a slug is generated from the name.
+     */
+    slug?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type SentryIoV1ProjectCreateNode = {
+  type: 'n8n-nodes-base.sentryIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SentryIoV1ProjectCreateParams>;
+};

@@ -1,0 +1,36 @@
+/**
+ * X (Formerly Twitter) Node - Version 1
+ * Discriminator: resource=tweet, operation=retweet
+ */
+
+
+interface Credentials {
+  twitterOAuth1Api: CredentialReference;
+}
+
+/** Retweet a tweet */
+export type TwitterV1TweetRetweetParams = {
+  resource: 'tweet';
+  operation: 'retweet';
+/**
+ * The ID of the tweet
+ */
+    tweetId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Whether each tweet returned in a timeline will include a user object including only the status authors numerical ID
+     * @default false
+     */
+    trimUser?: boolean | Expression<boolean>;
+  };
+};
+
+export type TwitterV1TweetRetweetNode = {
+  type: 'n8n-nodes-base.twitter';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwitterV1TweetRetweetParams>;
+};

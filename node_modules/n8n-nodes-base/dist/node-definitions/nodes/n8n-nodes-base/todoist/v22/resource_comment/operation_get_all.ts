@@ -1,0 +1,36 @@
+/**
+ * Todoist Node - Version 2.2
+ * Discriminator: resource=comment, operation=getAll
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Comment resource */
+export type TodoistV22CommentGetAllParams = {
+  resource: 'comment';
+  operation: 'getAll';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Filters
+ * @default {}
+ */
+    commentFilters?: {
+    /** Filter comments by task ID
+     */
+    task_id?: string | Expression<string> | PlaceholderValue;
+    /** Filter comments by project ID
+     */
+    project_id?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TodoistV22CommentGetAllNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV22CommentGetAllParams>;
+};

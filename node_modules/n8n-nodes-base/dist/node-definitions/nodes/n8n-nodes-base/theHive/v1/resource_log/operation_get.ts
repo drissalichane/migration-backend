@@ -1,0 +1,26 @@
+/**
+ * TheHive Node - Version 1
+ * Discriminator: resource=log, operation=get
+ */
+
+
+interface Credentials {
+  theHiveApi: CredentialReference;
+}
+
+/** Get a single log */
+export type TheHiveV1LogGetParams = {
+  resource: 'log';
+  operation: 'get';
+/**
+ * Log ID
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TheHiveV1LogGetNode = {
+  type: 'n8n-nodes-base.theHive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TheHiveV1LogGetParams>;
+};

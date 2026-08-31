@@ -1,0 +1,26 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=tag, operation=create
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Create an activity */
+export type MonicaCrmV1TagCreateParams = {
+  resource: 'tag';
+  operation: 'create';
+/**
+ * Name of the tag - max 250 characters
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1TagCreateNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1TagCreateParams>;
+};

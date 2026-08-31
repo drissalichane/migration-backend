@@ -1,0 +1,34 @@
+/**
+ * CoinGecko Node - Version 1
+ * Discriminator: resource=coin, operation=candlestick
+ */
+
+
+/** Get a candlestick open-high-low-close chart for the selected currency */
+export type CoinGeckoV1CoinCandlestickParams = {
+  resource: 'coin';
+  operation: 'candlestick';
+/**
+ * The first currency in the pair. For BTC:ETH this is BTC. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    baseCurrency?: string | Expression<string>;
+/**
+ * The second currency in the pair. For BTC:ETH this is ETH. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    quoteCurrency?: string | Expression<string>;
+/**
+ * Return data for this many days in the past from now
+ */
+    days?: '1' | '7' | '14' | '30' | '90' | '180' | '365' | 'max' | Expression<string>;
+};
+
+export type CoinGeckoV1CoinCandlestickOutput = {
+  time?: string;
+};
+
+export type CoinGeckoV1CoinCandlestickNode = {
+  type: 'n8n-nodes-base.coinGecko';
+  version: 1;
+  config: NodeConfig<CoinGeckoV1CoinCandlestickParams>;
+  output?: Items<CoinGeckoV1CoinCandlestickOutput>;
+};

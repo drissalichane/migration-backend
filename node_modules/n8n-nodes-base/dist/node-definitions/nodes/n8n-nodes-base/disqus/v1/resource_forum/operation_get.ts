@@ -1,0 +1,40 @@
+/**
+ * Disqus Node - Version 1
+ * Discriminator: resource=forum, operation=get
+ */
+
+
+interface Credentials {
+  disqusApi: CredentialReference;
+}
+
+/** Return forum details */
+export type DisqusV1ForumGetParams = {
+  resource: 'forum';
+  operation: 'get';
+/**
+ * The short name(aka ID) of the forum to get
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Attach
+     * @default []
+     */
+    attach?: Array<'counters' | 'followsForum' | 'forumCanDisableAds' | 'forumDaysAlive' | 'forumFeatures' | 'forumForumCategory' | 'forumIntegration' | 'forumNewPolicy' | 'forumPermissions'>;
+    /** You may specify relations to include with your response
+     * @default []
+     */
+    related?: Array<'author'>;
+  };
+};
+
+export type DisqusV1ForumGetNode = {
+  type: 'n8n-nodes-base.disqus';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DisqusV1ForumGetParams>;
+};

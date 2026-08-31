@@ -1,0 +1,82 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=deal, operation=update
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Update an account */
+export type ZohoCrmV1DealUpdateParams = {
+  resource: 'deal';
+  operation: 'update';
+/**
+ * ID of the deal to update
+ */
+    dealId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Monetary amount of the deal
+     */
+    Amount?: number | Expression<number>;
+    /** Closing Date
+     */
+    Closing_Date?: string | Expression<string>;
+    /** Symbol of the currency in which revenue is generated
+     */
+    Currency?: string | Expression<string> | PlaceholderValue;
+    /** Filter by custom fields
+     * @default {}
+     */
+    customFields?: {
+        /** Custom Field
+     */
+    customFields?: Array<{
+      /** Custom field to set a value to
+       */
+      fieldId?: string | Expression<string>;
+      /** Value to set on custom field
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Deal Name
+     */
+    Deal_Name?: string | Expression<string> | PlaceholderValue;
+    /** Description
+     */
+    Description?: string | Expression<string> | PlaceholderValue;
+    /** Average number of days to convert the lead into a deal
+     */
+    Lead_Conversion_Time?: number | Expression<number>;
+    /** Description of the next step in the sales process
+     */
+    Next_Step?: string | Expression<string> | PlaceholderValue;
+    /** Average number of days to convert the lead into a deal and to win the deal
+     */
+    Overall_Sales_Duration?: number | Expression<number>;
+    /** Probability of deal closure as a percentage. For example, enter 12 for 12%.
+     */
+    Probability?: number | Expression<number>;
+    /** Average number of days to win the deal
+     * @default 0
+     */
+    Sales_Cycle_Duration?: number | Expression<number>;
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     * @default []
+     */
+    Stage?: string | Expression<string>;
+  };
+};
+
+export type ZohoCrmV1DealUpdateNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1DealUpdateParams>;
+};

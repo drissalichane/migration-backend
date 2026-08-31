@@ -1,0 +1,61 @@
+/**
+ * Iterable Node - Version 1
+ * Discriminator: resource=user, operation=upsert
+ */
+
+
+interface Credentials {
+  iterableApi: CredentialReference;
+}
+
+/** Create a new user, or update the current one if it already exists (upsert) */
+export type IterableV1UserUpsertParams = {
+  resource: 'user';
+  operation: 'upsert';
+/**
+ * Identifier to be used
+ */
+    identifier?: 'email' | 'userId' | Expression<string>;
+/**
+ * Value
+ */
+    value?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to create a new user if the idetifier does not exist
+ * @displayOptions.show { identifier: ["userId"] }
+ * @default true
+ */
+    preferUserId?: boolean | Expression<boolean>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Data Fields
+     * @default {}
+     */
+    dataFieldsUi?: {
+        /** Data Field
+     */
+    dataFieldValues?: Array<{
+      /** The end user specified key of the user defined data
+       */
+      key?: string | Expression<string> | PlaceholderValue;
+      /** The end user specified value of the user defined data
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Whether to merge top level objects instead of overwriting (default: false), e.g. if user profile has data: {mySettings:{mobile:true}} and change contact field has data: {mySettings:{email:true}}, the resulting profile: {mySettings:{mobile:true,email:true}}
+     * @default false
+     */
+    mergeNestedObjects?: boolean | Expression<boolean>;
+  };
+};
+
+export type IterableV1UserUpsertNode = {
+  type: 'n8n-nodes-base.iterable';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<IterableV1UserUpsertParams>;
+};

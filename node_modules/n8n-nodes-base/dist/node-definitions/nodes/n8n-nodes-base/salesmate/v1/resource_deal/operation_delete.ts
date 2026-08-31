@@ -1,0 +1,26 @@
+/**
+ * Salesmate Node - Version 1
+ * Discriminator: resource=deal, operation=delete
+ */
+
+
+interface Credentials {
+  salesmateApi: CredentialReference;
+}
+
+/** Delete a company */
+export type SalesmateV1DealDeleteParams = {
+  resource: 'deal';
+  operation: 'delete';
+/**
+ * If more than one deal add them separated by ,
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SalesmateV1DealDeleteNode = {
+  type: 'n8n-nodes-base.salesmate';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesmateV1DealDeleteParams>;
+};

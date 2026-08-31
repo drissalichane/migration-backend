@@ -1,0 +1,36 @@
+/**
+ * One Simple API Node - Version 1
+ * Discriminator: resource=website, operation=seo
+ */
+
+
+interface Credentials {
+  oneSimpleApi: CredentialReference;
+}
+
+/** Get SEO information from website */
+export type OneSimpleApiV1WebsiteSeoParams = {
+  resource: 'website';
+  operation: 'seo';
+/**
+ * Webpage to get SEO information for
+ */
+    link?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Include Headers?
+     * @default false
+     */
+    headers?: boolean | Expression<boolean>;
+  };
+};
+
+export type OneSimpleApiV1WebsiteSeoNode = {
+  type: 'n8n-nodes-base.oneSimpleApi';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OneSimpleApiV1WebsiteSeoParams>;
+};

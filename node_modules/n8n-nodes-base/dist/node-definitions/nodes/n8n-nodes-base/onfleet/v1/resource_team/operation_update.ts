@@ -1,0 +1,50 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=team, operation=update
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Update an Onfleet admin */
+export type OnfleetV1TeamUpdateParams = {
+  resource: 'team';
+  operation: 'update';
+/**
+ * The ID of the team object for lookup
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** A list of managing administrators. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    managers?: string[];
+    /** The team's hub. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    hub?: string | Expression<string>;
+    /** A unique name for the team
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** Whether or not to allow drivers to self-assign tasks that are in the Team's unassigned container
+     * @default false
+     */
+    enableSelfAssignment?: boolean | Expression<boolean>;
+    /** A list of workers. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    workers?: string[];
+  };
+};
+
+export type OnfleetV1TeamUpdateNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1TeamUpdateParams>;
+};

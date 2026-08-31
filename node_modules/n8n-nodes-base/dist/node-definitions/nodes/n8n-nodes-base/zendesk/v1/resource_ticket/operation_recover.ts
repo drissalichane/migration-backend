@@ -1,0 +1,28 @@
+/**
+ * Zendesk Node - Version 1
+ * Discriminator: resource=ticket, operation=recover
+ */
+
+
+interface Credentials {
+  zendeskApi: CredentialReference;
+  zendeskOAuth2Api: CredentialReference;
+}
+
+/** Tickets are the means through which your end users (customers) communicate with agents in Zendesk Support */
+export type ZendeskV1TicketRecoverParams = {
+  resource: 'ticket';
+  operation: 'recover';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Suspended Ticket ID
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZendeskV1TicketRecoverNode = {
+  type: 'n8n-nodes-base.zendesk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZendeskV1TicketRecoverParams>;
+};

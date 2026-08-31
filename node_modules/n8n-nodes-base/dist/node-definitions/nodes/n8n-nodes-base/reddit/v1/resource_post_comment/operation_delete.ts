@@ -1,0 +1,26 @@
+/**
+ * Reddit Node - Version 1
+ * Discriminator: resource=postComment, operation=delete
+ */
+
+
+interface Credentials {
+  redditOAuth2Api: CredentialReference;
+}
+
+/** Remove a comment from a post */
+export type RedditV1PostCommentDeleteParams = {
+  resource: 'postComment';
+  operation: 'delete';
+/**
+ * ID of the comment to remove. Found in the comment URL:&lt;code&gt;/r/[subreddit_name]/comments/[post_id]/[post_title]/[comment_id]&lt;/code&gt;
+ */
+    commentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type RedditV1PostCommentDeleteNode = {
+  type: 'n8n-nodes-base.reddit';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<RedditV1PostCommentDeleteParams>;
+};

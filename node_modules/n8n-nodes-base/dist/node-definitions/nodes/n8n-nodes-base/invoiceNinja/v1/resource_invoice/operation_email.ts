@@ -1,0 +1,31 @@
+/**
+ * Invoice Ninja Node - Version 1
+ * Discriminator: resource=invoice, operation=email
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Email an invoice */
+export type InvoiceNinjaV1InvoiceEmailParams = {
+  resource: 'invoice';
+  operation: 'email';
+/**
+ * API Version
+ * @default v4
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Invoice ID
+ */
+    invoiceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type InvoiceNinjaV1InvoiceEmailNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV1InvoiceEmailParams>;
+};

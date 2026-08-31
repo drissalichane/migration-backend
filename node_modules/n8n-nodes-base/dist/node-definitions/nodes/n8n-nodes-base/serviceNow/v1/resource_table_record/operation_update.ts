@@ -1,0 +1,62 @@
+/**
+ * ServiceNow Node - Version 1
+ * Discriminator: resource=tableRecord, operation=update
+ */
+
+
+interface Credentials {
+  serviceNowOAuth2Api: CredentialReference;
+  serviceNowBasicApi: CredentialReference;
+}
+
+export type ServiceNowV1TableRecordUpdateParams = {
+  resource: 'tableRecord';
+  operation: 'update';
+/**
+ * Authentication method to use
+ * @default oAuth2
+ */
+    authentication?: 'basicAuth' | 'oAuth2' | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    tableName?: string | Expression<string>;
+/**
+ * Unique identifier of the record
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Data to Send
+ * @default columns
+ */
+    dataToSend?: 'mapInput' | 'columns' | 'nothing' | Expression<string>;
+/**
+ * List of input properties to avoid sending, separated by commas. Leave empty to send all inputs.
+ * @displayOptions.show { dataToSend: ["mapInput"] }
+ */
+    inputsToIgnore?: string | Expression<string> | PlaceholderValue;
+/**
+ * Fields to Send
+ * @displayOptions.show { dataToSend: ["columns"] }
+ * @default {}
+ */
+    fieldsToSend?: {
+        /** Field
+     */
+    field?: Array<{
+      /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+       */
+      column?: string | Expression<string>;
+      /** Field Value
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+};
+
+export type ServiceNowV1TableRecordUpdateNode = {
+  type: 'n8n-nodes-base.serviceNow';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ServiceNowV1TableRecordUpdateParams>;
+};

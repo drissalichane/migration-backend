@@ -1,0 +1,50 @@
+/**
+ * Slack Node - Version 2.3
+ * Discriminator: resource=message, operation=delete
+ */
+
+
+interface Credentials {
+  slackApi: CredentialReference;
+  slackOAuth2Api: CredentialReference;
+}
+
+export type SlackV23MessageDeleteParams = {
+  resource: 'message';
+  operation: 'delete';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * Delete Message From
+ */
+    select?: 'channel' | 'user' | Expression<string>;
+/**
+ * The Slack channel to delete the message from
+ * @displayOptions.show { select: ["channel"] }
+ * @default {"mode":"list","value":""}
+ */
+    channelId?: { __rl: true; mode: 'list' | 'id' | 'url'; value: string; cachedResultName?: string };
+/**
+ * User
+ * @displayOptions.show { select: ["user"] }
+ * @default {"mode":"list","value":""}
+ */
+    user?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Timestamp of the message to delete
+ */
+    timestamp: number | Expression<number>;
+};
+
+export type SlackV23MessageDeleteOutput = {
+  channel?: string;
+  message_timestamp?: string;
+  ok?: boolean;
+};
+
+export type SlackV23MessageDeleteNode = {
+  type: 'n8n-nodes-base.slack';
+  version: 2.3;
+  credentials?: Credentials;
+  config: NodeConfig<SlackV23MessageDeleteParams>;
+  output?: Items<SlackV23MessageDeleteOutput>;
+};

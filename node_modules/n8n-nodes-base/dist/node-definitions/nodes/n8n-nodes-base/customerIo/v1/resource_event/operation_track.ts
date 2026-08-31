@@ -1,0 +1,70 @@
+/**
+ * Customer.io Node - Version 1
+ * Discriminator: resource=event, operation=track
+ */
+
+
+interface Credentials {
+  customerIoApi: CredentialReference;
+}
+
+/** Track a customer event */
+export type CustomerIoV1EventTrackParams = {
+  resource: 'event';
+  operation: 'track';
+/**
+ * The unique identifier for the customer
+ */
+    customerId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Name of the event to track
+ */
+    eventName?: string | Expression<string> | PlaceholderValue;
+/**
+ * JSON Parameters
+ * @default false
+ */
+    jsonParameters?: boolean | Expression<boolean>;
+/**
+ * Object of values to set as described &lt;a href="https://customer.io/docs/api-triggered-data-format#basic-data-formatting"&gt;here&lt;/a&gt;
+ * @displayOptions.show { jsonParameters: [true] }
+ */
+    additionalFieldsJson?: IDataObject | string | Expression<string>;
+/**
+ * Additional Fields
+ * @displayOptions.show { jsonParameters: [false] }
+ * @default {}
+ */
+    additionalFields?: {
+    /** Custom Properties
+     * @default {}
+     */
+    customAttributes?: {
+        /** Attribute
+     */
+    customAttribute?: Array<{
+      /** Attribute name
+       */
+      key?: string | Expression<string> | PlaceholderValue;
+      /** Attribute value
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Used to change event type. For Page View events set to "page".
+     */
+    type?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type CustomerIoV1EventTrackOutput = {
+  success?: boolean;
+};
+
+export type CustomerIoV1EventTrackNode = {
+  type: 'n8n-nodes-base.customerIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CustomerIoV1EventTrackParams>;
+  output?: Items<CustomerIoV1EventTrackOutput>;
+};

@@ -1,0 +1,26 @@
+/**
+ * Magento 2 Node - Version 1
+ * Discriminator: resource=order, operation=ship
+ */
+
+
+interface Credentials {
+  magento2Api: CredentialReference;
+}
+
+/** Ship an order */
+export type Magento2V1OrderShipParams = {
+  resource: 'order';
+  operation: 'ship';
+/**
+ * Order ID
+ */
+    orderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type Magento2V1OrderShipNode = {
+  type: 'n8n-nodes-base.magento2';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<Magento2V1OrderShipParams>;
+};

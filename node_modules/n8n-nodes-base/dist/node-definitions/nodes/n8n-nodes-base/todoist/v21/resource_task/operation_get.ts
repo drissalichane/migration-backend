@@ -1,0 +1,50 @@
+/**
+ * Todoist Node - Version 2.1
+ * Discriminator: resource=task, operation=get
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Task resource */
+export type TodoistV21TaskGetParams = {
+  resource: 'task';
+  operation: 'get';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Task ID
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TodoistV21TaskGetOutput = {
+  comment_count?: number;
+  content?: string;
+  created_at?: string;
+  creator_id?: string;
+  description?: string;
+  due?: {
+    date?: string;
+    is_recurring?: boolean;
+    lang?: string;
+    string?: string;
+  };
+  id?: string;
+  is_completed?: boolean;
+  labels?: Array<string>;
+  order?: number;
+  priority?: number;
+  project_id?: string;
+  url?: string;
+};
+
+export type TodoistV21TaskGetNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV21TaskGetParams>;
+  output?: Items<TodoistV21TaskGetOutput>;
+};

@@ -1,0 +1,33 @@
+/**
+ * Sentry.io Node - Version 1
+ * Discriminator: resource=team, operation=get
+ */
+
+
+interface Credentials {
+  sentryIoOAuth2Api: CredentialReference;
+  sentryIoApi: CredentialReference;
+  sentryIoServerApi: CredentialReference;
+}
+
+/** Get event by ID */
+export type SentryIoV1TeamGetParams = {
+  resource: 'team';
+  operation: 'get';
+  authentication?: 'accessToken' | 'oAuth2' | 'accessTokenServer' | Expression<string>;
+/**
+ * The slug of the organization the team belongs to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    organizationSlug?: string | Expression<string>;
+/**
+ * The slug of the team to get. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    teamSlug?: string | Expression<string>;
+};
+
+export type SentryIoV1TeamGetNode = {
+  type: 'n8n-nodes-base.sentryIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SentryIoV1TeamGetParams>;
+};

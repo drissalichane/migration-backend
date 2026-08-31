@@ -1,0 +1,54 @@
+/**
+ * NASA Node - Version 1
+ * Discriminator: resource=donkiSolarFlare, operation=get
+ */
+
+
+interface Credentials {
+  nasaApi: CredentialReference;
+}
+
+/** Get the Astronomy Picture of the Day */
+export type NasaV1DonkiSolarFlareGetParams = {
+  resource: 'donkiSolarFlare';
+  operation: 'get';
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Start Date
+     */
+    startDate?: string | Expression<string>;
+    /** End Date
+     */
+    endDate?: string | Expression<string>;
+  };
+};
+
+export type NasaV1DonkiSolarFlareGetOutput = {
+  activeRegionNum?: number;
+  beginTime?: string;
+  catalog?: string;
+  classType?: string;
+  endTime?: string;
+  flrID?: string;
+  instruments?: Array<{
+    displayName?: string;
+  }>;
+  link?: string;
+  note?: string;
+  peakTime?: string;
+  sentNotifications?: null;
+  sourceLocation?: string;
+  submissionTime?: string;
+  versionId?: number;
+};
+
+export type NasaV1DonkiSolarFlareGetNode = {
+  type: 'n8n-nodes-base.nasa';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NasaV1DonkiSolarFlareGetParams>;
+  output?: Items<NasaV1DonkiSolarFlareGetOutput>;
+};

@@ -1,0 +1,49 @@
+/**
+ * Microsoft Outlook Node - Version 1
+ * Discriminator: resource=messageAttachment, operation=getAll
+ */
+
+
+interface Credentials {
+  microsoftOutlookOAuth2Api: CredentialReference;
+}
+
+/** Get many messages in the signed-in user's mailbox */
+export type MicrosoftOutlookV1MessageAttachmentGetAllParams = {
+  resource: 'messageAttachment';
+  operation: 'getAll';
+/**
+ * Message ID
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Fields the response will contain. Multiple can be added separated by ,.
+     */
+    fields?: string | Expression<string> | PlaceholderValue;
+    /** Microsoft Graph API OData $filter query
+     */
+    filter?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftOutlookV1MessageAttachmentGetAllNode = {
+  type: 'n8n-nodes-base.microsoftOutlook';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftOutlookV1MessageAttachmentGetAllParams>;
+};

@@ -1,0 +1,28 @@
+/**
+ * Pipedrive Node - Version 1
+ * Discriminator: resource=lead, operation=delete
+ */
+
+
+interface Credentials {
+  pipedriveApi: CredentialReference;
+  pipedriveOAuth2Api: CredentialReference;
+}
+
+/** Delete an activity */
+export type PipedriveV1LeadDeleteParams = {
+  resource: 'lead';
+  operation: 'delete';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * ID of the lead to delete
+ */
+    leadId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type PipedriveV1LeadDeleteNode = {
+  type: 'n8n-nodes-base.pipedrive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PipedriveV1LeadDeleteParams>;
+};

@@ -1,0 +1,26 @@
+/**
+ * SecurityScorecard Node - Version 1
+ * Discriminator: resource=industry, operation=getScore
+ */
+
+
+interface Credentials {
+  securityScorecardApi: CredentialReference;
+}
+
+export type SecurityScorecardV1IndustryGetScoreParams = {
+  resource: 'industry';
+  operation: 'getScore';
+/**
+ * Industry
+ * @default food
+ */
+    industry?: 'food' | 'healthcare' | 'manofacturing' | 'retail' | 'technology' | Expression<string>;
+};
+
+export type SecurityScorecardV1IndustryGetScoreNode = {
+  type: 'n8n-nodes-base.securityScorecard';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SecurityScorecardV1IndustryGetScoreParams>;
+};

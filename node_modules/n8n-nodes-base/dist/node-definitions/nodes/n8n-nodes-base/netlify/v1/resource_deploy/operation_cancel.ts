@@ -1,0 +1,26 @@
+/**
+ * Netlify Node - Version 1
+ * Discriminator: resource=deploy, operation=cancel
+ */
+
+
+interface Credentials {
+  netlifyApi: CredentialReference;
+}
+
+/** Cancel a deployment */
+export type NetlifyV1DeployCancelParams = {
+  resource: 'deploy';
+  operation: 'cancel';
+/**
+ * Deploy ID
+ */
+    deployId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type NetlifyV1DeployCancelNode = {
+  type: 'n8n-nodes-base.netlify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NetlifyV1DeployCancelParams>;
+};

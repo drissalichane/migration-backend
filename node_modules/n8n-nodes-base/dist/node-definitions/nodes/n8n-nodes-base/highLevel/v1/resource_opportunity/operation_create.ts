@@ -1,0 +1,95 @@
+/**
+ * HighLevel Node - Version 1
+ * Discriminator: resource=opportunity, operation=create
+ */
+
+
+interface Credentials {
+  highLevelApi: CredentialReference;
+}
+
+export type HighLevelV1OpportunityCreateParams = {
+  resource: 'opportunity';
+  operation: 'create';
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    pipelineId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    stageId?: string | Expression<string>;
+/**
+ * Either Email, Phone or Contact ID
+ * @hint There can only be one opportunity for each contact.
+ */
+    contactIdentifier?: string | Expression<string> | PlaceholderValue;
+/**
+ * Title
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+/**
+ * Status
+ * @default open
+ */
+    status?: 'open' | 'won' | 'lost' | 'abandoned' | Expression<string>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Choose staff member from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    assignedTo?: string | Expression<string>;
+    /** Company Name
+     */
+    companyName?: string | Expression<string> | PlaceholderValue;
+    /** Monetary value of lead opportunity
+     */
+    monetaryValue?: number | Expression<number>;
+    /** Name
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** Tags
+     * @hint Comma separated list of tags, array of strings can be set in expression
+     */
+    tags?: string | Expression<string> | PlaceholderValue;
+  };
+  requestOptions?: {
+    /** Batching
+     * @default {"batch":{}}
+     */
+    batching?: {
+        /** Batching
+     */
+    batch?: {
+      /** Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.
+       * @default 50
+       */
+      batchSize?: number | Expression<number>;
+      /** Time (in milliseconds) between each batch of requests. 0 for disabled.
+       * @default 1000
+       */
+      batchInterval?: number | Expression<number>;
+    };
+  };
+    /** Whether to accept the response even if SSL certificate validation is not possible
+     * @default false
+     */
+    allowUnauthorizedCerts?: boolean;
+    /** HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128
+     */
+    proxy?: string | Expression<string> | PlaceholderValue;
+    /** Time in ms to wait for the server to send response headers (and start the response body) before aborting the request
+     * @default 10000
+     */
+    timeout?: number | Expression<number>;
+  };
+};
+
+export type HighLevelV1OpportunityCreateNode = {
+  type: 'n8n-nodes-base.highLevel';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HighLevelV1OpportunityCreateParams>;
+};

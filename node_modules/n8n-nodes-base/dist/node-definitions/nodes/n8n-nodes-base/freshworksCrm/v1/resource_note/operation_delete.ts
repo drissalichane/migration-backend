@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=note, operation=delete
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Delete an account */
+export type FreshworksCrmV1NoteDeleteParams = {
+  resource: 'note';
+  operation: 'delete';
+/**
+ * ID of the note to delete
+ */
+    noteId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1NoteDeleteNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1NoteDeleteParams>;
+};

@@ -1,0 +1,35 @@
+/**
+ * WhatsApp Business Cloud Node - Version 1
+ * Discriminator: resource=media, operation=mediaUrlGet
+ */
+
+
+interface Credentials {
+  whatsAppApi: CredentialReference;
+}
+
+export type WhatsAppV1MediaMediaUrlGetParams = {
+  resource: 'media';
+  operation: 'mediaUrlGet';
+/**
+ * The ID of the media
+ */
+    mediaGetId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type WhatsAppV1MediaMediaUrlGetOutput = {
+  file_size?: number;
+  id?: string;
+  messaging_product?: string;
+  mime_type?: string;
+  sha256?: string;
+  url?: string;
+};
+
+export type WhatsAppV1MediaMediaUrlGetNode = {
+  type: 'n8n-nodes-base.whatsApp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<WhatsAppV1MediaMediaUrlGetParams>;
+  output?: Items<WhatsAppV1MediaMediaUrlGetOutput>;
+};

@@ -1,0 +1,62 @@
+/**
+ * Google Sheets Node - Version 4.3
+ * Discriminator: resource=spreadsheet, operation=create
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleSheetsOAuth2Api: CredentialReference;
+}
+
+/** Create a new sheet */
+export type GoogleSheetsV43SpreadsheetCreateParams = {
+  resource: 'spreadsheet';
+  operation: 'create';
+  authentication?: 'serviceAccount' | 'oAuth2' | Expression<string>;
+/**
+ * The title of the spreadsheet
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+/**
+ * Sheets
+ * @default {}
+ */
+    sheetsUi?: {
+        /** Sheet
+     */
+    sheetValues?: Array<{
+      /** Title of the property to create
+       */
+      title?: string | Expression<string> | PlaceholderValue;
+      /** Whether the Sheet should be hidden in the UI
+       * @default false
+       */
+      hidden?: boolean | Expression<boolean>;
+    }>;
+  };
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** The locale of the spreadsheet in one of the following formats:
+				&lt;ul&gt;
+					&lt;li&gt;en (639-1)&lt;/li&gt;
+					&lt;li&gt;fil (639-2 if no 639-1 format exists)&lt;/li&gt;
+					&lt;li&gt;en_US (combination of ISO language an country)&lt;/li&gt;
+				&lt;ul&gt;
+     */
+    locale?: string | Expression<string> | PlaceholderValue;
+    /** Cell recalculation interval options
+     */
+    autoRecalc?: '' | 'ON_CHANGE' | 'MINUTE' | 'HOUR' | Expression<string>;
+  };
+};
+
+export type GoogleSheetsV43SpreadsheetCreateNode = {
+  type: 'n8n-nodes-base.googleSheets';
+  version: 4.3;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleSheetsV43SpreadsheetCreateParams>;
+};

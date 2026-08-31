@@ -1,0 +1,35 @@
+/**
+ * Contentful Node - Version 1
+ * Discriminator: resource=asset, operation=get
+ */
+
+
+interface Credentials {
+  contentfulApi: CredentialReference;
+}
+
+export type ContentfulV1AssetGetParams = {
+  resource: 'asset';
+  operation: 'get';
+/**
+ * Pick where your data comes from, delivery or preview API
+ * @default deliveryApi
+ */
+    source?: 'deliveryApi' | 'previewApi' | Expression<string>;
+/**
+ * The ID for the Contentful environment (e.g. master, staging, etc.). Depending on your plan, you might not have environments. In that case use "master".
+ * @default master
+ */
+    environmentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Asset ID
+ */
+    assetId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ContentfulV1AssetGetNode = {
+  type: 'n8n-nodes-base.contentful';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ContentfulV1AssetGetParams>;
+};

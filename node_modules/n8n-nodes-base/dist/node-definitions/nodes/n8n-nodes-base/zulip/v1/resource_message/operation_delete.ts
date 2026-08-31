@@ -1,0 +1,26 @@
+/**
+ * Zulip Node - Version 1
+ * Discriminator: resource=message, operation=delete
+ */
+
+
+interface Credentials {
+  zulipApi: CredentialReference;
+}
+
+/** Delete a message */
+export type ZulipV1MessageDeleteParams = {
+  resource: 'message';
+  operation: 'delete';
+/**
+ * Unique identifier for the message
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZulipV1MessageDeleteNode = {
+  type: 'n8n-nodes-base.zulip';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZulipV1MessageDeleteParams>;
+};

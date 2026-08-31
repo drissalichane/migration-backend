@@ -1,0 +1,26 @@
+/**
+ * Microsoft Outlook Node - Version 2 - Zod Schema
+ * Discriminator: resource=message, operation=reply
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema, resolveSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('message').default('message'),
+      operation: z.literal('reply'),
+      messageId: z.union([z.object({ __rl: z.literal(true), mode: z.union([z.literal('list'), z.literal('id')]), value: z.union([z.string(), z.number()]), cachedResultName: z.string().optional(), cachedResultUrl: z.string().optional() }), expressionSchema]).optional(),
+      replyToSenderOnly: booleanOrExpression.optional(),
+      message: stringOrExpression.optional(),
+      additionalFields: resolveSchema({ parameters, schema: z.object({ attachments: z.unknown().optional(), bccRecipients: stringOrExpression.optional(), ccRecipients: stringOrExpression.optional(), internetMessageHeaders: z.unknown().optional(), from: stringOrExpression.optional(), importance: z.union([z.literal('Low'), z.literal('Normal'), z.literal('High'), expressionSchema]).optional(), bodyContentType: z.union([z.literal('html'), z.literal('Text'), expressionSchema]).optional(), isReadReceiptRequested: booleanOrExpression.optional(), toRecipients: stringOrExpression.optional(), replyTo: stringOrExpression.optional(), subject: stringOrExpression.optional() }), required: false, displayOptions: {"show":{"replyToSenderOnly":[true]}}, defaults: {"replyToSenderOnly":false} }),
+      options: z.object({ saveAsDraft: booleanOrExpression.optional() }).optional(),
+    }).optional(),
+  });
+};

@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=appointment, operation=delete
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Delete an account */
+export type FreshworksCrmV1AppointmentDeleteParams = {
+  resource: 'appointment';
+  operation: 'delete';
+/**
+ * ID of the appointment to delete
+ */
+    appointmentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1AppointmentDeleteNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1AppointmentDeleteParams>;
+};

@@ -1,0 +1,44 @@
+/**
+ * Nextcloud Node - Version 1
+ * Discriminator: resource=file, operation=download
+ */
+
+
+interface Credentials {
+  nextCloudApi: CredentialReference;
+  nextCloudOAuth2Api: CredentialReference;
+}
+
+/** Download a file */
+export type NextCloudV1FileDownloadParams = {
+  resource: 'file';
+  operation: 'download';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The file path of the file to download. Has to contain the full path. The path should start with "/".
+ */
+    path?: string | Expression<string> | PlaceholderValue;
+/**
+ * Put Output File in Field
+ * @hint The name of the output binary field to put the file in
+ * @default data
+ */
+    binaryPropertyName?: string | Expression<string> | PlaceholderValue;
+};
+
+export type NextCloudV1FileDownloadOutput = {
+  contentLength?: string;
+  contentType?: string;
+  eTag?: string;
+  lastModified?: string;
+  path?: string;
+  type?: string;
+};
+
+export type NextCloudV1FileDownloadNode = {
+  type: 'n8n-nodes-base.nextCloud';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NextCloudV1FileDownloadParams>;
+  output?: Items<NextCloudV1FileDownloadOutput>;
+};

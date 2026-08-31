@@ -1,0 +1,26 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=call, operation=get
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Retrieve an activity */
+export type MonicaCrmV1CallGetParams = {
+  resource: 'call';
+  operation: 'get';
+/**
+ * ID of the call to retrieve
+ */
+    callId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1CallGetNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1CallGetParams>;
+};

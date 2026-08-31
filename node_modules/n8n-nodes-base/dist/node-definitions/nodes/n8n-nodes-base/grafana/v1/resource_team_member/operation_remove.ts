@@ -1,0 +1,30 @@
+/**
+ * Grafana Node - Version 1
+ * Discriminator: resource=teamMember, operation=remove
+ */
+
+
+interface Credentials {
+  grafanaApi: CredentialReference;
+}
+
+/** Remove a member from a team */
+export type GrafanaV1TeamMemberRemoveParams = {
+  resource: 'teamMember';
+  operation: 'remove';
+/**
+ * User to remove from the team. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    memberId?: string | Expression<string>;
+/**
+ * Team to remove the user from. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    teamId?: string | Expression<string>;
+};
+
+export type GrafanaV1TeamMemberRemoveNode = {
+  type: 'n8n-nodes-base.grafana';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GrafanaV1TeamMemberRemoveParams>;
+};

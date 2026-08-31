@@ -1,0 +1,30 @@
+/**
+ * Vero Node - Version 1
+ * Discriminator: resource=user, operation=removeTags
+ */
+
+
+interface Credentials {
+  veroApi: CredentialReference;
+}
+
+/** Create, update and manage the subscription status of your users */
+export type VeroV1UserRemoveTagsParams = {
+  resource: 'user';
+  operation: 'removeTags';
+/**
+ * The unique identifier of the user
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+/**
+ * Tags to remove separated by ","
+ */
+    tags?: string | Expression<string> | PlaceholderValue;
+};
+
+export type VeroV1UserRemoveTagsNode = {
+  type: 'n8n-nodes-base.vero';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<VeroV1UserRemoveTagsParams>;
+};

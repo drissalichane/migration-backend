@@ -1,0 +1,79 @@
+/**
+ * Jina AI Node - Version 1
+ * Discriminator: resource=research, operation=deepResearch
+ */
+
+
+interface Credentials {
+  jinaAiApi: CredentialReference;
+}
+
+/** Research a topic and generate a structured research report */
+export type JinaAiV1ResearchDeepResearchParams = {
+  resource: 'research';
+  operation: 'deepResearch';
+/**
+ * The topic or question for the AI to research
+ */
+    researchQuery?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return a simplified version of the response instead of the raw data
+ * @default true
+ */
+    simplify?: boolean | Expression<boolean>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** The maximum number of URLs to include in the final answer
+     */
+    maxReturnedSources?: number | Expression<number>;
+    /** A list of domains that are given a higher priority for content retrieval
+     */
+    prioritizeSources?: string | Expression<string> | PlaceholderValue;
+    /** A list of domains to be strictly excluded from content retrieval
+     */
+    excludeSources?: string | Expression<string> | PlaceholderValue;
+    /** Restrict search to specific websites
+     */
+    siteFilter?: string | Expression<string> | PlaceholderValue;
+  };
+  requestOptions?: {
+    /** Batching
+     * @default {"batch":{}}
+     */
+    batching?: {
+        /** Batching
+     */
+    batch?: {
+      /** Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.
+       * @default 50
+       */
+      batchSize?: number | Expression<number>;
+      /** Time (in milliseconds) between each batch of requests. 0 for disabled.
+       * @default 1000
+       */
+      batchInterval?: number | Expression<number>;
+    };
+  };
+    /** Whether to accept the response even if SSL certificate validation is not possible
+     * @default false
+     */
+    allowUnauthorizedCerts?: boolean;
+    /** HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128
+     */
+    proxy?: string | Expression<string> | PlaceholderValue;
+    /** Time in ms to wait for the server to send response headers (and start the response body) before aborting the request
+     * @default 10000
+     */
+    timeout?: number | Expression<number>;
+  };
+};
+
+export type JinaAiV1ResearchDeepResearchNode = {
+  type: 'n8n-nodes-base.jinaAi';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JinaAiV1ResearchDeepResearchParams>;
+};

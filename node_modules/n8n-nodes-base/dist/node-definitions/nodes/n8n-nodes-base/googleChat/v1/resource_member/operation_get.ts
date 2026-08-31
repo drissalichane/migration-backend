@@ -1,0 +1,28 @@
+/**
+ * Google Chat Node - Version 1
+ * Discriminator: resource=member, operation=get
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleChatOAuth2Api: CredentialReference;
+}
+
+/** Get a membership */
+export type GoogleChatV1MemberGetParams = {
+  resource: 'member';
+  operation: 'get';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * Member to be retrieved in the form "spaces/*\/members/*"
+ */
+    memberId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleChatV1MemberGetNode = {
+  type: 'n8n-nodes-base.googleChat';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleChatV1MemberGetParams>;
+};

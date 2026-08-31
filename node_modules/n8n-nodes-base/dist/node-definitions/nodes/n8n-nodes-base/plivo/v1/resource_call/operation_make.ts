@@ -1,0 +1,46 @@
+/**
+ * Plivo Node - Version 1
+ * Discriminator: resource=call, operation=make
+ */
+
+
+interface Credentials {
+  plivoApi: CredentialReference;
+}
+
+/** Make a voice call */
+export type PlivoV1CallMakeParams = {
+  resource: 'call';
+  operation: 'make';
+/**
+ * Caller ID for the call to make
+ */
+    from?: string | Expression<string> | PlaceholderValue;
+/**
+ * Phone number to make the call to
+ */
+    to?: string | Expression<string> | PlaceholderValue;
+/**
+ * HTTP verb to be used when invoking the Answer URL
+ * @default POST
+ */
+    answer_method?: 'GET' | 'POST' | Expression<string>;
+/**
+ * URL to be invoked by Plivo once the call is answered. It should return the XML to handle the call once answered.
+ */
+    answer_url?: string | Expression<string> | PlaceholderValue;
+};
+
+export type PlivoV1CallMakeOutput = {
+  api_id?: string;
+  message?: string;
+  request_uuid?: string;
+};
+
+export type PlivoV1CallMakeNode = {
+  type: 'n8n-nodes-base.plivo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PlivoV1CallMakeParams>;
+  output?: Items<PlivoV1CallMakeOutput>;
+};

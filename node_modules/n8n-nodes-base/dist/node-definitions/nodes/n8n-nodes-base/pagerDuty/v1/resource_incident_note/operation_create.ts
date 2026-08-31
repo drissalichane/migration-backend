@@ -1,0 +1,36 @@
+/**
+ * PagerDuty Node - Version 1
+ * Discriminator: resource=incidentNote, operation=create
+ */
+
+
+interface Credentials {
+  pagerDutyApi: CredentialReference;
+  pagerDutyOAuth2Api: CredentialReference;
+}
+
+/** Create an incident */
+export type PagerDutyV1IncidentNoteCreateParams = {
+  resource: 'incidentNote';
+  operation: 'create';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * Unique identifier for the incident
+ */
+    incidentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * The note content
+ */
+    content?: string | Expression<string> | PlaceholderValue;
+/**
+ * The email address of a valid user associated with the account making the request
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+};
+
+export type PagerDutyV1IncidentNoteCreateNode = {
+  type: 'n8n-nodes-base.pagerDuty';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PagerDutyV1IncidentNoteCreateParams>;
+};

@@ -1,0 +1,48 @@
+/**
+ * Todoist Node - Version 2.2
+ * Discriminator: resource=label, operation=update
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Label resource */
+export type TodoistV22LabelUpdateParams = {
+  resource: 'label';
+  operation: 'update';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Label ID
+ */
+    labelId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    labelUpdateFields?: {
+    /** Name of the label
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+    /** The color of the label
+     */
+    color?: 'berry_red' | 'red' | 'orange' | 'yellow' | 'olive_green' | 'lime_green' | 'green' | 'mint_green' | 'teal' | 'sky_blue' | 'light_blue' | 'blue' | 'grape' | 'violet' | 'lavender' | 'magenta' | 'salmon' | 'charcoal' | 'grey' | 'taupe' | Expression<string>;
+    /** Label order
+     * @default 0
+     */
+    order?: number | Expression<number>;
+    /** Whether the label is a favorite
+     * @default false
+     */
+    is_favorite?: boolean | Expression<boolean>;
+  };
+};
+
+export type TodoistV22LabelUpdateNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.2;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV22LabelUpdateParams>;
+};

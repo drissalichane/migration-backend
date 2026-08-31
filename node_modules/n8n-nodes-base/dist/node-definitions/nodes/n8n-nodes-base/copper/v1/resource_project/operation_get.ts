@@ -1,0 +1,25 @@
+/**
+ * Copper Node - Version 1
+ * Discriminator: resource=project, operation=get
+ */
+
+
+interface Credentials {
+  copperApi: CredentialReference;
+}
+
+export type CopperV1ProjectGetParams = {
+  resource: 'project';
+  operation: 'get';
+/**
+ * ID of the project to retrieve
+ */
+    projectId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type CopperV1ProjectGetNode = {
+  type: 'n8n-nodes-base.copper';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CopperV1ProjectGetParams>;
+};

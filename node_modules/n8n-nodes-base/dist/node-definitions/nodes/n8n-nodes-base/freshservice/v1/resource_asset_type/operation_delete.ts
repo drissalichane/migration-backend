@@ -1,0 +1,26 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=assetType, operation=delete
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Delete an agent */
+export type FreshserviceV1AssetTypeDeleteParams = {
+  resource: 'assetType';
+  operation: 'delete';
+/**
+ * ID of the asset type to delete
+ */
+    assetTypeId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshserviceV1AssetTypeDeleteNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1AssetTypeDeleteParams>;
+};

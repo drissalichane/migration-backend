@@ -1,0 +1,26 @@
+/**
+ * Taiga Node - Version 1
+ * Discriminator: resource=task, operation=delete
+ */
+
+
+interface Credentials {
+  taigaApi: CredentialReference;
+}
+
+/** Delete an epic */
+export type TaigaV1TaskDeleteParams = {
+  resource: 'task';
+  operation: 'delete';
+/**
+ * ID of the task to delete
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TaigaV1TaskDeleteNode = {
+  type: 'n8n-nodes-base.taiga';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TaigaV1TaskDeleteParams>;
+};

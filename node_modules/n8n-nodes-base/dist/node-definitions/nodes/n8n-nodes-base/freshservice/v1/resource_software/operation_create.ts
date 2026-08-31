@@ -1,0 +1,47 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=software, operation=create
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Create an agent */
+export type FreshserviceV1SoftwareCreateParams = {
+  resource: 'software';
+  operation: 'create';
+/**
+ * Application Type
+ * @default desktop
+ */
+    applicationType?: 'desktop' | 'mobile' | 'saas' | Expression<string>;
+/**
+ * Name
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Description
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** Notes
+     */
+    notes?: string | Expression<string> | PlaceholderValue;
+    /** Status
+     * @default managed
+     */
+    status?: 'disabled' | 'ignored' | 'needs review' | 'restricted' | Expression<string>;
+  };
+};
+
+export type FreshserviceV1SoftwareCreateNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1SoftwareCreateParams>;
+};

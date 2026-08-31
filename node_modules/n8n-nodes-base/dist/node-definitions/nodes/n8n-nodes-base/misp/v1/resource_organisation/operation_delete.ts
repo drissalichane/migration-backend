@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=organisation, operation=delete
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1OrganisationDeleteParams = {
+  resource: 'organisation';
+  operation: 'delete';
+/**
+ * UUID or numeric ID of the organisation
+ */
+    organisationId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1OrganisationDeleteNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1OrganisationDeleteParams>;
+};

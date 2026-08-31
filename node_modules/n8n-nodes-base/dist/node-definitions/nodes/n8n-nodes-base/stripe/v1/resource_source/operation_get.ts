@@ -1,0 +1,26 @@
+/**
+ * Stripe Node - Version 1
+ * Discriminator: resource=source, operation=get
+ */
+
+
+interface Credentials {
+  stripeApi: CredentialReference;
+}
+
+/** Get a balance */
+export type StripeV1SourceGetParams = {
+  resource: 'source';
+  operation: 'get';
+/**
+ * ID of the source to retrieve
+ */
+    sourceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type StripeV1SourceGetNode = {
+  type: 'n8n-nodes-base.stripe';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StripeV1SourceGetParams>;
+};

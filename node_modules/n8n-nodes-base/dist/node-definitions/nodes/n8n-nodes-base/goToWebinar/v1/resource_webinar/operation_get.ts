@@ -1,0 +1,25 @@
+/**
+ * GoToWebinar Node - Version 1
+ * Discriminator: resource=webinar, operation=get
+ */
+
+
+interface Credentials {
+  goToWebinarOAuth2Api: CredentialReference;
+}
+
+export type GoToWebinarV1WebinarGetParams = {
+  resource: 'webinar';
+  operation: 'get';
+/**
+ * Key of the webinar to retrieve
+ */
+    webinarKey?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoToWebinarV1WebinarGetNode = {
+  type: 'n8n-nodes-base.goToWebinar';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoToWebinarV1WebinarGetParams>;
+};

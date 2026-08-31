@@ -1,0 +1,37 @@
+/**
+ * Strava Node - Version 1.1
+ * Discriminator: resource=activity, operation=getComments
+ */
+
+
+interface Credentials {
+  stravaOAuth2Api: CredentialReference;
+}
+
+/** Get all activity comments */
+export type StravaV11ActivityGetCommentsParams = {
+  resource: 'activity';
+  operation: 'getComments';
+/**
+ * ID or email of activity
+ */
+    activityId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+};
+
+export type StravaV11ActivityGetCommentsNode = {
+  type: 'n8n-nodes-base.strava';
+  version: 1.1;
+  credentials?: Credentials;
+  config: NodeConfig<StravaV11ActivityGetCommentsParams>;
+};

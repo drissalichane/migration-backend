@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=quote, operation=get
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Get an account */
+export type ZohoCrmV1QuoteGetParams = {
+  resource: 'quote';
+  operation: 'get';
+/**
+ * ID of the quote to retrieve
+ */
+    quoteId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1QuoteGetNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1QuoteGetParams>;
+};

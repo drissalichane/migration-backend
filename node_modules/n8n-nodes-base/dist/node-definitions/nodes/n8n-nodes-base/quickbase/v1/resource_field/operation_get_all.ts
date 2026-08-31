@@ -1,0 +1,47 @@
+/**
+ * Quick Base Node - Version 1
+ * Discriminator: resource=field, operation=getAll
+ */
+
+
+interface Credentials {
+  quickbaseApi: CredentialReference;
+}
+
+/** Get many fields */
+export type QuickbaseV1FieldGetAllParams = {
+  resource: 'field';
+  operation: 'getAll';
+/**
+ * The table identifier
+ */
+    tableId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Whether to get back the custom permissions for the field(s)
+     * @default false
+     */
+    includeFieldPerms?: boolean | Expression<boolean>;
+  };
+};
+
+export type QuickbaseV1FieldGetAllNode = {
+  type: 'n8n-nodes-base.quickbase';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbaseV1FieldGetAllParams>;
+};

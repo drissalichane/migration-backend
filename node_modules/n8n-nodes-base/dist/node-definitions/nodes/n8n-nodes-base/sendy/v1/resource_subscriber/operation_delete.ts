@@ -1,0 +1,30 @@
+/**
+ * Sendy Node - Version 1
+ * Discriminator: resource=subscriber, operation=delete
+ */
+
+
+interface Credentials {
+  sendyApi: CredentialReference;
+}
+
+/** Delete a subscriber from a list */
+export type SendyV1SubscriberDeleteParams = {
+  resource: 'subscriber';
+  operation: 'delete';
+/**
+ * Email address of the subscriber
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+/**
+ * The list ID you want to subscribe a user to. This encrypted & hashed ID can be found under View all lists section named ID.
+ */
+    listId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SendyV1SubscriberDeleteNode = {
+  type: 'n8n-nodes-base.sendy';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SendyV1SubscriberDeleteParams>;
+};

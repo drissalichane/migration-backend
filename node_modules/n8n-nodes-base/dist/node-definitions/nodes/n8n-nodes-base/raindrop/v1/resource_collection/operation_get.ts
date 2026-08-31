@@ -1,0 +1,25 @@
+/**
+ * Raindrop Node - Version 1
+ * Discriminator: resource=collection, operation=get
+ */
+
+
+interface Credentials {
+  raindropOAuth2Api: CredentialReference;
+}
+
+export type RaindropV1CollectionGetParams = {
+  resource: 'collection';
+  operation: 'get';
+/**
+ * The ID of the collection to retrieve
+ */
+    collectionId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type RaindropV1CollectionGetNode = {
+  type: 'n8n-nodes-base.raindrop';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<RaindropV1CollectionGetParams>;
+};

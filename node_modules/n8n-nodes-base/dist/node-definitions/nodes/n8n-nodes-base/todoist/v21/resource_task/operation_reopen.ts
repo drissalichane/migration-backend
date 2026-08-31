@@ -1,0 +1,28 @@
+/**
+ * Todoist Node - Version 2.1
+ * Discriminator: resource=task, operation=reopen
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Task resource */
+export type TodoistV21TaskReopenParams = {
+  resource: 'task';
+  operation: 'reopen';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Task ID
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TodoistV21TaskReopenNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV21TaskReopenParams>;
+};

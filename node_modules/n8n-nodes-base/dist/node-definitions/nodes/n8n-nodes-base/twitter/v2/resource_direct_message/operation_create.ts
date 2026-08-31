@@ -1,0 +1,40 @@
+/**
+ * X (Formerly Twitter) Node - Version 2
+ * Discriminator: resource=directMessage, operation=create
+ */
+
+
+interface Credentials {
+  twitterOAuth2Api: CredentialReference;
+}
+
+/** Send a direct message to a user */
+export type TwitterV2DirectMessageCreateParams = {
+  resource: 'directMessage';
+  operation: 'create';
+/**
+ * The user you want to send the message to
+ * @default {"mode":"username","value":""}
+ */
+    user?: { __rl: true; mode: 'username' | 'id'; value: string; cachedResultName?: string };
+/**
+ * The text of the direct message. URL encoding is required. Max length of 10,000 characters.
+ */
+    text?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** The attachment ID to associate with the message
+     */
+    attachments?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TwitterV2DirectMessageCreateNode = {
+  type: 'n8n-nodes-base.twitter';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<TwitterV2DirectMessageCreateParams>;
+};

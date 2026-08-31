@@ -1,0 +1,29 @@
+/**
+ * Sentry.io Node - Version 1
+ * Discriminator: resource=issue, operation=get
+ */
+
+
+interface Credentials {
+  sentryIoOAuth2Api: CredentialReference;
+  sentryIoApi: CredentialReference;
+  sentryIoServerApi: CredentialReference;
+}
+
+/** Get event by ID */
+export type SentryIoV1IssueGetParams = {
+  resource: 'issue';
+  operation: 'get';
+  authentication?: 'accessToken' | 'oAuth2' | 'accessTokenServer' | Expression<string>;
+/**
+ * ID of issue to get
+ */
+    issueId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SentryIoV1IssueGetNode = {
+  type: 'n8n-nodes-base.sentryIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SentryIoV1IssueGetParams>;
+};

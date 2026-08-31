@@ -1,0 +1,33 @@
+/**
+ * Todoist Node - Version 2.1
+ * Discriminator: resource=task, operation=close
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Task resource */
+export type TodoistV21TaskCloseParams = {
+  resource: 'task';
+  operation: 'close';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Task ID
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TodoistV21TaskCloseOutput = {
+  success?: boolean;
+};
+
+export type TodoistV21TaskCloseNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV21TaskCloseParams>;
+  output?: Items<TodoistV21TaskCloseOutput>;
+};

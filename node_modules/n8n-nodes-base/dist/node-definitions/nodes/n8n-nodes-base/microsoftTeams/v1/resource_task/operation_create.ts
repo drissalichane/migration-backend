@@ -1,0 +1,63 @@
+/**
+ * Microsoft Teams Node - Version 1
+ * Discriminator: resource=task, operation=create
+ */
+
+
+interface Credentials {
+  microsoftTeamsOAuth2Api: CredentialReference;
+}
+
+/** Create a channel */
+export type MicrosoftTeamsV1TaskCreateParams = {
+  resource: 'task';
+  operation: 'create';
+/**
+ * Group Source
+ * @default all
+ */
+    groupSource?: 'all' | 'mine' | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    groupId?: string | Expression<string>;
+/**
+ * The plan for the task to belong to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    planId?: string | Expression<string>;
+/**
+ * The bucket for the task to belong to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    bucketId?: string | Expression<string>;
+/**
+ * Title of the task
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Who the task should be assigned to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    assignedTo?: string | Expression<string>;
+    /** Date and time at which the task is due. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time.
+     */
+    dueDateTime?: string | Expression<string>;
+    /** Labels to assign to the task. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    labels?: string[];
+    /** Percentage of task completion. When set to 100, the task is considered completed.
+     * @default 0
+     */
+    percentComplete?: number | Expression<number>;
+  };
+};
+
+export type MicrosoftTeamsV1TaskCreateNode = {
+  type: 'n8n-nodes-base.microsoftTeams';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftTeamsV1TaskCreateParams>;
+};

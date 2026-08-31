@@ -1,0 +1,26 @@
+/**
+ * Home Assistant Node - Version 1
+ * Discriminator: resource=template, operation=create
+ */
+
+
+interface Credentials {
+  homeAssistantApi: CredentialReference;
+}
+
+/** Create an event */
+export type HomeAssistantV1TemplateCreateParams = {
+  resource: 'template';
+  operation: 'create';
+/**
+ * Render a Home Assistant template. &lt;a href="https://www.home-assistant.io/docs/configuration/templating/"&gt;See template docs for more information.&lt;/a&gt;.
+ */
+    template?: string | Expression<string> | PlaceholderValue;
+};
+
+export type HomeAssistantV1TemplateCreateNode = {
+  type: 'n8n-nodes-base.homeAssistant';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HomeAssistantV1TemplateCreateParams>;
+};

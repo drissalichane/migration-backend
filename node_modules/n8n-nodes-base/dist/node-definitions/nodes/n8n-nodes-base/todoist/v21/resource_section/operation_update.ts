@@ -1,0 +1,37 @@
+/**
+ * Todoist Node - Version 2.1
+ * Discriminator: resource=section, operation=update
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Section resource */
+export type TodoistV21SectionUpdateParams = {
+  resource: 'section';
+  operation: 'update';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * Section ID
+ */
+    sectionId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    sectionUpdateFields?: {
+    /** Name of the section
+     */
+    name?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TodoistV21SectionUpdateNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV21SectionUpdateParams>;
+};

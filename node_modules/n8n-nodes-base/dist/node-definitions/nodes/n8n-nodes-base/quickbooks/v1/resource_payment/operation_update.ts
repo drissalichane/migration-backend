@@ -1,0 +1,34 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=payment, operation=update
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1PaymentUpdateParams = {
+  resource: 'payment';
+  operation: 'update';
+/**
+ * The ID of the payment to update
+ */
+    paymentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Date when the transaction occurred
+     */
+    TxnDate?: string | Expression<string>;
+  };
+};
+
+export type QuickbooksV1PaymentUpdateNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1PaymentUpdateParams>;
+};

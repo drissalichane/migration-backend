@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=salesOrder, operation=get
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Get an account */
+export type ZohoCrmV1SalesOrderGetParams = {
+  resource: 'salesOrder';
+  operation: 'get';
+/**
+ * ID of the sales order to retrieve
+ */
+    salesOrderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1SalesOrderGetNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1SalesOrderGetParams>;
+};

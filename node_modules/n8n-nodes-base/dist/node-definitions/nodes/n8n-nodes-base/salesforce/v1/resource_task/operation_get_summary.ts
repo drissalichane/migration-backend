@@ -1,0 +1,28 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=task, operation=getSummary
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a business activity such as making a phone call or other to-do items. In the user interface, and records are collectively referred to as activities. */
+export type SalesforceV1TaskGetSummaryParams = {
+  resource: 'task';
+  operation: 'getSummary';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+};
+
+export type SalesforceV1TaskGetSummaryNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1TaskGetSummaryParams>;
+};

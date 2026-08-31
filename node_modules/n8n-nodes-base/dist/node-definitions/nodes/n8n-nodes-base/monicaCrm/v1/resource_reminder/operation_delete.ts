@@ -1,0 +1,26 @@
+/**
+ * Monica CRM Node - Version 1
+ * Discriminator: resource=reminder, operation=delete
+ */
+
+
+interface Credentials {
+  monicaCrmApi: CredentialReference;
+}
+
+/** Delete an activity */
+export type MonicaCrmV1ReminderDeleteParams = {
+  resource: 'reminder';
+  operation: 'delete';
+/**
+ * ID of the reminder to delete
+ */
+    reminderId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MonicaCrmV1ReminderDeleteNode = {
+  type: 'n8n-nodes-base.monicaCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MonicaCrmV1ReminderDeleteParams>;
+};

@@ -1,0 +1,32 @@
+/**
+ * Mautic Node - Version 1
+ * Discriminator: resource=companyContact, operation=remove
+ */
+
+
+interface Credentials {
+  mauticApi: CredentialReference;
+  mauticOAuth2Api: CredentialReference;
+}
+
+/** Add/remove contacts to/from a company */
+export type MauticV1CompanyContactRemoveParams = {
+  resource: 'companyContact';
+  operation: 'remove';
+  authentication?: 'credentials' | 'oAuth2' | Expression<string>;
+/**
+ * The ID of the contact
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+/**
+ * The ID of the company
+ */
+    companyId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MauticV1CompanyContactRemoveNode = {
+  type: 'n8n-nodes-base.mautic';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MauticV1CompanyContactRemoveParams>;
+};

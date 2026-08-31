@@ -1,0 +1,22 @@
+/**
+ * Matrix Node - Version 1
+ * Discriminator: resource=account, operation=me
+ */
+
+
+interface Credentials {
+  matrixApi: CredentialReference;
+}
+
+/** Get current user's account information */
+export type MatrixV1AccountMeParams = {
+  resource: 'account';
+  operation: 'me';
+};
+
+export type MatrixV1AccountMeNode = {
+  type: 'n8n-nodes-base.matrix';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MatrixV1AccountMeParams>;
+};

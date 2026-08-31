@@ -1,0 +1,29 @@
+/**
+ * Pipedrive Node - Version 1
+ * Discriminator: resource=deal, operation=duplicate
+ */
+
+
+interface Credentials {
+  pipedriveApi: CredentialReference;
+  pipedriveOAuth2Api: CredentialReference;
+}
+
+/** Duplicate a deal */
+export type PipedriveV1DealDuplicateParams = {
+  resource: 'deal';
+  operation: 'duplicate';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * ID of the deal to duplicate
+ * @default 0
+ */
+    dealId?: number | Expression<number>;
+};
+
+export type PipedriveV1DealDuplicateNode = {
+  type: 'n8n-nodes-base.pipedrive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PipedriveV1DealDuplicateParams>;
+};

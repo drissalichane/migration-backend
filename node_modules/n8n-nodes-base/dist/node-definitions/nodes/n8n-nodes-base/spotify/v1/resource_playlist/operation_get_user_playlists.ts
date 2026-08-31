@@ -1,0 +1,63 @@
+/**
+ * Spotify Node - Version 1
+ * Discriminator: resource=playlist, operation=getUserPlaylists
+ */
+
+
+interface Credentials {
+  spotifyOAuth2Api: CredentialReference;
+}
+
+/** Get a user's playlists */
+export type SpotifyV1PlaylistGetUserPlaylistsParams = {
+  resource: 'playlist';
+  operation: 'getUserPlaylists';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+};
+
+export type SpotifyV1PlaylistGetUserPlaylistsOutput = {
+  collaborative?: boolean;
+  description?: string;
+  external_urls?: {
+    spotify?: string;
+  };
+  href?: string;
+  id?: string;
+  name?: string;
+  owner?: {
+    display_name?: string;
+    external_urls?: {
+      spotify?: string;
+    };
+    href?: string;
+    id?: string;
+    type?: string;
+    uri?: string;
+  };
+  public?: boolean;
+  snapshot_id?: string;
+  tracks?: {
+    href?: string;
+    total?: number;
+  };
+  type?: string;
+  uri?: string;
+};
+
+export type SpotifyV1PlaylistGetUserPlaylistsNode = {
+  type: 'n8n-nodes-base.spotify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SpotifyV1PlaylistGetUserPlaylistsParams>;
+  output?: Items<SpotifyV1PlaylistGetUserPlaylistsOutput>;
+};

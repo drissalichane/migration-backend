@@ -1,0 +1,26 @@
+/**
+ * Twist Node - Version 1
+ * Discriminator: resource=channel, operation=archive
+ */
+
+
+interface Credentials {
+  twistOAuth2Api: CredentialReference;
+}
+
+/** Archive a channel */
+export type TwistV1ChannelArchiveParams = {
+  resource: 'channel';
+  operation: 'archive';
+/**
+ * The ID of the channel
+ */
+    channelId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TwistV1ChannelArchiveNode = {
+  type: 'n8n-nodes-base.twist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwistV1ChannelArchiveParams>;
+};

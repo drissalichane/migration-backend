@@ -1,0 +1,90 @@
+/**
+ * Invoice Ninja Node - Version 1
+ * Discriminator: resource=expense, operation=create
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Create a new client */
+export type InvoiceNinjaV1ExpenseCreateParams = {
+  resource: 'expense';
+  operation: 'create';
+/**
+ * API Version
+ * @default v4
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Additional Fields
+ * @displayOptions.show { apiVersion: ["v4"] }
+ * @default {}
+ */
+    additionalFields?: {
+    /** Amount
+     * @default 0
+     */
+    amount?: number | Expression<number>;
+    /** Billable
+     * @default false
+     */
+    billable?: boolean | Expression<boolean>;
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    client?: string | Expression<string>;
+    /** Custom Value 1
+     */
+    customValue1?: string | Expression<string> | PlaceholderValue;
+    /** Custom Value 2
+     */
+    customValue2?: string | Expression<string> | PlaceholderValue;
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    category?: string | Expression<string>;
+    /** Expense Date
+     */
+    expenseDate?: string | Expression<string>;
+    /** Payment Date
+     */
+    paymentDate?: string | Expression<string>;
+    /** Payment Type
+     * @default 1
+     */
+    paymentType?: 5 | 28 | 8 | 1 | 2 | 32 | 17 | 3 | 16 | 13 | 4 | 10 | 9 | 11 | 31 | 15 | 24 | 19 | 20 | 21 | 7 | 27 | 12 | 14 | 30 | 29 | 22 | 23 | 25 | 18 | 26 | 6 | Expression<number>;
+    /** Private Notes
+     */
+    privateNotes?: string | Expression<string> | PlaceholderValue;
+    /** Public Notes
+     */
+    publicNotes?: string | Expression<string> | PlaceholderValue;
+    /** Tax Name 1
+     */
+    taxName1?: string | Expression<string> | PlaceholderValue;
+    /** Tax Name 2
+     */
+    taxName2?: string | Expression<string> | PlaceholderValue;
+    /** Tax Rate 1
+     * @default 0
+     */
+    taxRate1?: number | Expression<number>;
+    /** Tax Rate 2
+     * @default 0
+     */
+    taxRate2?: number | Expression<number>;
+    /** Transaction Reference
+     */
+    transactionReference?: string | Expression<string> | PlaceholderValue;
+    /** Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+     */
+    vendor?: string | Expression<string>;
+  };
+};
+
+export type InvoiceNinjaV1ExpenseCreateNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV1ExpenseCreateParams>;
+};

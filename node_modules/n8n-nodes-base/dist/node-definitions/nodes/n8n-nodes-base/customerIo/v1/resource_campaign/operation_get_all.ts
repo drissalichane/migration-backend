@@ -1,0 +1,21 @@
+/**
+ * Customer.io Node - Version 1
+ * Discriminator: resource=campaign, operation=getAll
+ */
+
+
+interface Credentials {
+  customerIoApi: CredentialReference;
+}
+
+export type CustomerIoV1CampaignGetAllParams = {
+  resource: 'campaign';
+  operation: 'getAll';
+};
+
+export type CustomerIoV1CampaignGetAllNode = {
+  type: 'n8n-nodes-base.customerIo';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CustomerIoV1CampaignGetAllParams>;
+};

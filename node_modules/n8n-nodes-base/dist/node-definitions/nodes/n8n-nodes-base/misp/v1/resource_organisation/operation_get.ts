@@ -1,0 +1,25 @@
+/**
+ * MISP Node - Version 1
+ * Discriminator: resource=organisation, operation=get
+ */
+
+
+interface Credentials {
+  mispApi: CredentialReference;
+}
+
+export type MispV1OrganisationGetParams = {
+  resource: 'organisation';
+  operation: 'get';
+/**
+ * UUID or numeric ID of the organisation
+ */
+    organisationId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MispV1OrganisationGetNode = {
+  type: 'n8n-nodes-base.misp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MispV1OrganisationGetParams>;
+};

@@ -1,0 +1,98 @@
+/**
+ * NocoDB Node - Version 1
+ * Discriminator: resource=row, operation=getAll
+ */
+
+
+interface Credentials {
+  nocoDb: CredentialReference;
+  nocoDbApiToken: CredentialReference;
+}
+
+/** Retrieve many rows */
+export type NocoDbV1RowGetAllParams = {
+  resource: 'row';
+  operation: 'getAll';
+  authentication?: 'nocoDbApiToken' | 'nocoDb' | Expression<string>;
+/**
+ * API Version
+ * @default 1
+ */
+    version?: 1 | 2 | 3 | Expression<number>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @displayOptions.show { version: [3] }
+ * @default none
+ */
+    workspaceId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ * @displayOptions.show { version: [3] }
+ */
+    projectId?: string | Expression<string>;
+/**
+ * The table to operate on. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ * @displayOptions.show { version: [2, 3] }
+ */
+    table?: string | Expression<string>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Whether the attachment fields define in 'Download Fields' will be downloaded
+ * @default false
+ */
+    downloadAttachments?: boolean | Expression<boolean>;
+/**
+ * Name of the fields of type 'attachment' that should be downloaded. Multiple ones can be defined separated by comma. Case sensitive.
+ * @displayOptions.show { downloadAttachments: [true] }
+ */
+    downloadFieldNames?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** The select fields of the returned rows
+     */
+    viewId?: string | Expression<string> | PlaceholderValue;
+    /** The select fields of the returned rows
+     * @default []
+     */
+    fields?: string | Expression<string> | PlaceholderValue;
+    /** The sorting rules for the returned rows
+     * @default {}
+     */
+    sort?: {
+        /** Property
+     */
+    property?: Array<{
+      /** Name of the field to sort on
+       */
+      field?: string | Expression<string> | PlaceholderValue;
+      /** The sort direction
+       * @default asc
+       */
+      direction?: 'asc' | 'desc' | Expression<string>;
+    }>;
+  };
+    /** A formula used to filter rows
+     */
+    where?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type NocoDbV1RowGetAllNode = {
+  type: 'n8n-nodes-base.nocoDb';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NocoDbV1RowGetAllParams>;
+};

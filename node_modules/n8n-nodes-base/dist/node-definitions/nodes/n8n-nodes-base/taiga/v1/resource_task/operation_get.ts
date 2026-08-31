@@ -1,0 +1,26 @@
+/**
+ * Taiga Node - Version 1
+ * Discriminator: resource=task, operation=get
+ */
+
+
+interface Credentials {
+  taigaApi: CredentialReference;
+}
+
+/** Get an epic */
+export type TaigaV1TaskGetParams = {
+  resource: 'task';
+  operation: 'get';
+/**
+ * ID of the task to retrieve
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TaigaV1TaskGetNode = {
+  type: 'n8n-nodes-base.taiga';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TaigaV1TaskGetParams>;
+};

@@ -1,0 +1,32 @@
+/**
+ * Gotify Node - Version 1
+ * Discriminator: resource=message, operation=getAll
+ */
+
+
+interface Credentials {
+  gotifyApi: CredentialReference;
+}
+
+export type GotifyV1MessageGetAllParams = {
+  resource: 'message';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 20
+ */
+    limit?: number | Expression<number>;
+};
+
+export type GotifyV1MessageGetAllNode = {
+  type: 'n8n-nodes-base.gotify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GotifyV1MessageGetAllParams>;
+};

@@ -1,0 +1,28 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=lead, operation=getSummary
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a prospect or potential */
+export type SalesforceV1LeadGetSummaryParams = {
+  resource: 'lead';
+  operation: 'getSummary';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+};
+
+export type SalesforceV1LeadGetSummaryNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1LeadGetSummaryParams>;
+};

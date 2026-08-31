@@ -1,0 +1,26 @@
+/**
+ * Wekan Node - Version 1
+ * Discriminator: resource=board, operation=get
+ */
+
+
+interface Credentials {
+  wekanApi: CredentialReference;
+}
+
+/** Get the data of a board */
+export type WekanV1BoardGetParams = {
+  resource: 'board';
+  operation: 'get';
+/**
+ * The ID of the board to get
+ */
+    boardId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type WekanV1BoardGetNode = {
+  type: 'n8n-nodes-base.wekan';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<WekanV1BoardGetParams>;
+};

@@ -1,0 +1,66 @@
+/**
+ * NASA Node - Version 1
+ * Discriminator: resource=donkiCoronalMassEjection, operation=get
+ */
+
+
+interface Credentials {
+  nasaApi: CredentialReference;
+}
+
+/** Get the Astronomy Picture of the Day */
+export type NasaV1DonkiCoronalMassEjectionGetParams = {
+  resource: 'donkiCoronalMassEjection';
+  operation: 'get';
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Start Date
+     */
+    startDate?: string | Expression<string>;
+    /** End Date
+     */
+    endDate?: string | Expression<string>;
+  };
+};
+
+export type NasaV1DonkiCoronalMassEjectionGetOutput = {
+  activityID?: string;
+  catalog?: string;
+  cmeAnalyses?: Array<{
+    featureCode?: string;
+    halfAngle?: number;
+    imageType?: string;
+    isMostAccurate?: boolean;
+    latitude?: number;
+    levelOfData?: number;
+    link?: string;
+    measurementTechnique?: string;
+    minorHalfWidth?: null;
+    note?: string;
+    speed?: number;
+    submissionTime?: string;
+    tilt?: null;
+    time21_5?: string;
+    type?: string;
+  }>;
+  instruments?: Array<{
+    displayName?: string;
+  }>;
+  link?: string;
+  note?: string;
+  sourceLocation?: string;
+  startTime?: string;
+  submissionTime?: string;
+  versionId?: number;
+};
+
+export type NasaV1DonkiCoronalMassEjectionGetNode = {
+  type: 'n8n-nodes-base.nasa';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<NasaV1DonkiCoronalMassEjectionGetParams>;
+  output?: Items<NasaV1DonkiCoronalMassEjectionGetOutput>;
+};

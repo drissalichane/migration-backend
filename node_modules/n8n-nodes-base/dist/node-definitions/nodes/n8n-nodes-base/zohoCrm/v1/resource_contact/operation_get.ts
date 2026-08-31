@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=contact, operation=get
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Get an account */
+export type ZohoCrmV1ContactGetParams = {
+  resource: 'contact';
+  operation: 'get';
+/**
+ * ID of the contact to retrieve
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1ContactGetNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1ContactGetParams>;
+};

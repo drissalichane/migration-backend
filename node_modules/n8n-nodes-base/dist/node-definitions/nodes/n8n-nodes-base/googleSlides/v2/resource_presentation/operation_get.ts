@@ -1,0 +1,32 @@
+/**
+ * Google Slides Node - Version 2
+ * Discriminator: resource=presentation, operation=get
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleSlidesOAuth2Api: CredentialReference;
+}
+
+/** Get a presentation */
+export type GoogleSlidesV2PresentationGetParams = {
+  resource: 'presentation';
+  operation: 'get';
+/**
+ * Authentication
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * ID of the presentation to retrieve. Found in the presentation URL: &lt;code&gt;https://docs.google.com/presentation/d/PRESENTATION_ID/edit&lt;/code&gt;
+ */
+    presentationId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleSlidesV2PresentationGetNode = {
+  type: 'n8n-nodes-base.googleSlides';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleSlidesV2PresentationGetParams>;
+};

@@ -1,0 +1,48 @@
+/**
+ * MailerLite Node - Version 1
+ * Discriminator: resource=subscriber, operation=get
+ */
+
+
+interface Credentials {
+  mailerLiteApi: CredentialReference;
+}
+
+/** Get an subscriber */
+export type MailerLiteV1SubscriberGetParams = {
+  resource: 'subscriber';
+  operation: 'get';
+/**
+ * Email of subscriber to get
+ */
+    subscriberId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MailerLiteV1SubscriberGetOutput = {
+  id?: number;
+  name?: string;
+  email?: string;
+  sent?: number;
+  opened?: number;
+  clicked?: number;
+  type?: string;
+  country_id?: string;
+  signup_ip?: null;
+  signup_timestamp?: null;
+  fields?: Array<{
+    key: string;
+    value: string;
+    type: string;
+  }>;
+  date_unsubscribe?: null;
+  date_created?: string;
+  date_updated?: string;
+};
+
+export type MailerLiteV1SubscriberGetNode = {
+  type: 'n8n-nodes-base.mailerLite';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MailerLiteV1SubscriberGetParams>;
+  output?: Items<MailerLiteV1SubscriberGetOutput>;
+};

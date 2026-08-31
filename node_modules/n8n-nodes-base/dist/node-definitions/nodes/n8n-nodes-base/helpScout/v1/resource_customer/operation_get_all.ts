@@ -1,0 +1,62 @@
+/**
+ * Help Scout Node - Version 1
+ * Discriminator: resource=customer, operation=getAll
+ */
+
+
+interface Credentials {
+  helpScoutOAuth2Api: CredentialReference;
+}
+
+/** Get many conversations */
+export type HelpScoutV1CustomerGetAllParams = {
+  resource: 'customer';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Filters customers by first name
+     */
+    firstName?: string | Expression<string> | PlaceholderValue;
+    /** Filters customers by last name
+     */
+    lastName?: string | Expression<string> | PlaceholderValue;
+    /** Filters customers from a specific mailbox
+     */
+    mailbox?: string | Expression<string> | PlaceholderValue;
+    /** Returns only customers that were modified after this date
+     */
+    modifiedSince?: string | Expression<string>;
+    /** Sorts the result by specified field
+     * @default score
+     */
+    sortField?: 'score' | 'firstName' | 'lastName' | 'modifiedAt' | Expression<string>;
+    /** Sort Order
+     * @default desc
+     */
+    sortOrder?: 'asc' | 'desc' | Expression<string>;
+    /** Advanced search &lt;a href="https://developer.helpscout.com/mailbox-api/endpoints/customers/list/#query"&gt;Examples&lt;/a&gt;
+     */
+    query?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type HelpScoutV1CustomerGetAllNode = {
+  type: 'n8n-nodes-base.helpScout';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HelpScoutV1CustomerGetAllParams>;
+};

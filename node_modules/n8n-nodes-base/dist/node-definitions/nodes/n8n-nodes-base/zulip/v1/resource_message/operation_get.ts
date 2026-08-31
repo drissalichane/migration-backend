@@ -1,0 +1,26 @@
+/**
+ * Zulip Node - Version 1
+ * Discriminator: resource=message, operation=get
+ */
+
+
+interface Credentials {
+  zulipApi: CredentialReference;
+}
+
+/** Get a message */
+export type ZulipV1MessageGetParams = {
+  resource: 'message';
+  operation: 'get';
+/**
+ * Unique identifier for the message
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZulipV1MessageGetNode = {
+  type: 'n8n-nodes-base.zulip';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZulipV1MessageGetParams>;
+};

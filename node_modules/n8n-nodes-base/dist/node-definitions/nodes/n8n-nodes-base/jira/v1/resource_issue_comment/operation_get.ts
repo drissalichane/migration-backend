@@ -1,0 +1,42 @@
+/**
+ * Jira Software Node - Version 1
+ * Discriminator: resource=issueComment, operation=get
+ */
+
+
+interface Credentials {
+  jiraSoftwareCloudApi: CredentialReference;
+  jiraSoftwareServerApi: CredentialReference;
+  jiraSoftwareServerPatApi: CredentialReference;
+}
+
+/** Get, create, update, and delete a comment from an issue */
+export type JiraV1IssueCommentGetParams = {
+  resource: 'issueComment';
+  operation: 'get';
+  jiraVersion?: 'cloud' | 'server' | 'serverPat' | Expression<string>;
+/**
+ * The ID or key of the issue
+ */
+    issueKey?: string | Expression<string> | PlaceholderValue;
+/**
+ * The ID of the comment
+ */
+    commentId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Use expand to include additional information about comments in the response. This parameter accepts Rendered Body, which returns the comment body rendered in HTML.
+     */
+    expand?: 'renderedBody' | Expression<string>;
+  };
+};
+
+export type JiraV1IssueCommentGetNode = {
+  type: 'n8n-nodes-base.jira';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JiraV1IssueCommentGetParams>;
+};

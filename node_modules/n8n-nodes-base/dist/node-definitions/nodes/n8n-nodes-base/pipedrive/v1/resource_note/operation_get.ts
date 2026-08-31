@@ -1,0 +1,29 @@
+/**
+ * Pipedrive Node - Version 1
+ * Discriminator: resource=note, operation=get
+ */
+
+
+interface Credentials {
+  pipedriveApi: CredentialReference;
+  pipedriveOAuth2Api: CredentialReference;
+}
+
+/** Get data of an activity */
+export type PipedriveV1NoteGetParams = {
+  resource: 'note';
+  operation: 'get';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * ID of the note to get
+ * @default 0
+ */
+    noteId?: number | Expression<number>;
+};
+
+export type PipedriveV1NoteGetNode = {
+  type: 'n8n-nodes-base.pipedrive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PipedriveV1NoteGetParams>;
+};

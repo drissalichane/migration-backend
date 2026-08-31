@@ -1,0 +1,21 @@
+/**
+ * Data table - Table Resource
+ * Re-exports all operation types for this resource.
+ */
+
+import type { DataTableV1TableCreateNode } from './operation_create';
+import type { DataTableV1TableDeleteNode } from './operation_delete';
+import type { DataTableV1TableListNode } from './operation_list';
+import type { DataTableV1TableUpdateNode } from './operation_update';
+
+export * from './operation_create';
+export * from './operation_delete';
+export * from './operation_list';
+export * from './operation_update';
+
+export type DataTableV1TableNode =
+  | DataTableV1TableCreateNode
+  | DataTableV1TableDeleteNode
+  | DataTableV1TableListNode
+  | DataTableV1TableUpdateNode
+  ;

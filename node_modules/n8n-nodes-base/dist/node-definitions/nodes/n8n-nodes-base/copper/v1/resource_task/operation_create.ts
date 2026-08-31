@@ -1,0 +1,45 @@
+/**
+ * Copper Node - Version 1
+ * Discriminator: resource=task, operation=create
+ */
+
+
+interface Credentials {
+  copperApi: CredentialReference;
+}
+
+export type CopperV1TaskCreateParams = {
+  resource: 'task';
+  operation: 'create';
+/**
+ * Name
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** ID of the user who will own the task to create
+     */
+    assignee_id?: string | Expression<string> | PlaceholderValue;
+    /** Description of the task to create
+     */
+    details?: string | Expression<string> | PlaceholderValue;
+    /** Priority
+     * @default High
+     */
+    priority?: 'High' | 'None' | Expression<string>;
+    /** Status
+     * @default Open
+     */
+    status?: 'Completed' | 'Open' | Expression<string>;
+  };
+};
+
+export type CopperV1TaskCreateNode = {
+  type: 'n8n-nodes-base.copper';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CopperV1TaskCreateParams>;
+};

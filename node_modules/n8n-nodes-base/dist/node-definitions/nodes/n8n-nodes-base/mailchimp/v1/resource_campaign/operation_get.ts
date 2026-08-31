@@ -1,0 +1,28 @@
+/**
+ * Mailchimp Node - Version 1
+ * Discriminator: resource=campaign, operation=get
+ */
+
+
+interface Credentials {
+  mailchimpApi: CredentialReference;
+  mailchimpOAuth2Api: CredentialReference;
+}
+
+/** Get a member on list */
+export type MailchimpV1CampaignGetParams = {
+  resource: 'campaign';
+  operation: 'get';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * List of Campaigns
+ */
+    campaignId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MailchimpV1CampaignGetNode = {
+  type: 'n8n-nodes-base.mailchimp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MailchimpV1CampaignGetParams>;
+};

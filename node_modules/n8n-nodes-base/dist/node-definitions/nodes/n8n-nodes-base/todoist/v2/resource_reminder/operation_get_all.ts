@@ -1,0 +1,24 @@
+/**
+ * Todoist Node - Version 2
+ * Discriminator: resource=reminder, operation=getAll
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Reminder resource */
+export type TodoistV2ReminderGetAllParams = {
+  resource: 'reminder';
+  operation: 'getAll';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+};
+
+export type TodoistV2ReminderGetAllNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV2ReminderGetAllParams>;
+};

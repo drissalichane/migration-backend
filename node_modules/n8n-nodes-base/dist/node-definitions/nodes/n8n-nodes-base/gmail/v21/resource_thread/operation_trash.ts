@@ -1,0 +1,37 @@
+/**
+ * Gmail Node - Version 2.1
+ * Discriminator: resource=thread, operation=trash
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  gmailOAuth2: CredentialReference;
+}
+
+export type GmailV21ThreadTrashParams = {
+  resource: 'thread';
+  operation: 'trash';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The ID of the thread you are operating on
+ */
+    threadId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GmailV21ThreadTrashOutput = {
+  id?: string;
+  messages?: Array<{
+    id?: string;
+    labelIds?: Array<string>;
+    threadId?: string;
+  }>;
+};
+
+export type GmailV21ThreadTrashNode = {
+  type: 'n8n-nodes-base.gmail';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<GmailV21ThreadTrashParams>;
+  output?: Items<GmailV21ThreadTrashOutput>;
+};

@@ -1,0 +1,27 @@
+/**
+ * Spotify Node - Version 1
+ * Discriminator: resource=player, operation=resume
+ */
+
+
+interface Credentials {
+  spotifyOAuth2Api: CredentialReference;
+}
+
+/** Resume playback on the current active device */
+export type SpotifyV1PlayerResumeParams = {
+  resource: 'player';
+  operation: 'resume';
+};
+
+export type SpotifyV1PlayerResumeOutput = {
+  success?: boolean;
+};
+
+export type SpotifyV1PlayerResumeNode = {
+  type: 'n8n-nodes-base.spotify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SpotifyV1PlayerResumeParams>;
+  output?: Items<SpotifyV1PlayerResumeOutput>;
+};

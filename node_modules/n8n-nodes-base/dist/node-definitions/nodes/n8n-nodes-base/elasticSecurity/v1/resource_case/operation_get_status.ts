@@ -1,0 +1,22 @@
+/**
+ * Elastic Security Node - Version 1
+ * Discriminator: resource=case, operation=getStatus
+ */
+
+
+interface Credentials {
+  elasticSecurityApi: CredentialReference;
+}
+
+/** Retrieve a summary of all case activity */
+export type ElasticSecurityV1CaseGetStatusParams = {
+  resource: 'case';
+  operation: 'getStatus';
+};
+
+export type ElasticSecurityV1CaseGetStatusNode = {
+  type: 'n8n-nodes-base.elasticSecurity';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ElasticSecurityV1CaseGetStatusParams>;
+};

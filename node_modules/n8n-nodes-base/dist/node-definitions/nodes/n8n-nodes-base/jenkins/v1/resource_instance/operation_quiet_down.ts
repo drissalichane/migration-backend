@@ -1,0 +1,26 @@
+/**
+ * Jenkins Node - Version 1
+ * Discriminator: resource=instance, operation=quietDown
+ */
+
+
+interface Credentials {
+  jenkinsApi: CredentialReference;
+}
+
+/** Put Jenkins in quiet mode, no builds can be started, Jenkins is ready for shutdown */
+export type JenkinsV1InstanceQuietDownParams = {
+  resource: 'instance';
+  operation: 'quietDown';
+/**
+ * Freeform reason for quiet down mode
+ */
+    reason?: string | Expression<string> | PlaceholderValue;
+};
+
+export type JenkinsV1InstanceQuietDownNode = {
+  type: 'n8n-nodes-base.jenkins';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JenkinsV1InstanceQuietDownParams>;
+};

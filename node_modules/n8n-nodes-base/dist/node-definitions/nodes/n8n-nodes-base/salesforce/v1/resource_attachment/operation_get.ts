@@ -1,0 +1,32 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=attachment, operation=get
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a file that a has uploaded and attached to a parent object */
+export type SalesforceV1AttachmentGetParams = {
+  resource: 'attachment';
+  operation: 'get';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+/**
+ * ID of attachment that needs to be fetched
+ */
+    attachmentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SalesforceV1AttachmentGetNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1AttachmentGetParams>;
+};

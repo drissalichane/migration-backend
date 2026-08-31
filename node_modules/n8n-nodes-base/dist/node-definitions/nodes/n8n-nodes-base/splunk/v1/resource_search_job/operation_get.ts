@@ -1,0 +1,26 @@
+/**
+ * Splunk Node - Version 1
+ * Discriminator: resource=searchJob, operation=get
+ */
+
+
+interface Credentials {
+  splunkApi: CredentialReference;
+}
+
+/** Retrieve a search configuration */
+export type SplunkV1SearchJobGetParams = {
+  resource: 'searchJob';
+  operation: 'get';
+/**
+ * ID of the search job to retrieve
+ */
+    searchJobId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SplunkV1SearchJobGetNode = {
+  type: 'n8n-nodes-base.splunk';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SplunkV1SearchJobGetParams>;
+};

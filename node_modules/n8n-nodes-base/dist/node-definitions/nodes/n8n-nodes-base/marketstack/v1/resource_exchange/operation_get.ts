@@ -1,0 +1,26 @@
+/**
+ * Marketstack Node - Version 1
+ * Discriminator: resource=exchange, operation=get
+ */
+
+
+interface Credentials {
+  marketstackApi: CredentialReference;
+}
+
+/** Stock market exchange */
+export type MarketstackV1ExchangeGetParams = {
+  resource: 'exchange';
+  operation: 'get';
+/**
+ * Stock exchange to retrieve, specified by &lt;a href="https://en.wikipedia.org/wiki/Market_Identifier_Code"&gt;Market Identifier Code&lt;/a&gt;, e.g. &lt;code&gt;XNAS&lt;/code&gt;
+ */
+    exchange?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MarketstackV1ExchangeGetNode = {
+  type: 'n8n-nodes-base.marketstack';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MarketstackV1ExchangeGetParams>;
+};

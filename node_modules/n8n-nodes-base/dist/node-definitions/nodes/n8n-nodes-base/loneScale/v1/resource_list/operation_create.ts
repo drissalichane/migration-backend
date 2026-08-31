@@ -1,0 +1,31 @@
+/**
+ * LoneScale Node - Version 1
+ * Discriminator: resource=list, operation=create
+ */
+
+
+interface Credentials {
+  loneScaleApi: CredentialReference;
+}
+
+/** Manipulate list */
+export type LoneScaleV1ListCreateParams = {
+  resource: 'list';
+  operation: 'create';
+/**
+ * Name of your list
+ */
+    name?: string | Expression<string> | PlaceholderValue;
+/**
+ * Type of your list
+ * @default COMPANY
+ */
+    type?: 'COMPANY' | 'PEOPLE';
+};
+
+export type LoneScaleV1ListCreateNode = {
+  type: 'n8n-nodes-base.loneScale';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<LoneScaleV1ListCreateParams>;
+};

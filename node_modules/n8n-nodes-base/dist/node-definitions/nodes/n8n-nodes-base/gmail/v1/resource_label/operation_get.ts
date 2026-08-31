@@ -1,0 +1,27 @@
+/**
+ * Gmail Node - Version 1
+ * Discriminator: resource=label, operation=get
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  gmailOAuth2: CredentialReference;
+}
+
+export type GmailV1LabelGetParams = {
+  resource: 'label';
+  operation: 'get';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The ID of the label
+ */
+    labelId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GmailV1LabelGetNode = {
+  type: 'n8n-nodes-base.gmail';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GmailV1LabelGetParams>;
+};

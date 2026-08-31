@@ -1,0 +1,25 @@
+/**
+ * Lemlist Node - Version 1
+ * Discriminator: resource=unsubscribe, operation=delete
+ */
+
+
+interface Credentials {
+  lemlistApi: CredentialReference;
+}
+
+export type LemlistV1UnsubscribeDeleteParams = {
+  resource: 'unsubscribe';
+  operation: 'delete';
+/**
+ * Email to delete from the unsubscribes
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+};
+
+export type LemlistV1UnsubscribeDeleteNode = {
+  type: 'n8n-nodes-base.lemlist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<LemlistV1UnsubscribeDeleteParams>;
+};

@@ -1,0 +1,30 @@
+/**
+ * Grafana Node - Version 1
+ * Discriminator: resource=teamMember, operation=add
+ */
+
+
+interface Credentials {
+  grafanaApi: CredentialReference;
+}
+
+/** Add a member to a team */
+export type GrafanaV1TeamMemberAddParams = {
+  resource: 'teamMember';
+  operation: 'add';
+/**
+ * User to add to a team. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    userId?: string | Expression<string>;
+/**
+ * Team to add the user to. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    teamId?: string | Expression<string>;
+};
+
+export type GrafanaV1TeamMemberAddNode = {
+  type: 'n8n-nodes-base.grafana';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GrafanaV1TeamMemberAddParams>;
+};

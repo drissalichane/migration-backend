@@ -1,0 +1,69 @@
+/**
+ * Twilio Node - Version 1
+ * Discriminator: resource=sms, operation=send
+ */
+
+
+interface Credentials {
+  twilioApi: CredentialReference;
+}
+
+/** Send SMS/MMS/WhatsApp message */
+export type TwilioV1SmsSendParams = {
+  resource: 'sms';
+  operation: 'send';
+/**
+ * The number from which to send the message
+ */
+    from?: string | Expression<string> | PlaceholderValue;
+/**
+ * The number to which to send the message
+ */
+    to?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether the message should be sent to WhatsApp
+ * @default false
+ */
+    toWhatsapp?: boolean | Expression<boolean>;
+/**
+ * The message to send
+ */
+    message?: string | Expression<string> | PlaceholderValue;
+  options?: {
+    /** Status Callbacks allow you to receive events related to the REST resources managed by Twilio: Rooms, Recordings and Compositions
+     */
+    statusCallback?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TwilioV1SmsSendOutput = {
+  account_sid?: string;
+  api_version?: string;
+  body?: string;
+  date_created?: string;
+  date_sent?: null;
+  date_updated?: string;
+  direction?: string;
+  error_code?: null;
+  error_message?: null;
+  from?: string;
+  messaging_service_sid?: string;
+  num_media?: string;
+  num_segments?: string;
+  price?: null;
+  sid?: string;
+  status?: string;
+  subresource_uris?: {
+    media?: string;
+  };
+  to?: string;
+  uri?: string;
+};
+
+export type TwilioV1SmsSendNode = {
+  type: 'n8n-nodes-base.twilio';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwilioV1SmsSendParams>;
+  output?: Items<TwilioV1SmsSendOutput>;
+};

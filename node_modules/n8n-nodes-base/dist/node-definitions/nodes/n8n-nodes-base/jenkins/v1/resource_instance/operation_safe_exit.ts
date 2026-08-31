@@ -1,0 +1,22 @@
+/**
+ * Jenkins Node - Version 1
+ * Discriminator: resource=instance, operation=safeExit
+ */
+
+
+interface Credentials {
+  jenkinsApi: CredentialReference;
+}
+
+/** Shutdown once no jobs are running */
+export type JenkinsV1InstanceSafeExitParams = {
+  resource: 'instance';
+  operation: 'safeExit';
+};
+
+export type JenkinsV1InstanceSafeExitNode = {
+  type: 'n8n-nodes-base.jenkins';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JenkinsV1InstanceSafeExitParams>;
+};

@@ -1,0 +1,37 @@
+/**
+ * Mailchimp Node - Version 1
+ * Discriminator: resource=member, operation=delete
+ */
+
+
+interface Credentials {
+  mailchimpApi: CredentialReference;
+  mailchimpOAuth2Api: CredentialReference;
+}
+
+/** Delete a member on list */
+export type MailchimpV1MemberDeleteParams = {
+  resource: 'member';
+  operation: 'delete';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * List of lists. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    list?: string | Expression<string>;
+/**
+ * Member's email
+ */
+    email?: string | Expression<string> | PlaceholderValue;
+};
+
+export type MailchimpV1MemberDeleteOutput = {
+  error?: string;
+};
+
+export type MailchimpV1MemberDeleteNode = {
+  type: 'n8n-nodes-base.mailchimp';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MailchimpV1MemberDeleteParams>;
+  output?: Items<MailchimpV1MemberDeleteOutput>;
+};

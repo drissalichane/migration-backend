@@ -1,0 +1,22 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=lead, operation=getFields
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Get lead fields */
+export type ZohoCrmV1LeadGetFieldsParams = {
+  resource: 'lead';
+  operation: 'getFields';
+};
+
+export type ZohoCrmV1LeadGetFieldsNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1LeadGetFieldsParams>;
+};

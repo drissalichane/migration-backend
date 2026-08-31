@@ -1,0 +1,56 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=release, operation=update
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Update an agent */
+export type FreshserviceV1ReleaseUpdateParams = {
+  resource: 'release';
+  operation: 'update';
+/**
+ * ID of the release to update
+ */
+    releaseId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** ID of the department initiating the release. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    department_id?: string | Expression<string>;
+    /** HTML supported
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** ID of the agent group to which the release is assigned. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    group_id?: string | Expression<string>;
+    /** Priority
+     * @default 1
+     */
+    priority?: 1 | 2 | 3 | 4 | Expression<number>;
+    /** Release Type
+     * @default 1
+     */
+    release_type?: 1 | 2 | 3 | 4 | Expression<number>;
+    /** Status
+     * @default 1
+     */
+    status?: 1 | 2 | 3 | 4 | 5 | Expression<number>;
+    /** Subject
+     */
+    subject?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type FreshserviceV1ReleaseUpdateNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1ReleaseUpdateParams>;
+};

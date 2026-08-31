@@ -1,0 +1,70 @@
+/**
+ * Todoist Node - Version 2
+ * Discriminator: resource=reminder, operation=create
+ */
+
+
+interface Credentials {
+  todoistApi: CredentialReference;
+  todoistOAuth2Api: CredentialReference;
+}
+
+/** Reminder resource */
+export type TodoistV2ReminderCreateParams = {
+  resource: 'reminder';
+  operation: 'create';
+  authentication?: 'apiKey' | 'oAuth2' | Expression<string>;
+/**
+ * The ID of the task to attach reminder to
+ */
+    itemId?: string | Expression<string> | PlaceholderValue;
+/**
+ * How to specify when the reminder should trigger
+ * @default natural_language
+ */
+    dueDateType?: 'natural_language' | 'full_day' | 'floating_time' | 'fixed_timezone' | Expression<string>;
+/**
+ * Human-readable date and time
+ * @displayOptions.show { dueDateType: ["natural_language"] }
+ */
+    natural_language_representation?: string | Expression<string> | PlaceholderValue;
+/**
+ * Full-day date in YYYY-MM-DD format
+ * @displayOptions.show { dueDateType: ["full_day"] }
+ */
+    date?: string | Expression<string> | PlaceholderValue;
+/**
+ * Floating date and time (no timezone)
+ * @displayOptions.show { dueDateType: ["floating_time"] }
+ */
+    datetime?: string | Expression<string>;
+/**
+ * Timezone for the fixed timezone date
+ * @displayOptions.show { dueDateType: ["fixed_timezone"] }
+ */
+    timezone?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    reminderOptions?: {
+    /** The reminder type
+     * @default absolute
+     */
+    type?: 'absolute' | 'relative' | Expression<string>;
+    /** Minutes before the task due date
+     * @default 0
+     */
+    minute_offset?: number | Expression<number>;
+    /** User ID to notify (for shared tasks)
+     */
+    notify_uid?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type TodoistV2ReminderCreateNode = {
+  type: 'n8n-nodes-base.todoist';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<TodoistV2ReminderCreateParams>;
+};

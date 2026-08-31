@@ -1,0 +1,25 @@
+/**
+ * Figma Trigger (Beta) Node - Version 1 - Zod Validation Schemas
+ *
+ * These schemas validate node configuration at runtime.
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema }) {
+
+  // Parameters schema
+  const parametersSchema = z.object({
+    teamId: stringOrExpression.optional(),
+    triggerOn: z.union([z.literal('fileComment'), z.literal('fileDelete'), z.literal('fileUpdate'), z.literal('fileVersionUpdate'), z.literal('libraryPublish'), expressionSchema]).optional(),
+  });
+
+  // Return combined config schema
+  return z.object({
+    parameters: parametersSchema.optional(),
+  });
+};

@@ -1,0 +1,31 @@
+/**
+ * Invoice Ninja Node - Version 1
+ * Discriminator: resource=invoice, operation=delete
+ */
+
+
+interface Credentials {
+  invoiceNinjaApi: CredentialReference;
+}
+
+/** Delete a client */
+export type InvoiceNinjaV1InvoiceDeleteParams = {
+  resource: 'invoice';
+  operation: 'delete';
+/**
+ * API Version
+ * @default v4
+ */
+    apiVersion?: 'v4' | 'v5' | Expression<string>;
+/**
+ * Invoice ID
+ */
+    invoiceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type InvoiceNinjaV1InvoiceDeleteNode = {
+  type: 'n8n-nodes-base.invoiceNinja';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<InvoiceNinjaV1InvoiceDeleteParams>;
+};

@@ -1,0 +1,33 @@
+/**
+ * Slack Node - Version 2.3
+ * Discriminator: resource=channel, operation=setPurpose
+ */
+
+
+interface Credentials {
+  slackApi: CredentialReference;
+  slackOAuth2Api: CredentialReference;
+}
+
+/** Sets the purpose for a conversation */
+export type SlackV23ChannelSetPurposeParams = {
+  resource: 'channel';
+  operation: 'setPurpose';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * The Slack channel to set the purpose of
+ * @default {"mode":"list","value":""}
+ */
+    channelId?: { __rl: true; mode: 'list' | 'id' | 'url'; value: string; cachedResultName?: string };
+/**
+ * A new, specialer purpose
+ */
+    purpose?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SlackV23ChannelSetPurposeNode = {
+  type: 'n8n-nodes-base.slack';
+  version: 2.3;
+  credentials?: Credentials;
+  config: NodeConfig<SlackV23ChannelSetPurposeParams>;
+};

@@ -1,0 +1,25 @@
+/**
+ * Supabase Node - Version 1 - Zod Schema
+ * Discriminator: resource=row, operation=get
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema, resolveSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('row').default('row'),
+      operation: z.literal('get'),
+      useCustomSchema: z.boolean().optional(),
+      schema: resolveSchema({ parameters, schema: stringOrExpression, required: false, displayOptions: {"show":{"useCustomSchema":[true]}}, defaults: {"useCustomSchema":false} }),
+      tableId: stringOrExpression.optional(),
+      filters: z.object({ conditions: z.array(z.object({ keyName: stringOrExpression.optional(), keyValue: stringOrExpression.optional() })).optional() }).optional(),
+    }).optional(),
+  });
+};

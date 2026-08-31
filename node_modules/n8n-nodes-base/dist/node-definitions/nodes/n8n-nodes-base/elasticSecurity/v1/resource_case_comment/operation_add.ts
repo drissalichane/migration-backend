@@ -1,0 +1,44 @@
+/**
+ * Elastic Security Node - Version 1
+ * Discriminator: resource=caseComment, operation=add
+ */
+
+
+interface Credentials {
+  elasticSecurityApi: CredentialReference;
+}
+
+/** Add a comment to a case */
+export type ElasticSecurityV1CaseCommentAddParams = {
+  resource: 'caseComment';
+  operation: 'add';
+/**
+ * ID of the case containing the comment to retrieve
+ */
+    caseId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Comment
+ */
+    comment?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return a simplified version of the response instead of the raw data
+ * @default true
+ */
+    simple?: boolean | Expression<boolean>;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** Valid application owner registered within the Cases Role Based Access Control system
+     */
+    owner?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type ElasticSecurityV1CaseCommentAddNode = {
+  type: 'n8n-nodes-base.elasticSecurity';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ElasticSecurityV1CaseCommentAddParams>;
+};

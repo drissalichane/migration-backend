@@ -1,0 +1,375 @@
+/**
+ * Wait Node - Version 1.1
+ * Wait before continue with execution
+ */
+
+
+export interface WaitV11Params {
+/**
+ * Determines the waiting mode to use before the workflow continues
+ * @builderHint For user approval workflows, consider using nodes with operation: "sendAndWait" (e.g., email, Slack) instead of Wait node. If using "webhook", the URL will be generated at runtime and can be referenced with {{ $execution.resumeUrl }}.
+ * @default timeInterval
+ */
+    resume?: 'timeInterval' | 'specificTime' | 'webhook' | 'form' | Expression<string>;
+/**
+ * If and how incoming resume-webhook-requests to $execution.resumeFormUrl should be authenticated for additional security
+ * @displayOptions.show { resume: ["form", "webhook"] }
+ * @default none
+ */
+    incomingAuthentication?: 'basicAuth' | 'none' | Expression<string>;
+/**
+ * The date and time to wait for before continuing
+ * @displayOptions.show { resume: ["specificTime"] }
+ */
+    dateTime?: string | Expression<string>;
+/**
+ * The time to wait
+ * @displayOptions.show { resume: ["timeInterval"] }
+ * @default 5
+ */
+    amount?: number | Expression<number>;
+/**
+ * The time unit of the Wait Amount value
+ * @displayOptions.show { resume: ["timeInterval"] }
+ * @default seconds
+ */
+    unit?: 'seconds' | 'minutes' | 'hours' | 'days' | Expression<string>;
+/**
+ * Shown at the top of the form
+ * @displayOptions.show { resume: ["form"] }
+ */
+    formTitle?: string | Expression<string> | PlaceholderValue;
+/**
+ * Shown underneath the Form Title. Can be used to prompt the user on how to complete the form. Accepts HTML. Does not accept &lt;code&gt;&lt;script&gt;&lt;/code&gt;, &lt;code&gt;&lt;style&gt;&lt;/code&gt; or &lt;code&gt;&lt;input&gt;&lt;/code&gt; tags.
+ * @displayOptions.show { resume: ["form"] }
+ */
+    formDescription?: string | Expression<string> | PlaceholderValue;
+/**
+ * Form Elements
+ * @displayOptions.show { resume: ["form"] }
+ * @default {}
+ */
+    formFields?: {
+        /** Values
+     */
+    values?: Array<{
+      /** The name of the field, used in input attributes and referenced by the workflow
+       * @displayOptions.hide { fieldType: ["html"] }
+       */
+      fieldName?: string | Expression<string> | PlaceholderValue;
+      /** Label that appears above the input field
+       * @displayOptions.hide { fieldType: ["hiddenField", "html"] }
+       */
+      fieldLabel?: string | Expression<string> | PlaceholderValue;
+      /** Label that appears above the input field
+       * @displayOptions.hide { fieldType: ["hiddenField", "html"] }
+       */
+      fieldLabel?: string | Expression<string> | PlaceholderValue;
+      /** The name of the field, used in input attributes and referenced by the workflow
+       * @displayOptions.show { fieldType: ["hiddenField"] }
+       */
+      fieldName?: string | Expression<string> | PlaceholderValue;
+      /** The type of field to add to the form
+       * @default text
+       */
+      fieldType?: 'checkbox' | 'html' | 'date' | 'dropdown' | 'email' | 'file' | 'hiddenField' | 'number' | 'password' | 'radio' | 'text' | 'textarea' | Expression<string>;
+      /** Optional field. It can be used to include the html in the output.
+       * @displayOptions.show { fieldType: ["html"] }
+       */
+      elementName?: string | Expression<string> | PlaceholderValue;
+      /** The name of the field, used in input attributes and referenced by the workflow
+       * @displayOptions.hide { fieldType: ["html"] }
+       */
+      fieldName?: string | Expression<string> | PlaceholderValue;
+      /** Sample text to display inside the field
+       * @displayOptions.hide { fieldType: ["dropdown", "date", "file", "html", "hiddenField", "radio", "checkbox"] }
+       */
+      placeholder?: string | Expression<string> | PlaceholderValue;
+      /** Default value that will be pre-filled in the form field
+       * @displayOptions.show { fieldType: ["text", "number", "email", "textarea"] }
+       */
+      defaultValue?: string | Expression<string> | PlaceholderValue;
+      /** Default date value that will be pre-filled in the form field (format: YYYY-MM-DD)
+       * @displayOptions.show { fieldType: ["date"] }
+       */
+      defaultValue?: string | Expression<string>;
+      /** Default value that will be pre-selected. Must match one of the option labels.
+       * @displayOptions.show { fieldType: ["dropdown", "radio"] }
+       */
+      defaultValue?: string | Expression<string> | PlaceholderValue;
+      /** Default value(s) that will be pre-selected. Must match one or multiple of the option labels. Separate multiple pre-selected options with a comma.
+       * @displayOptions.show { fieldType: ["checkbox"] }
+       */
+      defaultValue?: string | Expression<string> | PlaceholderValue;
+      /** Input value can be set here or will be passed as a query parameter via Field Name if no value is set
+       * @displayOptions.show { fieldType: ["hiddenField"] }
+       */
+      fieldValue?: string | Expression<string> | PlaceholderValue;
+      /** List of options that can be selected from the dropdown
+       * @displayOptions.show { fieldType: ["dropdown"] }
+       * @default {"values":[{"option":""}]}
+       */
+      fieldOptions?: {
+        /** Values
+     */
+    values?: Array<{
+      /** Option
+       */
+      option?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+      /** Checkboxes
+       * @displayOptions.show { fieldType: ["checkbox"] }
+       * @default {"values":[{"option":""}]}
+       */
+      fieldOptions?: {
+        /** Values
+     */
+    values?: Array<{
+      /** Checkbox Label
+       */
+      option?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+      /** Radio Buttons
+       * @displayOptions.show { fieldType: ["radio"] }
+       * @default {"values":[{"option":""}]}
+       */
+      fieldOptions?: {
+        /** Values
+     */
+    values?: Array<{
+      /** Radio Button Label
+       */
+      option?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+      /** Whether to allow the user to select multiple options from the dropdown list
+       * @displayOptions.show { fieldType: ["dropdown"] }
+       * @default false
+       */
+      multiselect?: boolean | Expression<boolean>;
+      /** Limit Selection
+       * @displayOptions.show { fieldType: ["checkbox"] }
+       * @default unlimited
+       */
+      limitSelection?: 'exact' | 'range' | 'unlimited' | Expression<string>;
+      /** Number of Selections
+       * @displayOptions.show { fieldType: ["checkbox"], limitSelection: ["exact"] }
+       * @default 1
+       */
+      numberOfSelections?: number | Expression<number>;
+      /** Minimum Selections
+       * @displayOptions.show { fieldType: ["checkbox"], limitSelection: ["range"] }
+       * @default 0
+       */
+      minSelections?: number | Expression<number>;
+      /** Maximum Selections
+       * @displayOptions.show { fieldType: ["checkbox"], limitSelection: ["range"] }
+       * @default 1
+       */
+      maxSelections?: number | Expression<number>;
+      /** HTML elements to display on the form page
+       * @hint Does not accept &lt;code&gt;&lt;script&gt;&lt;/code&gt;, &lt;code&gt;&lt;style&gt;&lt;/code&gt; or &lt;code&gt;&lt;input&gt;&lt;/code&gt; tags
+       * @displayOptions.show { fieldType: ["html"] }
+       */
+      html?: string;
+      /** Whether to allow the user to select multiple files from the file input or just one
+       * @displayOptions.show { fieldType: ["file"] }
+       * @default true
+       */
+      multipleFiles?: boolean | Expression<boolean>;
+      /** Comma-separated list of allowed file extensions
+       * @hint Leave empty to allow all file types
+       * @displayOptions.show { fieldType: ["file"] }
+       */
+      acceptFileTypes?: string | Expression<string> | PlaceholderValue;
+      /** Whether to require the user to enter a value for this field before submitting the form
+       * @displayOptions.hide { fieldType: ["html", "hiddenField"] }
+       * @default false
+       */
+      requiredField?: boolean | Expression<boolean>;
+    }>;
+  };
+/**
+ * When to respond to the form submission
+ * @displayOptions.show { resume: ["form", "webhook"] }
+ * @default onReceived
+ */
+    responseMode?: 'onReceived' | 'lastNode' | 'responseNode' | Expression<string>;
+/**
+ * The HTTP method of the Webhook call
+ * @displayOptions.show { resume: ["webhook"] }
+ * @default GET
+ */
+    httpMethod?: 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | Expression<string>;
+/**
+ * The HTTP Response code to return
+ * @displayOptions.show { resume: ["webhook"] }
+ * @displayOptions.hide { responseMode: ["responseNode"] }
+ * @default 200
+ */
+    responseCode?: number | Expression<number>;
+/**
+ * What data should be returned. If it should return all items as an array or only the first item as object.
+ * @displayOptions.show { responseMode: ["lastNode"], resume: ["webhook"] }
+ * @default firstEntryJson
+ */
+    responseData?: 'allEntries' | 'firstEntryJson' | 'firstEntryBinary' | 'noData' | Expression<string>;
+/**
+ * Name of the binary property to return
+ * @displayOptions.show { responseData: ["firstEntryBinary"], resume: ["webhook"] }
+ * @default data
+ */
+    responseBinaryPropertyName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to limit the time this node should wait for a user response before execution resumes
+ * @displayOptions.show { resume: ["webhook", "form"] }
+ * @default false
+ */
+    limitWaitTime?: boolean | Expression<boolean>;
+/**
+ * Sets the condition for the execution to resume. Can be a specified date or after some time.
+ * @displayOptions.show { limitWaitTime: [true], resume: ["webhook", "form"] }
+ * @default afterTimeInterval
+ */
+    limitType?: 'afterTimeInterval' | 'atSpecifiedTime' | Expression<string>;
+/**
+ * The time to wait
+ * @displayOptions.show { limitType: ["afterTimeInterval"], limitWaitTime: [true], resume: ["webhook", "form"] }
+ * @default 1
+ */
+    resumeAmount?: number | Expression<number>;
+/**
+ * Unit of the interval value
+ * @displayOptions.show { limitType: ["afterTimeInterval"], limitWaitTime: [true], resume: ["webhook", "form"] }
+ * @default hours
+ */
+    resumeUnit?: 'seconds' | 'minutes' | 'hours' | 'days' | Expression<string>;
+/**
+ * Continue execution after the specified date and time
+ * @displayOptions.show { limitType: ["atSpecifiedTime"], limitWaitTime: [true], resume: ["webhook", "form"] }
+ */
+    maxDateAndTime?: string | Expression<string>;
+/**
+ * Options
+ * @displayOptions.show { resume: ["webhook", "form"] }
+ * @default {}
+ */
+    options?: {
+    /** Whether the webhook will receive binary data
+     * @displayOptions.show { /httpMethod: ["PATCH", "PUT", "POST"] }
+     * @default false
+     */
+    binaryData?: boolean | Expression<boolean>;
+    /** If the data gets received via "Form-Data Multipart" it will be the prefix and a number starting with 0 will be attached to it
+     * @hint The name of the output binary field to put the file in
+     * @displayOptions.show { binaryData: [true] }
+     * @default data
+     */
+    binaryPropertyName?: string | Expression<string> | PlaceholderValue;
+    /** The name of the output field to put any binary file data in. Only relevant if binary data is received.
+     * @default data
+     */
+    binaryPropertyName?: string | Expression<string> | PlaceholderValue;
+    /** Whether to ignore requests from bots like link previewers and web crawlers
+     * @default false
+     */
+    ignoreBots?: boolean | Expression<boolean>;
+    /** Comma-separated list of allowed IP addresses or CIDR ranges. Leave empty to allow all IPs.
+     */
+    ipWhitelist?: string | Expression<string> | PlaceholderValue;
+    /** Whether to send any body in the response
+     * @displayOptions.show { /responseMode: ["onReceived"] }
+     * @displayOptions.hide { rawBody: [true] }
+     * @default false
+     */
+    noResponseBody?: boolean | Expression<boolean>;
+    /** Raw body (binary)
+     * @displayOptions.hide { binaryData: [true], noResponseBody: [true] }
+     * @default false
+     */
+    rawBody?: boolean | Expression<boolean>;
+    /** Whether to return the raw body
+     * @displayOptions.hide { noResponseBody: [true] }
+     * @default false
+     */
+    rawBody?: boolean | Expression<boolean>;
+    /** Custom response data to send
+     * @displayOptions.show { /responseMode: ["onReceived"] }
+     * @displayOptions.hide { noResponseBody: [true] }
+     */
+    responseData?: string | Expression<string> | PlaceholderValue;
+    /** Set a custom content-type to return if another one as the "application/json" should be returned
+     * @displayOptions.show { /responseData: ["firstEntryJson"], /responseMode: ["lastNode"] }
+     */
+    responseContentType?: string | Expression<string> | PlaceholderValue;
+    /** Add headers to the webhook response
+     * @default {}
+     */
+    responseHeaders?: {
+        /** Entries
+     */
+    entries?: Array<{
+      /** Name of the header
+       */
+      name?: string | Expression<string> | PlaceholderValue;
+      /** Value of the header
+       */
+      value?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** Name of the property to return the data of instead of the whole JSON
+     * @displayOptions.show { /responseData: ["firstEntryJson"], /responseMode: ["lastNode"] }
+     * @default data
+     */
+    responsePropertyName?: string | Expression<string> | PlaceholderValue;
+    /** This suffix path will be appended to the restart URL. Helpful when using multiple wait nodes.
+     */
+    webhookSuffix?: string;
+    /** Whether to include the link “Form automated with n8n” at the bottom of the form
+     * @default true
+     */
+    appendAttribution?: boolean | Expression<boolean>;
+    /** Form Response
+     * @default {"values":{"respondWith":"text"}}
+     */
+    respondWithOptions?: {
+        /** Values
+     */
+    values?: {
+      /** Respond With
+       * @default text
+       */
+      respondWith?: 'text' | 'redirect' | Expression<string>;
+      /** The text displayed to users after they fill the form. Leave it empty if don't want to show any additional text.
+       * @displayOptions.show { respondWith: ["text"] }
+       * @default Your response has been recorded
+       */
+      formSubmittedText?: string | Expression<string> | PlaceholderValue;
+      /** The URL to redirect users to after they fill the form. Must be a valid URL.
+       * @displayOptions.show { respondWith: ["redirect"] }
+       */
+      redirectUrl?: string | Expression<string> | PlaceholderValue;
+    };
+  };
+  };
+}
+
+export interface WaitV11Credentials {
+  httpBasicAuth: CredentialReference;
+  httpHeaderAuth: CredentialReference;
+  jwtAuth: CredentialReference;
+}
+
+interface WaitV11NodeBase {
+  type: 'n8n-nodes-base.wait';
+  version: 1.1;
+  credentials?: WaitV11Credentials;
+}
+
+export type WaitV11ParamsNode = WaitV11NodeBase & {
+  config: NodeConfig<WaitV11Params>;
+};
+
+export type WaitV11Node = WaitV11ParamsNode;

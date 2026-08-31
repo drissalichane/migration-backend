@@ -1,0 +1,93 @@
+/**
+ * Brevo Node - Version 1
+ * Discriminator: resource=attribute, operation=create
+ */
+
+
+interface Credentials {
+  sendInBlueApi: CredentialReference;
+}
+
+export type SendInBlueV1AttributeCreateParams = {
+  resource: 'attribute';
+  operation: 'create';
+/**
+ * Category of the attribute
+ * @default normal
+ */
+    attributeCategory?: 'calculated' | 'category' | 'global' | 'normal' | 'transactional' | Expression<string>;
+/**
+ * Name of the attribute
+ */
+    attributeName?: string | Expression<string> | PlaceholderValue;
+/**
+ * Attribute Type
+ * @displayOptions.show { attributeCategory: ["normal"] }
+ */
+    attributeType?: 'boolean' | 'date' | 'float' | 'text' | Expression<string>;
+/**
+ * Value of the attribute
+ * @displayOptions.show { attributeCategory: ["global", "calculated"] }
+ */
+    attributeValue?: string | Expression<string> | PlaceholderValue;
+/**
+ * Contact Attribute List
+ * @displayOptions.show { attributeCategory: ["category"] }
+ * @default {}
+ */
+    attributeCategoryList?: {
+    /** List of values and labels that the attribute can take
+     * @default {}
+     */
+    categoryEnumeration?: {
+        /** Attribute
+     */
+    attributesValues?: Array<{
+      /** ID of the value, must be numeric
+       * @default 1
+       */
+      attributeCategoryValue?: number | Expression<number>;
+      /** Label of the value
+       */
+      attributeCategoryLabel?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+  };
+  requestOptions?: {
+    /** Batching
+     * @default {"batch":{}}
+     */
+    batching?: {
+        /** Batching
+     */
+    batch?: {
+      /** Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1.
+       * @default 50
+       */
+      batchSize?: number | Expression<number>;
+      /** Time (in milliseconds) between each batch of requests. 0 for disabled.
+       * @default 1000
+       */
+      batchInterval?: number | Expression<number>;
+    };
+  };
+    /** Whether to accept the response even if SSL certificate validation is not possible
+     * @default false
+     */
+    allowUnauthorizedCerts?: boolean;
+    /** HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128
+     */
+    proxy?: string | Expression<string> | PlaceholderValue;
+    /** Time in ms to wait for the server to send response headers (and start the response body) before aborting the request
+     * @default 10000
+     */
+    timeout?: number | Expression<number>;
+  };
+};
+
+export type SendInBlueV1AttributeCreateNode = {
+  type: 'n8n-nodes-base.sendInBlue';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SendInBlueV1AttributeCreateParams>;
+};

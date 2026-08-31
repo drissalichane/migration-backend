@@ -1,0 +1,66 @@
+/**
+ * Microsoft Excel Node - Version 1
+ * Discriminator: resource=table, operation=getColumns
+ */
+
+
+interface Credentials {
+  microsoftExcelOAuth2Api: CredentialReference;
+}
+
+/** Represents an Excel table */
+export type MicrosoftExcelV1TableGetColumnsParams = {
+  resource: 'table';
+  operation: 'getColumns';
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    workbook?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    worksheet?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    table?: string | Expression<string>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Whether the data should be returned RAW instead of parsed into keys according to their header
+ * @default false
+ */
+    rawData?: boolean | Expression<boolean>;
+/**
+ * The name of the property into which to write the RAW data
+ * @displayOptions.show { rawData: [true] }
+ * @default data
+ */
+    dataProperty?: string | Expression<string> | PlaceholderValue;
+/**
+ * Filters
+ * @displayOptions.show { rawData: [true] }
+ * @default {}
+ */
+    filters?: {
+    /** Fields the response will containt. Multiple can be added separated by ,.
+     */
+    fields?: string | Expression<string> | PlaceholderValue;
+  };
+};
+
+export type MicrosoftExcelV1TableGetColumnsNode = {
+  type: 'n8n-nodes-base.microsoftExcel';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftExcelV1TableGetColumnsParams>;
+};

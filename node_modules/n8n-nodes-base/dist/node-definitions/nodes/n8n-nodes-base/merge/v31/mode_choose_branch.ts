@@ -1,0 +1,38 @@
+/**
+ * Merge Node - Version 3.1
+ * Discriminator: mode=chooseBranch
+ */
+
+
+/** Output data from a specific branch, without modifying it */
+export type MergeV31ChooseBranchParams = {
+  mode: 'chooseBranch';
+/**
+ * The number of data inputs you want to merge. The node waits for all connected inputs to be executed.
+ * @default 2
+ */
+    numberInputs?: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+/**
+ * Output Type
+ * @default waitForAll
+ */
+    chooseBranchMode?: 'waitForAll' | Expression<string>;
+/**
+ * Output
+ * @displayOptions.show { chooseBranchMode: ["waitForAll"] }
+ * @default specifiedInput
+ */
+    output?: 'specifiedInput' | 'empty' | Expression<string>;
+/**
+ * The number of the input to use data of
+ * @displayOptions.show { output: ["specifiedInput"] }
+ * @default 1
+ */
+    useDataOfInput?: string | Expression<string>;
+};
+
+export type MergeV31ChooseBranchNode = {
+  type: 'n8n-nodes-base.merge';
+  version: 3.1;
+  config: NodeConfig<MergeV31ChooseBranchParams>;
+};

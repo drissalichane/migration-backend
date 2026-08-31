@@ -1,0 +1,26 @@
+/**
+ * One Simple API Node - Version 1
+ * Discriminator: resource=socialProfile, operation=instagramProfile
+ */
+
+
+interface Credentials {
+  oneSimpleApi: CredentialReference;
+}
+
+/** Get details about an Instagram profile */
+export type OneSimpleApiV1SocialProfileInstagramProfileParams = {
+  resource: 'socialProfile';
+  operation: 'instagramProfile';
+/**
+ * Profile name to get details of
+ */
+    profileName?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OneSimpleApiV1SocialProfileInstagramProfileNode = {
+  type: 'n8n-nodes-base.oneSimpleApi';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OneSimpleApiV1SocialProfileInstagramProfileParams>;
+};

@@ -1,0 +1,81 @@
+/**
+ * HubSpot Node - Version 2
+ * Discriminator: resource=deal, operation=getAll
+ */
+
+
+interface Credentials {
+  hubspotApi: CredentialReference;
+  hubspotAppToken: CredentialReference;
+  hubspotOAuth2Api: CredentialReference;
+}
+
+/** Get many contacts */
+export type HubspotV2DealGetAllParams = {
+  resource: 'deal';
+  operation: 'getAll';
+  authentication?: 'apiKey' | 'appToken' | 'oAuth2' | Expression<string>;
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+/**
+ * Options
+ * @default {}
+ */
+    filters?: {
+    /** Whether to include the IDs of the associated contacts and companies in the results. This will also automatically include the num_associated_contacts property.
+     * @default false
+     */
+    includeAssociations?: boolean | Expression<boolean>;
+    /** Include specific deal properties in the results. By default, the results will only include Deal ID and will not include the values for any properties for your Deals.
+     * @default []
+     */
+    properties?: string[];
+    /** Works similarly to properties, but this parameter will include the history for the specified property
+     * @default []
+     */
+    propertiesWithHistory?: string[];
+    /** &lt;p&gt;Used to include specific deal properties in the results. By default, the results will only include Deal ID and will not include the values for any properties for your Deals.&lt;/p&gt;&lt;p&gt;Including this parameter will include the data for the specified property in the results. You can include this parameter multiple times to request multiple properties separated by a comma: &lt;code&gt;,&lt;/code&gt;.&lt;/p&gt;. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default {}
+     */
+    propertiesCollection?: {
+        /** Deal Properties to Include
+     */
+    propertiesValues?: {
+      /** Whether to include specific Deal properties in the returned results. Choose from a list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+       * @default []
+       */
+      properties?: string[];
+      /** Specify if the current value for a property should be fetched, or the value and all the historical values for that property
+       * @default valueAndHistory
+       */
+      propertyMode?: 'valueAndHistory' | 'valueOnly' | Expression<string>;
+    };
+  };
+  };
+};
+
+export type HubspotV2DealGetAllOutput = {
+  isDeleted?: boolean;
+  portalId?: number;
+  stateChanges?: Array<{
+    changeFlag?: string;
+    timestamp?: number;
+  }>;
+};
+
+export type HubspotV2DealGetAllNode = {
+  type: 'n8n-nodes-base.hubspot';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<HubspotV2DealGetAllParams>;
+  output?: Items<HubspotV2DealGetAllOutput>;
+};

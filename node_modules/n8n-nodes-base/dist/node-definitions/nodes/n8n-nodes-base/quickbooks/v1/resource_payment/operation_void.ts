@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=payment, operation=void
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1PaymentVoidParams = {
+  resource: 'payment';
+  operation: 'void';
+/**
+ * The ID of the payment to void
+ */
+    paymentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1PaymentVoidNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1PaymentVoidParams>;
+};

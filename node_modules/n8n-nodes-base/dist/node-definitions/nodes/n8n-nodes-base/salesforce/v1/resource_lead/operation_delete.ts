@@ -1,0 +1,32 @@
+/**
+ * Salesforce Node - Version 1
+ * Discriminator: resource=lead, operation=delete
+ */
+
+
+interface Credentials {
+  salesforceOAuth2Api: CredentialReference;
+  salesforceJwtApi: CredentialReference;
+}
+
+/** Represents a prospect or potential */
+export type SalesforceV1LeadDeleteParams = {
+  resource: 'lead';
+  operation: 'delete';
+/**
+ * OAuth Authorization Flow
+ * @default oAuth2
+ */
+    authentication?: 'oAuth2' | 'jwt' | Expression<string>;
+/**
+ * ID of Lead that needs to be fetched
+ */
+    leadId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type SalesforceV1LeadDeleteNode = {
+  type: 'n8n-nodes-base.salesforce';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SalesforceV1LeadDeleteParams>;
+};

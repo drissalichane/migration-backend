@@ -1,0 +1,35 @@
+/**
+ * Pipedrive Node - Version 1
+ * Discriminator: resource=file, operation=download
+ */
+
+
+interface Credentials {
+  pipedriveApi: CredentialReference;
+  pipedriveOAuth2Api: CredentialReference;
+}
+
+/** Download a file */
+export type PipedriveV1FileDownloadParams = {
+  resource: 'file';
+  operation: 'download';
+  authentication?: 'apiToken' | 'oAuth2' | Expression<string>;
+/**
+ * ID of the file to download
+ * @default 0
+ */
+    fileId?: number | Expression<number>;
+/**
+ * Put Output File in Field
+ * @hint The name of the output binary field to put the file in
+ * @default data
+ */
+    binaryPropertyName?: string | Expression<string> | PlaceholderValue;
+};
+
+export type PipedriveV1FileDownloadNode = {
+  type: 'n8n-nodes-base.pipedrive';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<PipedriveV1FileDownloadParams>;
+};

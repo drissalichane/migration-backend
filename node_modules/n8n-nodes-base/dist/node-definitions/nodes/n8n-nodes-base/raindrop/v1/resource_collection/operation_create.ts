@@ -1,0 +1,49 @@
+/**
+ * Raindrop Node - Version 1
+ * Discriminator: resource=collection, operation=create
+ */
+
+
+interface Credentials {
+  raindropOAuth2Api: CredentialReference;
+}
+
+export type RaindropV1CollectionCreateParams = {
+  resource: 'collection';
+  operation: 'create';
+/**
+ * Title of the collection to create
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+/**
+ * Additional Fields
+ * @default {}
+ */
+    additionalFields?: {
+    /** URL of an image to use as cover for the collection
+     */
+    cover?: string | Expression<string> | PlaceholderValue;
+    /** Whether the collection will be accessible without authentication
+     * @default false
+     */
+    public?: boolean | Expression<boolean>;
+    /** ID of this collection's parent collection, if it is a child collection
+     */
+    parentId?: string | Expression<string> | PlaceholderValue;
+    /** Descending sort order of this collection. The number is the position of the collection among all the collections with the same parent ID.
+     * @default 1
+     */
+    sort?: number | Expression<number>;
+    /** View style of this collection
+     * @default list
+     */
+    view?: 'list' | 'simple' | 'grid' | 'Masonry' | Expression<string>;
+  };
+};
+
+export type RaindropV1CollectionCreateNode = {
+  type: 'n8n-nodes-base.raindrop';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<RaindropV1CollectionCreateParams>;
+};

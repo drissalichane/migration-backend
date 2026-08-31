@@ -1,0 +1,26 @@
+/**
+ * Freshservice Node - Version 1
+ * Discriminator: resource=product, operation=get
+ */
+
+
+interface Credentials {
+  freshserviceApi: CredentialReference;
+}
+
+/** Retrieve an agent */
+export type FreshserviceV1ProductGetParams = {
+  resource: 'product';
+  operation: 'get';
+/**
+ * ID of the product to retrieve
+ */
+    productId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshserviceV1ProductGetNode = {
+  type: 'n8n-nodes-base.freshservice';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshserviceV1ProductGetParams>;
+};

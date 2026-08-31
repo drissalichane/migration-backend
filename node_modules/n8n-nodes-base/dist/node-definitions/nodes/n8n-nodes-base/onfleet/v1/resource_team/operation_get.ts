@@ -1,0 +1,26 @@
+/**
+ * Onfleet Node - Version 1
+ * Discriminator: resource=team, operation=get
+ */
+
+
+interface Credentials {
+  onfleetApi: CredentialReference;
+}
+
+/** Get container information */
+export type OnfleetV1TeamGetParams = {
+  resource: 'team';
+  operation: 'get';
+/**
+ * The ID of the team object for lookup
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type OnfleetV1TeamGetNode = {
+  type: 'n8n-nodes-base.onfleet';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<OnfleetV1TeamGetParams>;
+};

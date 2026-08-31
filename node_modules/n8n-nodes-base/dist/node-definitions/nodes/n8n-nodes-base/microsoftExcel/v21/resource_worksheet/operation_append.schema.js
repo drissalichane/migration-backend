@@ -1,0 +1,27 @@
+/**
+ * Microsoft Excel 365 Node - Version 2.1 - Zod Schema
+ * Discriminator: resource=worksheet, operation=append
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema, resolveSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('worksheet'),
+      operation: z.literal('append').default('append'),
+      workbook: z.union([z.object({ __rl: z.literal(true), mode: z.union([z.literal('list'), z.literal('id')]), value: z.union([z.string(), z.number()]), cachedResultName: z.string().optional(), cachedResultUrl: z.string().optional() }), expressionSchema]).optional(),
+      worksheet: z.union([z.object({ __rl: z.literal(true), mode: z.union([z.literal('list'), z.literal('id')]), value: z.union([z.string(), z.number()]), cachedResultName: z.string().optional(), cachedResultUrl: z.string().optional() }), expressionSchema]).optional(),
+      dataMode: z.union([z.literal('autoMap'), z.literal('define'), z.literal('raw'), expressionSchema]).optional(),
+      data: resolveSchema({ parameters, schema: z.union([iDataObjectSchema, z.string()]), required: false, displayOptions: {"show":{"dataMode":["raw"]}}, defaults: {"dataMode":"define"} }),
+      fieldsUi: resolveSchema({ parameters, schema: z.object({ values: z.array(z.object({ column: stringOrExpression.optional(), fieldValue: stringOrExpression.optional() })).optional() }), required: false, displayOptions: {"show":{"dataMode":["define"]}}, defaults: {"dataMode":"define"} }),
+      options: z.object({ rawData: booleanOrExpression.optional(), dataProperty: stringOrExpression.optional() }).optional(),
+    }).optional(),
+  });
+};

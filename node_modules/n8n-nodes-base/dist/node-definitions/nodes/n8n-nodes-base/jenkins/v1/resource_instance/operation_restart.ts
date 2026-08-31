@@ -1,0 +1,22 @@
+/**
+ * Jenkins Node - Version 1
+ * Discriminator: resource=instance, operation=restart
+ */
+
+
+interface Credentials {
+  jenkinsApi: CredentialReference;
+}
+
+/** Restart Jenkins immediately on environments where it is possible */
+export type JenkinsV1InstanceRestartParams = {
+  resource: 'instance';
+  operation: 'restart';
+};
+
+export type JenkinsV1InstanceRestartNode = {
+  type: 'n8n-nodes-base.jenkins';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JenkinsV1InstanceRestartParams>;
+};

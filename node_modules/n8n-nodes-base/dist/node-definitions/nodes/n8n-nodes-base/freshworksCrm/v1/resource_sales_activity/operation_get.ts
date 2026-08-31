@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=salesActivity, operation=get
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Retrieve an account */
+export type FreshworksCrmV1SalesActivityGetParams = {
+  resource: 'salesActivity';
+  operation: 'get';
+/**
+ * ID of the salesActivity to retrieve
+ */
+    salesActivityId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1SalesActivityGetNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1SalesActivityGetParams>;
+};

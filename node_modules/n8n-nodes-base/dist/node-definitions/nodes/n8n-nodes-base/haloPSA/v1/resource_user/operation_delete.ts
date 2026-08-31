@@ -1,0 +1,26 @@
+/**
+ * HaloPSA Node - Version 1
+ * Discriminator: resource=user, operation=delete
+ */
+
+
+interface Credentials {
+  haloPSAApi: CredentialReference;
+}
+
+/** Delete a client */
+export type HaloPSAV1UserDeleteParams = {
+  resource: 'user';
+  operation: 'delete';
+/**
+ * User ID
+ */
+    userId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type HaloPSAV1UserDeleteNode = {
+  type: 'n8n-nodes-base.haloPSA';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HaloPSAV1UserDeleteParams>;
+};

@@ -1,0 +1,33 @@
+/**
+ * Discourse Node - Version 1
+ * Discriminator: resource=group, operation=getAll
+ */
+
+
+interface Credentials {
+  discourseApi: CredentialReference;
+}
+
+/** Get many categories */
+export type DiscourseV1GroupGetAllParams = {
+  resource: 'group';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+};
+
+export type DiscourseV1GroupGetAllNode = {
+  type: 'n8n-nodes-base.discourse';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DiscourseV1GroupGetAllParams>;
+};

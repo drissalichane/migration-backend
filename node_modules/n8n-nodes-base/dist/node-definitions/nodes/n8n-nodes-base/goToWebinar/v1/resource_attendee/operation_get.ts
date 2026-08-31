@@ -1,0 +1,33 @@
+/**
+ * GoToWebinar Node - Version 1
+ * Discriminator: resource=attendee, operation=get
+ */
+
+
+interface Credentials {
+  goToWebinarOAuth2Api: CredentialReference;
+}
+
+export type GoToWebinarV1AttendeeGetParams = {
+  resource: 'attendee';
+  operation: 'get';
+/**
+ * Key of the webinar that the attendee attended. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    webinarKey?: string | Expression<string>;
+/**
+ * Key of the session that the attendee attended. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    sessionKey?: string | Expression<string>;
+/**
+ * Registrant key of the attendee at the webinar session
+ */
+    registrantKey?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoToWebinarV1AttendeeGetNode = {
+  type: 'n8n-nodes-base.goToWebinar';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoToWebinarV1AttendeeGetParams>;
+};

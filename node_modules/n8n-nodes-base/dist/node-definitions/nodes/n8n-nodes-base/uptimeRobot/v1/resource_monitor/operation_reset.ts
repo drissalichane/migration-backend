@@ -1,0 +1,26 @@
+/**
+ * UptimeRobot Node - Version 1
+ * Discriminator: resource=monitor, operation=reset
+ */
+
+
+interface Credentials {
+  uptimeRobotApi: CredentialReference;
+}
+
+/** Reset a monitor */
+export type UptimeRobotV1MonitorResetParams = {
+  resource: 'monitor';
+  operation: 'reset';
+/**
+ * The ID of the monitor
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type UptimeRobotV1MonitorResetNode = {
+  type: 'n8n-nodes-base.uptimeRobot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<UptimeRobotV1MonitorResetParams>;
+};

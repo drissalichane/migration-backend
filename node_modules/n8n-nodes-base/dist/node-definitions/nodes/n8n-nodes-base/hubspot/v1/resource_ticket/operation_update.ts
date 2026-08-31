@@ -1,0 +1,76 @@
+/**
+ * HubSpot Node - Version 1
+ * Discriminator: resource=ticket, operation=update
+ */
+
+
+interface Credentials {
+  hubspotApi: CredentialReference;
+  hubspotAppToken: CredentialReference;
+  hubspotOAuth2Api: CredentialReference;
+}
+
+/** Update a company */
+export type HubspotV1TicketUpdateParams = {
+  resource: 'ticket';
+  operation: 'update';
+  authentication?: 'apiKey' | 'appToken' | 'oAuth2' | Expression<string>;
+/**
+ * Unique identifier for a particular ticket
+ */
+    ticketId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Update Fields
+ * @default {}
+ */
+    updateFields?: {
+    /** Companies associated with the ticket. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    associatedCompanyIds?: string[];
+    /** Contact associated with the ticket. Choose from the list, or specify IDs using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     * @default []
+     */
+    associatedContactIds?: string[];
+    /** Main reason customer reached out for help. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    category?: string | Expression<string>;
+    /** The date the ticket was closed
+     */
+    closeDate?: string | Expression<string>;
+    /** The date the ticket was created
+     */
+    createDate?: string | Expression<string>;
+    /** Description of the ticket
+     */
+    description?: string | Expression<string> | PlaceholderValue;
+    /** The ID of the pipeline the ticket is in. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    pipelineId?: string | Expression<string>;
+    /** The level of attention needed on the ticket. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    priority?: string | Expression<string>;
+    /** The action taken to resolve the ticket. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    resolution?: string | Expression<string>;
+    /** Channel where ticket was originally submitted. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    source?: string | Expression<string>;
+    /** The stage ID of the pipeline the ticket is in; depends on Pipeline ID. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    stageId?: string | Expression<string>;
+    /** The ID of the pipeline the ticket is in
+     */
+    ticketName?: string | Expression<string> | PlaceholderValue;
+    /** The user from your team that the ticket is assigned to. You can assign additional users to a ticket record by creating a custom HubSpot user property. Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+     */
+    ticketOwnerId?: string | Expression<string>;
+  };
+};
+
+export type HubspotV1TicketUpdateNode = {
+  type: 'n8n-nodes-base.hubspot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HubspotV1TicketUpdateParams>;
+};

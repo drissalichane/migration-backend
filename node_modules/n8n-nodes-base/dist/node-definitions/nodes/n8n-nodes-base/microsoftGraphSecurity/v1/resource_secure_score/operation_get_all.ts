@@ -1,0 +1,45 @@
+/**
+ * Microsoft Graph Security Node - Version 1
+ * Discriminator: resource=secureScore, operation=getAll
+ */
+
+
+interface Credentials {
+  microsoftGraphSecurityOAuth2Api: CredentialReference;
+}
+
+export type MicrosoftGraphSecurityV1SecureScoreGetAllParams = {
+  resource: 'secureScore';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Filters
+ * @default {}
+ */
+    filters?: {
+    /** &lt;a href="https://docs.microsoft.com/en-us/graph/query-parameters#filter-parameter"&gt;Query parameter&lt;/a&gt; to filter results by
+     */
+    filter?: string | Expression<string> | PlaceholderValue;
+    /** Include Control Scores
+     * @default false
+     */
+    includeControlScores?: boolean | Expression<boolean>;
+  };
+};
+
+export type MicrosoftGraphSecurityV1SecureScoreGetAllNode = {
+  type: 'n8n-nodes-base.microsoftGraphSecurity';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftGraphSecurityV1SecureScoreGetAllParams>;
+};

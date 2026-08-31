@@ -1,0 +1,46 @@
+/**
+ * TheHive 5 Node - Version 1
+ * Discriminator: resource=log, operation=create
+ */
+
+
+interface Credentials {
+  theHiveProjectApi: CredentialReference;
+}
+
+export type TheHiveProjectV1LogCreateParams = {
+  resource: 'log';
+  operation: 'create';
+/**
+ * Task
+ * @default {"mode":"list","value":""}
+ */
+    taskId?: { __rl: true; mode: 'list' | 'id'; value: string; cachedResultName?: string };
+/**
+ * Fields
+ * @default {"mappingMode":"defineBelow","value":null}
+ */
+    logFields?: unknown;
+/**
+ * Array of supported attachments to add to the message
+ * @default {}
+ */
+    attachmentsUi?: {
+        /** Values
+     */
+    values?: Array<{
+      /** Add the field name from the input node
+       * @hint The name of the field with the attachment in the node input
+       * @default data
+       */
+      field?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+};
+
+export type TheHiveProjectV1LogCreateNode = {
+  type: 'n8n-nodes-base.theHiveProject';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TheHiveProjectV1LogCreateParams>;
+};

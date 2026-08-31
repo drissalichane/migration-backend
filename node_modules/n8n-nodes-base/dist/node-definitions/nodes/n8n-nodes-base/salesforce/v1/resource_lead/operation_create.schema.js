@@ -1,0 +1,25 @@
+/**
+ * Salesforce Node - Version 1 - Zod Schema
+ * Discriminator: resource=lead, operation=create
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('lead').default('lead'),
+      operation: z.literal('create').default('create'),
+      authentication: z.union([z.literal('oAuth2'), z.literal('jwt'), expressionSchema]).optional(),
+      company: stringOrExpression.optional(),
+      lastname: stringOrExpression.optional(),
+      additionalFields: z.object({ annualRevenue: numberOrExpression.optional(), city: stringOrExpression.optional(), country: stringOrExpression.optional(), customFieldsUi: z.unknown().optional(), description: stringOrExpression.optional(), email: stringOrExpression.optional(), fax: numberOrExpression.optional(), firstname: stringOrExpression.optional(), hasOptedOutOfEmail: booleanOrExpression.optional(), hasOptedOutOfFax: booleanOrExpression.optional(), industry: stringOrExpression.optional(), IsUnreadByOwner: booleanOrExpression.optional(), jigsaw: stringOrExpression.optional(), leadSource: stringOrExpression.optional(), mobilePhone: stringOrExpression.optional(), numberOfEmployees: numberOrExpression.optional(), owner: stringOrExpression.optional(), phone: stringOrExpression.optional(), postalCode: stringOrExpression.optional(), recordTypeId: stringOrExpression.optional(), rating: stringOrExpression.optional(), salutation: stringOrExpression.optional(), state: stringOrExpression.optional(), status: stringOrExpression.optional(), street: stringOrExpression.optional(), title: stringOrExpression.optional(), website: stringOrExpression.optional() }).optional(),
+    }).optional(),
+  });
+};

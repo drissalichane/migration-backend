@@ -1,0 +1,25 @@
+/**
+ * QuickBooks Online Node - Version 1
+ * Discriminator: resource=invoice, operation=void
+ */
+
+
+interface Credentials {
+  quickBooksOAuth2Api: CredentialReference;
+}
+
+export type QuickbooksV1InvoiceVoidParams = {
+  resource: 'invoice';
+  operation: 'void';
+/**
+ * The ID of the invoice to void
+ */
+    invoiceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type QuickbooksV1InvoiceVoidNode = {
+  type: 'n8n-nodes-base.quickbooks';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<QuickbooksV1InvoiceVoidParams>;
+};

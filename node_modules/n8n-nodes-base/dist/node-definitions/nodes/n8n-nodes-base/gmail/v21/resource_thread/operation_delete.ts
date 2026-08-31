@@ -1,0 +1,27 @@
+/**
+ * Gmail Node - Version 2.1
+ * Discriminator: resource=thread, operation=delete
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  gmailOAuth2: CredentialReference;
+}
+
+export type GmailV21ThreadDeleteParams = {
+  resource: 'thread';
+  operation: 'delete';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * The ID of the thread you are operating on
+ */
+    threadId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GmailV21ThreadDeleteNode = {
+  type: 'n8n-nodes-base.gmail';
+  version: 2.1;
+  credentials?: Credentials;
+  config: NodeConfig<GmailV21ThreadDeleteParams>;
+};

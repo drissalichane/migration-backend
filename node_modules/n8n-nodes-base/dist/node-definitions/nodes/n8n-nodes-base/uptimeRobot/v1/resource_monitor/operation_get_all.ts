@@ -1,0 +1,69 @@
+/**
+ * UptimeRobot Node - Version 1
+ * Discriminator: resource=monitor, operation=getAll
+ */
+
+
+interface Credentials {
+  uptimeRobotApi: CredentialReference;
+}
+
+/** Get many monitors */
+export type UptimeRobotV1MonitorGetAllParams = {
+  resource: 'monitor';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 50
+ */
+    limit?: number | Expression<number>;
+/**
+ * Filters
+ * @default {}
+ */
+    filters?: {
+    /** Whether the alert contacts set for the monitor to be returned
+     * @default false
+     */
+    alert_contacts?: boolean | Expression<boolean>;
+    /** Whether the logs of each monitor will be returned
+     * @default false
+     */
+    logs?: boolean | Expression<boolean>;
+    /** Whether to return the maintenance windows for the monitors
+     * @default false
+     */
+    mwindow?: boolean | Expression<boolean>;
+    /** Monitors IDs separated with dash, e.g. 15830-32696-83920
+     */
+    monitors?: string | Expression<string> | PlaceholderValue;
+    /** Whether the response time data of each monitor will be returned
+     * @default false
+     */
+    response_times?: boolean | Expression<boolean>;
+    /** A keyword to be matched against URL and friendly name
+     */
+    search?: string | Expression<string> | PlaceholderValue;
+    /** Statuses
+     * @default []
+     */
+    statuses?: Array<0 | 1 | 2 | 8 | 9>;
+    /** Select monitor types
+     * @default []
+     */
+    types?: Array<5 | 1 | 2 | 3 | 4>;
+  };
+};
+
+export type UptimeRobotV1MonitorGetAllNode = {
+  type: 'n8n-nodes-base.uptimeRobot';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<UptimeRobotV1MonitorGetAllParams>;
+};

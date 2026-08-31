@@ -1,0 +1,25 @@
+/**
+ * Copper Node - Version 1
+ * Discriminator: resource=task, operation=delete
+ */
+
+
+interface Credentials {
+  copperApi: CredentialReference;
+}
+
+export type CopperV1TaskDeleteParams = {
+  resource: 'task';
+  operation: 'delete';
+/**
+ * ID of the task to delete
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type CopperV1TaskDeleteNode = {
+  type: 'n8n-nodes-base.copper';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<CopperV1TaskDeleteParams>;
+};

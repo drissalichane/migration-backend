@@ -1,0 +1,26 @@
+/**
+ * Freshworks CRM Node - Version 1
+ * Discriminator: resource=task, operation=delete
+ */
+
+
+interface Credentials {
+  freshworksCrmApi: CredentialReference;
+}
+
+/** Delete an account */
+export type FreshworksCrmV1TaskDeleteParams = {
+  resource: 'task';
+  operation: 'delete';
+/**
+ * ID of the task to delete
+ */
+    taskId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type FreshworksCrmV1TaskDeleteNode = {
+  type: 'n8n-nodes-base.freshworksCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<FreshworksCrmV1TaskDeleteParams>;
+};

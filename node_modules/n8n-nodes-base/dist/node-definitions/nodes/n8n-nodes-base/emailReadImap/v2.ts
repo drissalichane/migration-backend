@@ -1,0 +1,62 @@
+/**
+ * Email Trigger (IMAP) Node - Version 2
+ * Triggers the workflow when a new email is received
+ */
+
+
+export interface EmailReadImapV2Params {
+  mailbox?: string | Expression<string> | PlaceholderValue;
+/**
+ * What to do after the email has been received. If "nothing" gets selected it will be processed multiple times.
+ * @default read
+ */
+    postProcessAction?: 'read' | 'nothing' | Expression<string>;
+/**
+ * Whether attachments of emails should be downloaded. Only set if needed as it increases processing.
+ * @displayOptions.show { format: ["simple"] }
+ * @default false
+ */
+    downloadAttachments?: boolean | Expression<boolean>;
+/**
+ * The format to return the message in
+ * @default simple
+ */
+    format?: 'raw' | 'resolved' | 'simple' | Expression<string>;
+/**
+ * Prefix for name of the binary property to which to write the attachments. An index starting with 0 will be added. So if name is "attachment_" the first attachment is saved to "attachment_0"
+ * @displayOptions.show { format: ["resolved"] }
+ * @default attachment_
+ */
+    dataPropertyAttachmentsPrefixName?: string | Expression<string> | PlaceholderValue;
+  options?: {
+    /** Custom email fetching rules. See &lt;a href="https://github.com/mscdex/node-imap"&gt;node-imap&lt;/a&gt;'s search function for more details.
+     * @default ["UNSEEN"]
+     */
+    customEmailConfig?: string | Expression<string> | PlaceholderValue;
+    /** Sets an interval (in minutes) to force a reconnection
+     * @default 60
+     */
+    forceReconnect?: number | Expression<number>;
+    /** Whether to fetch only new emails since the last run, or all emails that match the "Custom Email Rules" (["UNSEEN"] by default)
+     * @default true
+     */
+    trackLastMessageId?: boolean | Expression<boolean>;
+  };
+}
+
+export interface EmailReadImapV2Credentials {
+  imap: CredentialReference;
+}
+
+interface EmailReadImapV2NodeBase {
+  type: 'n8n-nodes-base.emailReadImap';
+  version: 2;
+  credentials?: EmailReadImapV2Credentials;
+  isTrigger: true;
+}
+
+export type EmailReadImapV2ParamsNode = EmailReadImapV2NodeBase & {
+  config: NodeConfig<EmailReadImapV2Params>;
+};
+
+export type EmailReadImapV2Node = EmailReadImapV2ParamsNode;

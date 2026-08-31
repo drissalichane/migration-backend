@@ -1,0 +1,32 @@
+/**
+ * Google Slides Node - Version 1
+ * Discriminator: resource=presentation, operation=create
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  googleSlidesOAuth2Api: CredentialReference;
+}
+
+/** Create a presentation */
+export type GoogleSlidesV1PresentationCreateParams = {
+  resource: 'presentation';
+  operation: 'create';
+/**
+ * Authentication
+ * @default serviceAccount
+ */
+    authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * Title of the presentation to create
+ */
+    title?: string | Expression<string> | PlaceholderValue;
+};
+
+export type GoogleSlidesV1PresentationCreateNode = {
+  type: 'n8n-nodes-base.googleSlides';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<GoogleSlidesV1PresentationCreateParams>;
+};

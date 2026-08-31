@@ -1,0 +1,26 @@
+/**
+ * Zoho CRM Node - Version 1
+ * Discriminator: resource=account, operation=delete
+ */
+
+
+interface Credentials {
+  zohoOAuth2Api: CredentialReference;
+}
+
+/** Delete an account */
+export type ZohoCrmV1AccountDeleteParams = {
+  resource: 'account';
+  operation: 'delete';
+/**
+ * ID of the account to delete. Can be found at the end of the URL.
+ */
+    accountId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZohoCrmV1AccountDeleteNode = {
+  type: 'n8n-nodes-base.zohoCrm';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZohoCrmV1AccountDeleteParams>;
+};

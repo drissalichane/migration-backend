@@ -1,0 +1,40 @@
+/**
+ * HaloPSA Node - Version 1
+ * Discriminator: resource=ticket, operation=get
+ */
+
+
+interface Credentials {
+  haloPSAApi: CredentialReference;
+}
+
+/** Get a client */
+export type HaloPSAV1TicketGetParams = {
+  resource: 'ticket';
+  operation: 'get';
+/**
+ * Ticket ID
+ */
+    ticketId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Whether to return a simplified version of the response instead of the raw data
+ * @default true
+ */
+    simplify?: boolean | Expression<boolean>;
+};
+
+export type HaloPSAV1TicketGetOutput = {
+  agent_id?: number;
+  details?: string;
+  id?: number;
+  summary?: string;
+  targetdate?: string;
+};
+
+export type HaloPSAV1TicketGetNode = {
+  type: 'n8n-nodes-base.haloPSA';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<HaloPSAV1TicketGetParams>;
+  output?: Items<HaloPSAV1TicketGetOutput>;
+};

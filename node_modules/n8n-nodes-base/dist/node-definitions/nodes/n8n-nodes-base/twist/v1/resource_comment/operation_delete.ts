@@ -1,0 +1,26 @@
+/**
+ * Twist Node - Version 1
+ * Discriminator: resource=comment, operation=delete
+ */
+
+
+interface Credentials {
+  twistOAuth2Api: CredentialReference;
+}
+
+/** Delete a channel */
+export type TwistV1CommentDeleteParams = {
+  resource: 'comment';
+  operation: 'delete';
+/**
+ * The ID of the comment
+ */
+    commentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type TwistV1CommentDeleteNode = {
+  type: 'n8n-nodes-base.twist';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<TwistV1CommentDeleteParams>;
+};

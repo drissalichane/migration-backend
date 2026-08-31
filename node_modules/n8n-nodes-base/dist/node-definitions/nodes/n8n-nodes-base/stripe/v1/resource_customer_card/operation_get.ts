@@ -1,0 +1,30 @@
+/**
+ * Stripe Node - Version 1
+ * Discriminator: resource=customerCard, operation=get
+ */
+
+
+interface Credentials {
+  stripeApi: CredentialReference;
+}
+
+/** Get a balance */
+export type StripeV1CustomerCardGetParams = {
+  resource: 'customerCard';
+  operation: 'get';
+/**
+ * ID of the customer whose card to retrieve
+ */
+    customerId?: string | Expression<string> | PlaceholderValue;
+/**
+ * ID of the source to retrieve
+ */
+    sourceId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type StripeV1CustomerCardGetNode = {
+  type: 'n8n-nodes-base.stripe';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StripeV1CustomerCardGetParams>;
+};

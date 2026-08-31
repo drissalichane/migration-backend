@@ -1,0 +1,32 @@
+/**
+ * Spotify Node - Version 1
+ * Discriminator: resource=player, operation=volume
+ */
+
+
+interface Credentials {
+  spotifyOAuth2Api: CredentialReference;
+}
+
+/** Set volume on the current active device */
+export type SpotifyV1PlayerVolumeParams = {
+  resource: 'player';
+  operation: 'volume';
+/**
+ * The volume percentage to set
+ * @default 50
+ */
+    volumePercent?: number | Expression<number>;
+};
+
+export type SpotifyV1PlayerVolumeOutput = {
+  success?: boolean;
+};
+
+export type SpotifyV1PlayerVolumeNode = {
+  type: 'n8n-nodes-base.spotify';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SpotifyV1PlayerVolumeParams>;
+  output?: Items<SpotifyV1PlayerVolumeOutput>;
+};

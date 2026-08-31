@@ -1,0 +1,28 @@
+/**
+ * Drift Node - Version 1
+ * Discriminator: resource=contact, operation=delete
+ */
+
+
+interface Credentials {
+  driftApi: CredentialReference;
+  driftOAuth2Api: CredentialReference;
+}
+
+/** Delete a contact */
+export type DriftV1ContactDeleteParams = {
+  resource: 'contact';
+  operation: 'delete';
+  authentication?: 'accessToken' | 'oAuth2' | Expression<string>;
+/**
+ * Unique identifier for the contact
+ */
+    contactId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type DriftV1ContactDeleteNode = {
+  type: 'n8n-nodes-base.drift';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<DriftV1ContactDeleteParams>;
+};

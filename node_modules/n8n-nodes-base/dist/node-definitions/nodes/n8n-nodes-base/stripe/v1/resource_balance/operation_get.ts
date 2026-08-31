@@ -1,0 +1,52 @@
+/**
+ * Stripe Node - Version 1
+ * Discriminator: resource=balance, operation=get
+ */
+
+
+interface Credentials {
+  stripeApi: CredentialReference;
+}
+
+/** Get a balance */
+export type StripeV1BalanceGetParams = {
+  resource: 'balance';
+  operation: 'get';
+};
+
+export type StripeV1BalanceGetOutput = {
+  available?: Array<{
+    amount?: number;
+    currency?: string;
+    source_types?: {
+      card?: number;
+    };
+  }>;
+  livemode?: boolean;
+  object?: string;
+  pending?: Array<{
+    amount?: number;
+    currency?: string;
+    source_types?: {
+      card?: number;
+    };
+  }>;
+  refund_and_dispute_prefunding?: {
+    available?: Array<{
+      amount?: number;
+      currency?: string;
+    }>;
+    pending?: Array<{
+      amount?: number;
+      currency?: string;
+    }>;
+  };
+};
+
+export type StripeV1BalanceGetNode = {
+  type: 'n8n-nodes-base.stripe';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<StripeV1BalanceGetParams>;
+  output?: Items<StripeV1BalanceGetOutput>;
+};

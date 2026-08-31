@@ -1,0 +1,28 @@
+/**
+ * Zammad Node - Version 1
+ * Discriminator: resource=organization, operation=delete
+ */
+
+
+interface Credentials {
+  zammadBasicAuthApi: CredentialReference;
+  zammadTokenAuthApi: CredentialReference;
+}
+
+/** Delete a group */
+export type ZammadV1OrganizationDeleteParams = {
+  resource: 'organization';
+  operation: 'delete';
+  authentication?: 'basicAuth' | 'tokenAuth' | Expression<string>;
+/**
+ * Organization to delete. Specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;.
+ */
+    id?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ZammadV1OrganizationDeleteNode = {
+  type: 'n8n-nodes-base.zammad';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ZammadV1OrganizationDeleteParams>;
+};

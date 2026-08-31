@@ -1,0 +1,30 @@
+/**
+ * Microsoft Teams Node - Version 1
+ * Discriminator: resource=channel, operation=get
+ */
+
+
+interface Credentials {
+  microsoftTeamsOAuth2Api: CredentialReference;
+}
+
+/** Get a channel */
+export type MicrosoftTeamsV1ChannelGetParams = {
+  resource: 'channel';
+  operation: 'get';
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    teamId?: string | Expression<string>;
+/**
+ * Choose from the list, or specify an ID using an &lt;a href="https://docs.n8n.io/code/expressions/"&gt;expression&lt;/a&gt;
+ */
+    channelId?: string | Expression<string>;
+};
+
+export type MicrosoftTeamsV1ChannelGetNode = {
+  type: 'n8n-nodes-base.microsoftTeams';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<MicrosoftTeamsV1ChannelGetParams>;
+};

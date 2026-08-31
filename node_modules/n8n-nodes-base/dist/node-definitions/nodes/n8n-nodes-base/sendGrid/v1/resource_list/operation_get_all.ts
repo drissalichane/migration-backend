@@ -1,0 +1,33 @@
+/**
+ * SendGrid Node - Version 1
+ * Discriminator: resource=list, operation=getAll
+ */
+
+
+interface Credentials {
+  sendGridApi: CredentialReference;
+}
+
+/** Get many lists */
+export type SendGridV1ListGetAllParams = {
+  resource: 'list';
+  operation: 'getAll';
+/**
+ * Whether to return all results or only up to a given limit
+ * @default false
+ */
+    returnAll?: boolean | Expression<boolean>;
+/**
+ * Max number of results to return
+ * @displayOptions.show { returnAll: [false] }
+ * @default 100
+ */
+    limit?: number | Expression<number>;
+};
+
+export type SendGridV1ListGetAllNode = {
+  type: 'n8n-nodes-base.sendGrid';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<SendGridV1ListGetAllParams>;
+};

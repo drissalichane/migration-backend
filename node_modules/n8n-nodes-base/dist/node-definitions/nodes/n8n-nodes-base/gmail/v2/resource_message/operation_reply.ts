@@ -1,0 +1,83 @@
+/**
+ * Gmail Node - Version 2
+ * Discriminator: resource=message, operation=reply
+ */
+
+
+interface Credentials {
+  googleApi: CredentialReference;
+  gmailOAuth2: CredentialReference;
+}
+
+export type GmailV2MessageReplyParams = {
+  resource: 'message';
+  operation: 'reply';
+  authentication?: 'oAuth2' | 'serviceAccount' | Expression<string>;
+/**
+ * Message ID
+ */
+    messageId?: string | Expression<string> | PlaceholderValue;
+/**
+ * Email Type
+ * @default html
+ */
+    emailType?: 'text' | 'html';
+/**
+ * Message
+ */
+    message?: string | Expression<string> | PlaceholderValue;
+/**
+ * Options
+ * @default {}
+ */
+    options?: {
+    /** Whether to include the phrase “This email was sent automatically with n8n” to the end of the email
+     * @default true
+     */
+    appendAttribution?: boolean | Expression<boolean>;
+    /** Array of supported attachments to add to the message
+     * @default {}
+     */
+    attachmentsUi?: {
+        /** Attachment Binary
+     */
+    attachmentsBinary?: Array<{
+      /** Add the field name from the input node. Multiple properties can be set separated by comma.
+       * @hint The name of the field with the attachment in the node input
+       * @default data
+       */
+      property?: string | Expression<string> | PlaceholderValue;
+    }>;
+  };
+    /** The email addresses of the blind copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.
+     */
+    bccList?: string | Expression<string> | PlaceholderValue;
+    /** The email addresses of the copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.
+     */
+    ccList?: string | Expression<string> | PlaceholderValue;
+    /** The name that will be shown in recipients' inboxes
+     */
+    senderName?: string | Expression<string> | PlaceholderValue;
+    /** The email address that the reply message is sent to
+     */
+    replyTo?: string | Expression<string> | PlaceholderValue;
+    /** Whether to reply to the sender only or to the entire list of recipients
+     * @default false
+     */
+    replyToSenderOnly?: boolean | Expression<boolean>;
+  };
+};
+
+export type GmailV2MessageReplyOutput = {
+  id?: string;
+  labelIds?: Array<string>;
+  threadId?: string;
+};
+
+export type GmailV2MessageReplyNode = {
+  type: 'n8n-nodes-base.gmail';
+  version: 2;
+  credentials?: Credentials;
+  config: NodeConfig<GmailV2MessageReplyParams>;
+  output?: Items<GmailV2MessageReplyOutput>;
+};

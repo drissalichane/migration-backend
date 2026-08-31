@@ -1,0 +1,32 @@
+/**
+ * ServiceNow Node - Version 1
+ * Discriminator: resource=attachment, operation=delete
+ */
+
+
+interface Credentials {
+  serviceNowOAuth2Api: CredentialReference;
+  serviceNowBasicApi: CredentialReference;
+}
+
+/** Delete an attachment */
+export type ServiceNowV1AttachmentDeleteParams = {
+  resource: 'attachment';
+  operation: 'delete';
+/**
+ * Authentication method to use
+ * @default oAuth2
+ */
+    authentication?: 'basicAuth' | 'oAuth2' | Expression<string>;
+/**
+ * Sys_id value of the attachment to delete
+ */
+    attachmentId?: string | Expression<string> | PlaceholderValue;
+};
+
+export type ServiceNowV1AttachmentDeleteNode = {
+  type: 'n8n-nodes-base.serviceNow';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<ServiceNowV1AttachmentDeleteParams>;
+};

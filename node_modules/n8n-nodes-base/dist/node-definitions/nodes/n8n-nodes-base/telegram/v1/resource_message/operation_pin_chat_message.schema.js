@@ -1,0 +1,29 @@
+/**
+ * Telegram Node - Version 1 - Zod Schema
+ * Discriminator: resource=message, operation=pinChatMessage
+ *
+ * Use .parse() for strict validation or .safeParse() for error handling.
+ *
+ * Schema helpers (z, expressionSchema, etc.) are passed as parameters
+ * by the schema-validator, not imported from external files.
+ *
+ * @generated - CommonJS JavaScript for runtime loading
+ */
+
+module.exports = function getSchema({ parameters, z, expressionSchema, stringOrExpression, numberOrExpression, booleanOrExpression, resourceLocatorValueSchema, resourceMapperValueSchema, filterValueSchema, assignmentCollectionValueSchema, iDataObjectSchema, resolveSchema }) {
+
+  return z.object({
+    parameters: z.object({
+      resource: z.literal('message').default('message'),
+      operation: z.literal('pinChatMessage'),
+      chatId: stringOrExpression.optional(),
+      messageId: stringOrExpression.optional(),
+      additionalFields: z.object({ disable_notification: booleanOrExpression.optional() }).optional(),
+      forceReply: resolveSchema({ parameters, schema: z.object({ force_reply: booleanOrExpression.optional(), selective: booleanOrExpression.optional() }), required: false, displayOptions: {"show":{"replyMarkup":["forceReply"]}} }),
+      inlineKeyboard: resolveSchema({ parameters, schema: z.object({ rows: z.array(z.object({ row: z.unknown().optional() })).optional() }), required: false, displayOptions: {"show":{"replyMarkup":["inlineKeyboard"]}} }),
+      replyKeyboard: resolveSchema({ parameters, schema: z.object({ rows: z.array(z.object({ row: z.unknown().optional() })).optional() }), required: false, displayOptions: {"show":{"replyMarkup":["replyKeyboard"]}} }),
+      replyKeyboardOptions: resolveSchema({ parameters, schema: z.object({ resize_keyboard: booleanOrExpression.optional(), one_time_keyboard: booleanOrExpression.optional(), selective: booleanOrExpression.optional() }), required: false, displayOptions: {"show":{"replyMarkup":["replyKeyboard"]}} }),
+      replyKeyboardRemove: resolveSchema({ parameters, schema: z.object({ remove_keyboard: booleanOrExpression.optional(), selective: booleanOrExpression.optional() }), required: false, displayOptions: {"show":{"replyMarkup":["replyKeyboardRemove"]}} }),
+    }).optional(),
+  });
+};

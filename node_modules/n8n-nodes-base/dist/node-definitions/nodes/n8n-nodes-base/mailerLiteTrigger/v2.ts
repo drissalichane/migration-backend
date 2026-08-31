@@ -1,0 +1,30 @@
+/**
+ * MailerLite Trigger Node - Version 2
+ * Starts the workflow when MailerLite events occur
+ */
+
+
+export interface MailerLiteTriggerV2Params {
+/**
+ * The events to listen to
+ * @default []
+ */
+    events?: Array<'campaign.sent' | 'subscriber.added_to_group' | 'subscriber.automation_completed' | 'subscriber.automation_triggered' | 'subscriber.bounced' | 'subscriber.created' | 'subscriber.removed_from_group' | 'subscriber.spam_reported' | 'subscriber.unsubscribed' | 'subscriber.updated'>;
+}
+
+export interface MailerLiteTriggerV2Credentials {
+  mailerLiteApi: CredentialReference;
+}
+
+interface MailerLiteTriggerV2NodeBase {
+  type: 'n8n-nodes-base.mailerLiteTrigger';
+  version: 2;
+  credentials?: MailerLiteTriggerV2Credentials;
+  isTrigger: true;
+}
+
+export type MailerLiteTriggerV2ParamsNode = MailerLiteTriggerV2NodeBase & {
+  config: NodeConfig<MailerLiteTriggerV2Params>;
+};
+
+export type MailerLiteTriggerV2Node = MailerLiteTriggerV2ParamsNode;

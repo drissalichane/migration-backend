@@ -1,0 +1,22 @@
+/**
+ * Jenkins Node - Version 1
+ * Discriminator: resource=instance, operation=safeRestart
+ */
+
+
+interface Credentials {
+  jenkinsApi: CredentialReference;
+}
+
+/** Restart Jenkins once no jobs are running on environments where it is possible */
+export type JenkinsV1InstanceSafeRestartParams = {
+  resource: 'instance';
+  operation: 'safeRestart';
+};
+
+export type JenkinsV1InstanceSafeRestartNode = {
+  type: 'n8n-nodes-base.jenkins';
+  version: 1;
+  credentials?: Credentials;
+  config: NodeConfig<JenkinsV1InstanceSafeRestartParams>;
+};
