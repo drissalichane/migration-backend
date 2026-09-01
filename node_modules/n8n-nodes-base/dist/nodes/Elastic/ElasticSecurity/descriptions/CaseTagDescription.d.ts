@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const caseTagOperations: INodeProperties[];
-export declare const caseTagFields: INodeProperties[];
-//# sourceMappingURL=CaseTagDescription.d.ts.map

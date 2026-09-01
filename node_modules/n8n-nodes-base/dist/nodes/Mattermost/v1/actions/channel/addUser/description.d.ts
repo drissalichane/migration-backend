@@ -1,3 +1,0 @@
-import type { ChannelProperties } from '../../Interfaces';
-export declare const channelAddUserDescription: ChannelProperties;
-//# sourceMappingURL=description.d.ts.map

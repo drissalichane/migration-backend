@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const issueAttachmentOperations: INodeProperties[];
-export declare const issueAttachmentFields: INodeProperties[];
-//# sourceMappingURL=IssueAttachmentDescription.d.ts.map

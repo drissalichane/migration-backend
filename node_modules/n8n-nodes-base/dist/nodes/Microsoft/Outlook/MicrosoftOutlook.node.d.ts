@@ -1,5 +1,0 @@
-import { VersionedNodeType } from 'n8n-workflow';
-export declare class MicrosoftOutlook extends VersionedNodeType {
-    constructor();
-}
-//# sourceMappingURL=MicrosoftOutlook.node.d.ts.map

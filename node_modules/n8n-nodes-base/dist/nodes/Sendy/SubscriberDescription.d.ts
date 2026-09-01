@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const subscriberOperations: INodeProperties[];
-export declare const subscriberFields: INodeProperties[];
-//# sourceMappingURL=SubscriberDescription.d.ts.map

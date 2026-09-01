@@ -1,5 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const projectRLC: INodeProperties;
-export declare const datasetRLC: INodeProperties;
-export declare const tableRLC: INodeProperties;
-//# sourceMappingURL=RLC.description.d.ts.map

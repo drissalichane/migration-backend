@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const panelistOperations: INodeProperties[];
-export declare const panelistFields: INodeProperties[];
-//# sourceMappingURL=PanelistDescription.d.ts.map

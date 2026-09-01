@@ -1,6 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-import * as create from './create.operation';
-import * as deleteSpreadsheet from './delete.operation';
-export { create, deleteSpreadsheet };
-export declare const descriptions: INodeProperties[];
-//# sourceMappingURL=SpreadSheet.resource.d.ts.map

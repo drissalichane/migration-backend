@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const meetingTranscriptOperations: INodeProperties[];
-export declare const meetingTranscriptFields: INodeProperties[];
-//# sourceMappingURL=MeetingTranscript.d.ts.map

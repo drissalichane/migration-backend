@@ -1,3 +1,0 @@
-import type { ILoadOptionsFunctions, ResourceMapperFields } from 'n8n-workflow';
-export declare function getMappingColumns(this: ILoadOptionsFunctions): Promise<ResourceMapperFields>;
-//# sourceMappingURL=resourceMapping.d.ts.map

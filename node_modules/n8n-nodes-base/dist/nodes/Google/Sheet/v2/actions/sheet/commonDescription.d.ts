@@ -1,8 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const dataLocationOnSheet: INodeProperties;
-export declare const locationDefine: INodeProperties;
-export declare const outputFormatting: INodeProperties;
-export declare const cellFormat: INodeProperties;
-export declare const handlingExtraData: INodeProperties;
-export declare const useAppendOption: INodeProperties;
-//# sourceMappingURL=commonDescription.d.ts.map

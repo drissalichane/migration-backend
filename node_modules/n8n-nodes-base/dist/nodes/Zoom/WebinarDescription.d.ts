@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const webinarOperations: INodeProperties[];
-export declare const webinarFields: INodeProperties[];
-//# sourceMappingURL=WebinarDescription.d.ts.map

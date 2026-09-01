@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const singletonOperations: INodeProperties[];
-export declare const singletonFields: INodeProperties[];
-//# sourceMappingURL=SingletonDescription.d.ts.map

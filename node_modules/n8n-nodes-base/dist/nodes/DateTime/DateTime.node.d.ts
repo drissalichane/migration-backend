@@ -1,5 +1,0 @@
-import { VersionedNodeType } from 'n8n-workflow';
-export declare class DateTime extends VersionedNodeType {
-    constructor();
-}
-//# sourceMappingURL=DateTime.node.d.ts.map

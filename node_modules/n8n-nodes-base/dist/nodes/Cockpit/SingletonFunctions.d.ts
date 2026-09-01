@@ -1,4 +1,0 @@
-import type { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
-export declare function getSingleton(this: IExecuteFunctions | ILoadOptionsFunctions, resourceName: string): Promise<any>;
-export declare function getAllSingletonNames(this: IExecuteFunctions | ILoadOptionsFunctions): Promise<string[]>;
-//# sourceMappingURL=SingletonFunctions.d.ts.map

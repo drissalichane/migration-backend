@@ -1,5 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-import * as sendLegacy from './sendLegacy.operation';
-export { sendLegacy };
-export declare const description: INodeProperties[];
-//# sourceMappingURL=index.d.ts.map

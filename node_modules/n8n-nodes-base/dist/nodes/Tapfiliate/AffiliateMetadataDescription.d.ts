@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const affiliateMetadataOperations: INodeProperties[];
-export declare const affiliateMetadataFields: INodeProperties[];
-//# sourceMappingURL=AffiliateMetadataDescription.d.ts.map

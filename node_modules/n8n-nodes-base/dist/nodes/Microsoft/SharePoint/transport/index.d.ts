@@ -1,3 +1,0 @@
-import type { IDataObject, IExecuteFunctions, IExecuteSingleFunctions, IHttpRequestMethods, ILoadOptionsFunctions } from 'n8n-workflow';
-export declare function microsoftSharePointApiRequest(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions, method: IHttpRequestMethods, endpoint: string, body?: IDataObject | Buffer, qs?: IDataObject, headers?: IDataObject, url?: string): Promise<any>;
-//# sourceMappingURL=index.d.ts.map

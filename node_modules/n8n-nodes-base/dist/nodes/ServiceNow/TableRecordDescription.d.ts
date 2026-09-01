@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const tableRecordOperations: INodeProperties[];
-export declare const tableRecordFields: INodeProperties[];
-//# sourceMappingURL=TableRecordDescription.d.ts.map

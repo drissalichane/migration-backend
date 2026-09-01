@@ -1,6 +1,0 @@
-import type { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
-export declare class Strava implements INodeType {
-    description: INodeTypeDescription;
-    execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
-}
-//# sourceMappingURL=Strava.node.d.ts.map

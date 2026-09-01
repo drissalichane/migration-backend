@@ -1,3 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const draftMessageSharedFields: INodeProperties[];
-//# sourceMappingURL=DraftMessageSharedDescription.d.ts.map

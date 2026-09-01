@@ -1,3 +1,0 @@
-import type { ICredentialsDecrypted, ICredentialTestFunctions, INodeCredentialTestResult } from 'n8n-workflow';
-export declare function postgresConnectionTest(this: ICredentialTestFunctions, credential: ICredentialsDecrypted): Promise<INodeCredentialTestResult>;
-//# sourceMappingURL=credentialTest.d.ts.map

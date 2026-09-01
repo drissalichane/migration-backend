@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const appointmentOperations: INodeProperties[];
-export declare const appointmentFields: INodeProperties[];
-//# sourceMappingURL=AppointmentDescription.d.ts.map

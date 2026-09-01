@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const databasePageOperations: INodeProperties[];
-export declare const databasePageFields: INodeProperties[];
-//# sourceMappingURL=DatabasePageDescription.d.ts.map

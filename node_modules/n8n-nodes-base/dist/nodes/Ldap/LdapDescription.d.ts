@@ -1,3 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const ldapFields: INodeProperties[];
-//# sourceMappingURL=LdapDescription.d.ts.map

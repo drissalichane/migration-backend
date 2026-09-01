@@ -1,5 +1,0 @@
-import { VersionedNodeType } from 'n8n-workflow';
-export declare class Airtable extends VersionedNodeType {
-    constructor();
-}
-//# sourceMappingURL=Airtable.node.d.ts.map

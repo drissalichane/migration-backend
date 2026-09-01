@@ -1,5 +1,0 @@
-import { VersionedNodeType } from 'n8n-workflow';
-export declare class AwsS3 extends VersionedNodeType {
-    constructor();
-}
-//# sourceMappingURL=AwsS3.node.d.ts.map

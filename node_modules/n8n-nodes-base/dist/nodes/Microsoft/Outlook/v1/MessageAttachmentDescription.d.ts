@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const messageAttachmentOperations: INodeProperties[];
-export declare const messageAttachmentFields: INodeProperties[];
-//# sourceMappingURL=MessageAttachmentDescription.d.ts.map

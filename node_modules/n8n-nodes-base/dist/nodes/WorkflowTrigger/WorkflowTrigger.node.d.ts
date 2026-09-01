@@ -1,6 +1,0 @@
-import type { ITriggerFunctions, INodeType, INodeTypeDescription, ITriggerResponse } from 'n8n-workflow';
-export declare class WorkflowTrigger implements INodeType {
-    description: INodeTypeDescription;
-    trigger(this: ITriggerFunctions): Promise<ITriggerResponse>;
-}
-//# sourceMappingURL=WorkflowTrigger.node.d.ts.map

@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const couponOperations: INodeProperties[];
-export declare const couponFields: INodeProperties[];
-//# sourceMappingURL=CouponDescription.d.ts.map

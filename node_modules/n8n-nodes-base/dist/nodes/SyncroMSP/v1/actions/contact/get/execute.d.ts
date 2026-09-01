@@ -1,3 +1,0 @@
-import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
-export declare function getContact(this: IExecuteFunctions, index: number): Promise<INodeExecutionData[]>;
-//# sourceMappingURL=execute.d.ts.map

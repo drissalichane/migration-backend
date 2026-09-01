@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const reminderOperations: INodeProperties[];
-export declare const reminderFields: INodeProperties[];
-//# sourceMappingURL=ReminderDescription.d.ts.map

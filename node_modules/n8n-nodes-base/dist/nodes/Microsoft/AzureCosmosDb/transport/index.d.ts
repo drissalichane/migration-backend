@@ -1,3 +1,0 @@
-import type { IDataObject, IHttpRequestMethods, ILoadOptionsFunctions, IExecuteSingleFunctions } from 'n8n-workflow';
-export declare function azureCosmosDbApiRequest(this: IExecuteSingleFunctions | ILoadOptionsFunctions, method: IHttpRequestMethods, endpoint: string, body?: IDataObject, qs?: IDataObject, headers?: IDataObject, returnFullResponse?: boolean): Promise<any>;
-//# sourceMappingURL=index.d.ts.map

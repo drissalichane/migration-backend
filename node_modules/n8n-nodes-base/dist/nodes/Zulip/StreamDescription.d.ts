@@ -1,4 +1,0 @@
-import type { INodeProperties } from 'n8n-workflow';
-export declare const streamOperations: INodeProperties[];
-export declare const streamFields: INodeProperties[];
-//# sourceMappingURL=StreamDescription.d.ts.map

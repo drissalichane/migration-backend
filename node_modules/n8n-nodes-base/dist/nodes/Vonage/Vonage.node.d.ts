@@ -1,6 +1,0 @@
-import type { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
-export declare class Vonage implements INodeType {
-    description: INodeTypeDescription;
-    execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
-}
-//# sourceMappingURL=Vonage.node.d.ts.map
