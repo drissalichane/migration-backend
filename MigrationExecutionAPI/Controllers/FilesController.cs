@@ -143,6 +143,34 @@ public class FilesController : ControllerBase
             }
 
             await _fileService.WriteFileAsync(repositoryPath, filePath, content ?? "");
+
+            // Auto-record the file change on the latest executing job
+            try
+            {
+                var activeJob = await _context.MigrationJobs
+                    .Include(j => j.FileChanges)
+                    .Where(j => j.Status == "Executing" || j.Status == "Pending PR Review")
+                    .OrderByDescending(j => j.Id)
+                    .FirstOrDefaultAsync();
+
+                if (activeJob != null)
+                {
+                    activeJob.FileChanges.Add(new FileChange
+                    {
+                        FilePath = filePath,
+                        Action = "WriteFile",
+                        TargetContent = "",
+                        ReplacementContent = content ?? "",
+                        Accepted = true
+                    });
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception dbEx)
+            {
+                _logger.LogWarning(dbEx, "Failed to record file change in database (non-fatal)");
+            }
+
             return Ok(new BaseResponse { Success = true, Message = "File written successfully" });
         }
         catch (Exception ex)
