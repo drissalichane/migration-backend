@@ -249,7 +249,7 @@ public class FilesController : ControllerBase
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Validation or operational error replacing file content");
-            return BadRequest(new BaseResponse { Success = false, Message = ex.Message });
+            return Ok(new BaseResponse { Success = false, Message = ex.Message });
         }
         catch (Exception ex)
         {

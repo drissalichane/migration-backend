@@ -1,0 +1,1365 @@
+{
+  "name": "NET8 Migration Pipeline v5.0 (Part 2 - Execute)",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "5e78388a-f782-4afe-af12-91183f6ca5cb",
+      "name": "Migrator LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -28720,
+        14816
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 15000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Execute Webhook').first().json.body.job_id + '-migrator' }}",
+        "contextWindowLength": 8
+      },
+      "id": "3412a831-277a-431b-b19a-b80bb6b05508",
+      "name": "Migrator Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [
+        -28192,
+        15536
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "build_output",
+              "stringValue": "={{ $json.stdout }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "09701af9-3677-4c70-b4a0-a92937970770",
+      "name": "Store Build Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -27552,
+        15408
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.build_output }}",
+              "rightValue": "BUILD_SUCCESS",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "03df13ec-b02f-4ad1-8286-64afed19748a",
+      "name": "Build Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -27136,
+        15376
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ 'RES_' + ($runIndex >= 3) }}",
+              "rightValue": "RES_true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9afb0a2b-7f60-49a2-85d3-ad56e8ecdb95",
+      "name": "Max Retries Reached?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -26784,
+        15360
+      ]
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "2a23c60c-8d6d-48f8-8c92-720582cc67bc",
+      "name": "Error Fixer LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -26368,
+        14816
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6f759b10-b9f4-49ab-aaee-ee6e9254419c",
+      "name": "Increment Retry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -26224,
+        15376
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\nSLN=$(find $BASE -name '*.sln' | head -1)\necho '=== CVE DEPENDENCY AUDIT ==='\nif [ -n \"$SLN\" ]; then\n  dotnet list \"$SLN\" package --vulnerable --include-transitive 2>&1 || echo 'AUDIT_UNAVAILABLE'\nelse\n  find $BASE -name '*.csproj' | head -5 | while read f; do\n    dotnet list \"$f\" package --vulnerable --include-transitive 2>&1\n  done\nfi\necho '=== KNOWN CVE WATCH LIST ==='\necho 'CVE-2024-21319 CVE-2024-30105 CVE-2024-38095'\necho 'CVE_CHECK_COMPLETE'"
+      },
+      "id": "5ddddbbe-a6e2-454e-af50-796ac4282e0a",
+      "name": "Security Patch CVE Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -26400,
+        14544
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\nSLN=$(find $BASE -name '*.sln' | head -1)\nFILTER='Category!=DatabaseTest&Category!=IntegrationTest'\nif [ -n \"$SLN\" ]; then\n  dotnet test \"$SLN\" --filter \"$FILTER\" --logger 'console;verbosity=normal' 2>&1 | tail -100\nelse\n  TEST_PROJ=$(find $BASE \\( -name '*.Tests.csproj' -o -name '*Tests.csproj' \\) | head -1)\n  if [ -n \"$TEST_PROJ\" ]; then\n    dotnet test \"$TEST_PROJ\" --filter \"$FILTER\" --logger 'console;verbosity=normal' 2>&1 | tail -100\n  else\n    echo 'NO_TEST_PROJECT_FOUND'\n  fi\nfi"
+      },
+      "id": "cee5f0e1-7296-493b-aea5-3208a4d8b41d",
+      "name": "Run Tests",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -26176,
+        14496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "tg1",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "Failed",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "tg2",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "NO_TEST_PROJECT_FOUND",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ff10fbe9-9b6d-4c05-9537-3793a0825b69",
+      "name": "Test Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -26016,
+        14400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Generate the migration report.\\n\\nMigration Plan:\\n' + $('Execute Webhook').first().json.body.migration_plan + '\\n\\nBuild Output:\\n' + $('Store Build Output').first().json.build_output + '\\n\\nCVE Audit:\\n' + $('Security Patch CVE Check').first().json.stdout + '\\n\\nTest Results:\\n' + $json.stdout }}",
+        "options": {
+          "maxIterations": 10,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "7eaae30e-58a0-45e6-b009-126ca108c71c",
+      "name": "Reporter Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -25792,
+        14384
+      ]
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "1b7bd504-f722-4b2a-aaff-94a8f704ce59",
+      "name": "Reporter LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -25792,
+        14608
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 15000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Execute Webhook').first().json.body.job_id + '-reporter' }}",
+        "contextWindowLength": 4
+      },
+      "id": "5c7cf653-ada1-43fa-9ebf-c9435202397d",
+      "name": "Reporter Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [
+        -25664,
+        14608
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d78b55e2-39e2-4b12-b47b-f49cc01a416e",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -25440,
+        14496
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d78972b3-3cef-40dc-aa57-2fe34f213788",
+      "name": "Test Failure Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -25568,
+        15264
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0862f4ed-3568-4837-b809-7366956b196d",
+      "name": "Failure Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -26416,
+        15264
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'CRITICAL INSTRUCTION: You are the execution planner. The codebase has NOT been migrated yet. You must generate a precise JSON array of commands to apply the migration plan.\\n\\n' + \n'Do NOT include `dotnet build` or test commands.\\n\\n' +\n'CRITICAL: You MUST process target_framework_updates, package_updates, nuget_versions_needed, file_changes, AND startup_changes from the Migration Plan.\\n\\n' +\n'CRITICAL: For target_framework_updates, you MUST output a ReplaceFileContent action to change the <TargetFramework> tag in the .csproj file.\\n' +\n'CRITICAL: For adding or updating NuGet packages (from package_updates OR nuget_versions_needed), you MUST use ExecuteCommand with `dotnet add [ACTUAL_PROJECT_FILE_PATH] package <name> --version <version>`. For [ACTUAL_PROJECT_FILE_PATH], look at target_framework_updates to find the correct .csproj file path! NEVER use ReplaceFileContent for NuGet packages. For removing packages, use dotnet remove [ACTUAL_PROJECT_FILE_PATH] package <name>. IMPORTANT: If the version ends in .x (e.g. 13.x), you MUST change it to .* (e.g. 13.*).\\n' +\n'CRITICAL: For <project_path> and filePath, you MUST use the EXACT full relative path from the repository root. Do NOT hallucinate directories like src/ if they are not in the migration plan!\\n\\n' +\n'CRITICAL: targetContent MUST NOT be empty. To insert new code, you MUST include the surrounding existing code in targetContent and replace it. NEVER use an empty string for targetContent.\\n\\n' +\n'CRITICAL: NEVER attempt to add \\'Microsoft.NETCore.App\\' or \\'Microsoft.AspNetCore.App\\' as a NuGet package via ExecuteCommand. These are framework references, not NuGet packages! Attempting to add them will cause the build to fail.\\n\\n' +\n'Output ONLY a valid JSON array of objects with the following formats:\\n' +\n'1. ReplaceFileContent: { \"action\": \"ReplaceFileContent\", \"filePath\": \"...\", \"targetContent\": \"...\", \"replacementContent\": \"...\" }\\n' +\n'2. ExecuteCommand: { \"action\": \"ExecuteCommand\", \"command\": \"...\" }\\n\\n' +\n'Migration Plan:\\n' + $json.body.migration_plan }}"
+      },
+      "id": "741e13a0-d933-41a9-962e-747379f32cfe",
+      "name": "Migrator Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -28944,
+        14624
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Fix these build errors by generating a JSON array of execution steps (ReplaceFileContent or ExecuteCommand). Output ONLY a valid JSON array of objects with the following formats:\\n1. ReplaceFileContent: { \"action\": \"ReplaceFileContent\", \"filePath\": \"...\", \"targetContent\": \"...\", \"replacementContent\": \"...\" }\\n2. ExecuteCommand: { \"action\": \"ExecuteCommand\", \"command\": \"...\" } This is retry #' + ($runIndex + 1) + '.\\n\\nCRITICAL: targetContent MUST NOT be empty. To insert new code, you MUST include the surrounding existing code in targetContent and replace it (e.g., replace <PropertyGroup> with <PropertyGroup>\\n<Nullable>enable</Nullable>). NEVER use an empty string for targetContent.\\n\\nOutput ONLY a JSON array, e.g. [ { \"action\": \"...\" } ]\\nIMPORTANT: When specifying file paths or <project> paths, you MUST use the EXACT full relative path from the repository root (e.g. `src/TodoApi/TodoApi.csproj` or `tests/TodoApi.Tests/TodoApi.Tests.csproj`). Do NOT use just the filename. Do NOT use bash subshells like $(find ...). CRITICAL: Do NOT hallucinate files that do not exist in the repository (e.g. do NOT assume Startup.cs exists, as .NET 6+ uses Program.cs).\\nIMPORTANT: For NuGet packages, ALWAYS use ExecuteCommand `dotnet add [ACTUAL_PROJECT_FILE_PATH] package <name> --version <version>`. Do NOT use ReplaceFileContent for packages.\\nIMPORTANT: Do NOT output multiple overlapping ReplaceFileContent actions for the same file. Combine multiple changes into a single block replacement if necessary.\\nCRITICAL: targetContent MUST be specific enough to match EXACTLY ONE location in the file. Do NOT use generic strings like \"public IActionResult\" which appear multiple times. ALWAYS include the method name or surrounding code so it is unique!\\nCRITICAL: If you encounter NU1605 (package downgrade), you MUST generate an ExecuteCommand step to add the required package version. Use the ACTUAL project filename from the error message. For example, if the error is in src/Api/Api.csproj, output: `dotnet add src/Api/Api.csproj package Newtonsoft.Json --version 13.0.3`\\nCRITICAL: If you encounter CS4032 (The \"await\" operator can only be used within an async method), you MUST generate a ReplaceFileContent step that changes the method signature from `public IActionResult FetchData()` to `public async Task<IActionResult> FetchData()` AND includes the await inside the method body.\\nCRITICAL: NEVER attempt to add \\'Microsoft.NETCore.App\\' or \\'Microsoft.AspNetCore.App\\' as a NuGet package via ExecuteCommand. These are framework references, not NuGet packages! Attempting to add them will cause the build to fail.\\n\\nBuild errors:\\n' + $('Store Build Output').first().json.build_output + '\\n\\nCRITICAL: The Original Plan HAS ALREADY BEEN EXECUTED! The code in the file is ALREADY modified according to the Original Plan. For example, if the Original Plan changed WebClient to HttpClient, the file CURRENTLY CONTAINS HttpClient! Your targetContent MUST match the CURRENT state of the file, not the old state.\\n\\nOriginal plan:\\n' + $('Execute Webhook').first().json.body.migration_plan + '\\n\\nCRITICAL PATH RULE: The build logs will contain absolute paths like /projects/migration-XX/folder/file.cs. YOU MUST STRIP this prefix! You must ONLY use the relative path (e.g. folder/file.cs). DO NOT include /projects/migration-XX/ or projects/migration-XX/ in the filePath or in any dotnet commands.' }}"
+      },
+      "id": "c6a88689-9966-4187-932b-d3b4c92577ad",
+      "name": "Error Fixer Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -26400,
+        14976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst text = $input.first().json.text || $input.first().json.message || $input.first().json.response || '[]';\nlet cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();\nconst start = cleanText.indexOf('[');\nconst end = cleanText.lastIndexOf(']');\nif (start !== -1 && end !== -1) {\n    cleanText = cleanText.substring(start, end + 1);\n} else {\n    const startObj = cleanText.indexOf('{');\n    const endObj = cleanText.lastIndexOf('}');\n    if (startObj !== -1 && endObj !== -1) {\n        cleanText = '[' + cleanText.substring(startObj, endObj + 1) + ']';\n    }\n}\ntry {\n  let plan = JSON.parse(cleanText);\n  if (!Array.isArray(plan)) {\n    if (typeof plan === 'object' && plan !== null && plan.action) {\n      plan = [plan];\n    } else {\n      throw new Error(\"Parsed JSON is not an array and doesn't look like an action object.\");\n    }\n  }\n  return plan.map(item => ({ json: item }));\n} catch (e) {\n  throw new Error(\"LLM did not output valid JSON array:\\n\" + cleanText + \"\\nError: \" + e.message);\n}\n"
+      },
+      "id": "a3e42ab6-e378-48fb-9404-7b23335beba0",
+      "name": "Parse JSON Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -28624,
+        14368
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "4ed1ce6f-ab83-41f5-86d8-4054f91f050a",
+      "name": "Loop Plan Steps",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -28304,
+        14016
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ReplaceFileContent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ReplaceFileContent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ExecuteCommand",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ExecuteCommand"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "287d03e2-a74b-41ef-af55-b8c4dbfa6b04",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -28080,
+        14032
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5153/api/files/replace",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jobId: $('Execute Webhook').first().json.body.job_id, filePath: $json.filePath, targetContent: $json.targetContent, replacementContent: $json.replacementContent }) }}",
+        "options": {}
+      },
+      "id": "9ccbe3c2-a307-4800-8b6f-b9b03571fe88",
+      "name": "API ReplaceFileContent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -27856,
+        13808
+      ]
+    },
+    {
+      "parameters": {
+        "command": "={{ 'cd /projects/migration-' + $('Execute Webhook').first().json.body.job_id + ' && ' + $json.command }}"
+      },
+      "id": "48bec391-a128-4d2b-9ec4-5a5df4f9c756",
+      "name": "API ExecuteCommand",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -27872,
+        14016
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\nSLN=$(find $BASE -name '*.sln' | head -1)\n\nif [ -n \"$SLN\" ]; then\n  OUTPUT=$(dotnet build \"$SLN\" 2>&1)\n  STATUS=$?\nelse\n  PROJ=$(find $BASE -name '*.csproj' | head -1)\n  if [ -n \"$PROJ\" ]; then\n    OUTPUT=$(dotnet build \"$PROJ\" 2>&1)\n    STATUS=$?\n  else\n    OUTPUT=\"NO_PROJECT_FOUND\"\n    STATUS=1\n  fi\nfi\n\nif [ $STATUS -ne 0 ]; then\n  echo \"$OUTPUT\"\n  echo \"\"\n  echo \"======================================\"\n  echo \"CURRENT FILE CONTENTS FOR FILES WITH ERRORS:\"\n  echo \"======================================\"\n  FILES=$(echo \"$OUTPUT\" | grep -oE '/projects/migration-[0-9]+/[^:(]+' | sort | uniq)\n  for FILE in $FILES; do\n    if [ -f \"$FILE\" ]; then\n      echo \"--- START FILE: $FILE ---\"\n      cat \"$FILE\"\n      echo \"--- END FILE: $FILE ---\"\n      echo \"\"\n    fi\n  done\n  echo \"BUILD_FAILED\"\nelse\n  echo \"$OUTPUT\"\n  echo \"BUILD_SUCCESS\"\nfi"
+      },
+      "id": "ae79bf39-3920-4455-ae15-6aa406ffb40f",
+      "name": "Run Build",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -28032,
+        15312
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "net8-migration-execute",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "de97d66b-3395-4873-917f-36ff9e5f958c",
+      "name": "Execute Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -29408,
+        14768
+      ],
+      "webhookId": "dbc5f4d0-6ddc-4528-a18c-eadebbdcaae5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "425d8446-1cf7-4cde-97db-ff94b8253b4d",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -25120,
+        15072
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Started Execution Phase.\"\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "688188d1-6023-4394-b6a4-84be89f07c04",
+      "name": "Log Execution Start",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -29136,
+        14736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  detailsStr = $('Error Fixer Chain').first()?.json?.text || '';\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Error Fixer analyzed build failures and created a patch.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "07b46f29-f123-438a-9397-371a0834e92f",
+      "name": "Log Error Fixer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26032,
+        14976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Build').first()?.json?.stdout || '';\n  let stderr = $('Run Build').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Build executed.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "64bda7d6-d15a-4c31-bd31-bcb4df1040ac",
+      "name": "Log Build Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -27824,
+        15424
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst text = $input.first().json.text || $input.first().json.message || $input.first().json.response || '[]';\nlet cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();\nconst start = cleanText.indexOf('[');\nconst end = cleanText.lastIndexOf(']');\nif (start !== -1 && end !== -1) {\n    cleanText = cleanText.substring(start, end + 1);\n} else {\n    const startObj = cleanText.indexOf('{');\n    const endObj = cleanText.lastIndexOf('}');\n    if (startObj !== -1 && endObj !== -1) {\n        cleanText = '[' + cleanText.substring(startObj, endObj + 1) + ']';\n    }\n}\ntry {\n  let plan = JSON.parse(cleanText);\n  if (!Array.isArray(plan)) {\n    if (typeof plan === 'object' && plan !== null && plan.action) {\n      plan = [plan];\n    } else {\n      throw new Error(\"Parsed JSON is not an array and doesn't look like an action object.\");\n    }\n  }\n  return plan.map(item => ({ json: item }));\n} catch (e) {\n  throw new Error(\"LLM did not output valid JSON array:\\n\" + cleanText + \"\\nError: \" + e.message);\n}\n"
+      },
+      "id": "d34312ff-bf2b-42a9-95bf-cb01f94fb2ff",
+      "name": "Parse Error Fixer Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -27968,
+        14912
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "81a72057-7573-4637-be19-3ba3fdef00fa",
+      "name": "Error Fixer Loop",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -27728,
+        14512
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ReplaceFileContent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ReplaceFileContent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ExecuteCommand",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ExecuteCommand"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f252beba-e864-4188-8a47-06b4b7fe2886",
+      "name": "Error Fixer Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -27472,
+        14560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5153/api/files/replace",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jobId: $('Execute Webhook').first().json.body.job_id, filePath: $json.filePath, targetContent: $json.targetContent, replacementContent: $json.replacementContent }) }}",
+        "options": {}
+      },
+      "id": "61bce71f-5d6b-408e-a82f-460a2abc58b8",
+      "name": "Error Fixer Replace",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -27200,
+        14528
+      ]
+    },
+    {
+      "parameters": {
+        "command": "={{ 'cd /projects/migration-' + $('Execute Webhook').first().json.body.job_id + ' && ' + $json.command }}"
+      },
+      "id": "1e04da05-7a28-4994-980b-352522931726",
+      "name": "Error Fixer Execute",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -27200,
+        14800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Build').first()?.json?.stdout || '';\n  detailsStr = stdout;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Build succeeded! Running CVE security audit and unit tests...\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "a07c29dd-1c06-4aae-944c-3150d4792d5f",
+      "name": "Log Build Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26640,
+        14736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let tests = $('Run Tests').first()?.json?.stdout || '';\n  let security = $('Security Patch CVE Check').first()?.json?.stdout || '';\n  detailsStr = \"=== Security Audit ===\\n\" + security + \"\\n\\n=== Unit Tests ===\\n\" + tests;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Migration execution completed successfully! Generating file diffs for review...\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "1bd05a4e-0e9d-4c20-a2c8-341aec4f9d65",
+      "name": "Log Generating Diffs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25360,
+        14784
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "={{ false }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d6c0a265-530e-4274-80ce-162443d26634",
+      "name": "Check Error Fixer Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -26896,
+        14528
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "failed_replace",
+              "stringValue": "={{ true }}"
+            },
+            {
+              "name": "api_error",
+              "stringValue": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "27f9b332-40e0-4d92-b2e0-f6c564fa2655",
+      "name": "Mark Replace Failed",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -26704,
+        14352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let hasError = false;\nlet errorMessage = \"\";\ntry {\n  const errorItems = $('Mark Replace Failed').all();\n  if (errorItems && errorItems.length > 0) {\n    hasError = true;\n    errorMessage = errorItems.map(i => i.json.api_error).filter(e => e).join('\\n');\n  }\n} catch(e) {}\nreturn [{ json: { hasError, errorMessage } }];"
+      },
+      "id": "fa84d9bb-5a27-4243-b2f7-32f00d4ccbe2",
+      "name": "Aggregate Replace Errors",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -27392,
+        14320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ad3f6850-7e99-446e-87c7-5d73655d4880",
+      "name": "Any Replace Errors?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -27072,
+        14288
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "stdout",
+              "stringValue": "={{ 'API REPLACE ERROR(S):\\n' + $json.errorMessage + '\\n\\nThis means the targetContent you provided was found MULTIPLE TIMES in the file. You MUST provide a more specific targetContent string that includes more of the surrounding code so it matches EXACTLY ONE location.' }}"
+            },
+            {
+              "name": "exitCode",
+              "stringValue": "={{ 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "68bd49f0-7c87-476b-9a28-12f74fd1cfde",
+      "name": "Format API Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -26912,
+        14048
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reporter Agent": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Log Build Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Max Retries Reached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry": {
+      "main": [
+        [
+          {
+            "node": "Build Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Security Patch CVE Check": {
+      "main": [
+        [
+          {
+            "node": "Run Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Tests": {
+      "main": [
+        [
+          {
+            "node": "Test Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Gate": {
+      "main": [
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reporter LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reporter Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Migrator Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Chain": {
+      "main": [
+        [
+          {
+            "node": "Log Error Fixer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON Array": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Plan Steps": {
+      "main": [
+        [
+          {
+            "node": "Run Build",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Action": {
+      "main": [
+        [
+          {
+            "node": "API ReplaceFileContent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API ExecuteCommand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API ReplaceFileContent": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API ExecuteCommand": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Build": {
+      "main": [
+        [
+          {
+            "node": "Log Build Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Build Output": {
+      "main": [
+        [
+          {
+            "node": "Build Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Max Retries Reached?": {
+      "main": [
+        [
+          {
+            "node": "Failure Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Migrator LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Migrator Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Webhook": {
+      "main": [
+        [
+          {
+            "node": "Log Execution Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Log Generating Diffs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Failure Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failure Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Execution Start": {
+      "main": [
+        [
+          {
+            "node": "Migrator Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error Fixer": {
+      "main": [
+        [
+          {
+            "node": "Parse Error Fixer Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Build Output": {
+      "main": [
+        [
+          {
+            "node": "Store Build Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Error Fixer Array": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Loop": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Replace Errors",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Fixer Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Switch": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Replace",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Fixer Execute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Replace": {
+      "main": [
+        [
+          {
+            "node": "Check Error Fixer Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Execute": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Build Success": {
+      "main": [
+        [
+          {
+            "node": "Security Patch CVE Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Generating Diffs": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error Fixer Success": {
+      "main": [
+        [
+          {
+            "node": "Mark Replace Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Replace Failed": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Replace Errors": {
+      "main": [
+        [
+          {
+            "node": "Any Replace Errors?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Replace Errors?": {
+      "main": [
+        [
+          {
+            "node": "Format API Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Run Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Error": {
+      "main": [
+        [
+          {
+            "node": "Store Build Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "79ecdf7b-78ac-4e97-93f1-c8a4baa7f7d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
+  },
+  "id": "gJ9WUoi7aQAIT7qb",
+  "tags": [
+    {
+      "updatedAt": "2026-06-04T22:19:55.580Z",
+      "createdAt": "2026-06-04T22:19:55.580Z",
+      "id": "A1UiVsO8IfUtWbLO",
+      "name": "net8-migration"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.553Z",
+      "createdAt": "2026-06-04T22:19:55.553Z",
+      "id": "jaoQ74bsy1b2wl5n",
+      "name": "langchain"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.538Z",
+      "createdAt": "2026-06-04T22:19:55.538Z",
+      "id": "mDIA8LNCWd2AcbR4",
+      "name": "v4"
+    }
+  ]
+}
