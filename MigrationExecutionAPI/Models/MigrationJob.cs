@@ -28,6 +28,8 @@ public class MigrationJob
     public string? RepositoryProfileJson { get; set; }
     public RepositoryProfile? RepositoryProfile { get; set; }
 
+    public ICollection<MigrationTask> MigrationTasks { get; set; } = new List<MigrationTask>();
+
     public int? TeamId { get; set; }
     public Team? Team { get; set; }
     public int? AssignedToUserId { get; set; }

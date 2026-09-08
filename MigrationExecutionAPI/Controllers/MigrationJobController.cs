@@ -106,6 +106,10 @@ public class MigrationJobController : ControllerBase
     {
         var job = await _context.MigrationJobs
             .Include(j => j.FileChanges)
+            .Include(j => j.LlmUsageLogs)
+            .Include(j => j.NodeExecutionLogs)
+            .Include(j => j.ApprovalRecords)
+            .Include(j => j.MigrationTasks)
             .FirstOrDefaultAsync(j => j.Id == id);
             
         if (job == null)
