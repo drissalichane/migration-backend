@@ -665,7 +665,7 @@ public class MigrationJobController : ControllerBase
     {
         var job = await _context.MigrationJobs.FindAsync(id);
         if (job == null) return NotFound("Job not found");
-        if (string.IsNullOrEmpty(job.PrUrl)) return BadRequest("Job has no PR to sync.");
+        if (string.IsNullOrEmpty(job.PrUrl)) return Ok(new { Status = job.Status, Message = "Job has no PR to sync." });
 
         var githubToken = User.FindFirst("github_token")?.Value;
         if (string.IsNullOrEmpty(githubToken)) return Unauthorized("No GitHub token found.");
