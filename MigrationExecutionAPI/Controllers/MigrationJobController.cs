@@ -415,6 +415,55 @@ public class MigrationJobController : ControllerBase
                     currentJob.ExecutionReport = responseBody;
                 }
 
+                // Parse tasks from Reporter LLM if present
+                if (!string.IsNullOrEmpty(currentJob.ExecutionReport))
+                {
+                    var reportText = currentJob.ExecutionReport;
+                    var taskMarker = "---TASKS---";
+                    var markerIndex = reportText.IndexOf(taskMarker);
+                    if (markerIndex >= 0)
+                    {
+                        var tasksJsonStr = reportText.Substring(markerIndex + taskMarker.Length).Trim();
+                        // Remove tasks block from report
+                        currentJob.ExecutionReport = reportText.Substring(0, markerIndex).Trim();
+                        try
+                        {
+                            // Strip markdown code block formatting if present
+                            if (tasksJsonStr.StartsWith("```json")) tasksJsonStr = tasksJsonStr.Substring(7);
+                            else if (tasksJsonStr.StartsWith("```")) tasksJsonStr = tasksJsonStr.Substring(3);
+                            if (tasksJsonStr.EndsWith("```")) tasksJsonStr = tasksJsonStr.Substring(0, tasksJsonStr.Length - 3);
+
+                            var generatedTasks = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, string>>>(tasksJsonStr.Trim());
+                            if (generatedTasks != null)
+                            {
+                                foreach (var gt in generatedTasks)
+                                {
+                                    if (gt.TryGetValue("title", out var title))
+                                    {
+                                        gt.TryGetValue("description", out var desc);
+                                        db.MigrationTasks.Add(new MigrationTask
+                                        {
+                                            Title = $"[Reporter Agent] {title}",
+                                            Description = desc ?? "",
+                                            Status = "PendingApproval",
+                                            MigrationJobId = currentJob.Id,
+                                            CreatedAt = DateTime.UtcNow
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            db.JobLogs.Add(new JobLog {
+                                MigrationJobId = currentJob.Id, Level = "warn", Phase = "Execute",
+                                Message = "Failed to parse tasks from reporter LLM: " + ex.Message,
+                                Timestamp = DateTime.UtcNow
+                            });
+                        }
+                    }
+                }
+
                 if (!isStructuredSuccess ||
                     currentJob.ExecutionReport?.Contains("BUILD_FAILED") == true ||
                     currentJob.ExecutionReport?.Contains("errorMessage") == true ||
