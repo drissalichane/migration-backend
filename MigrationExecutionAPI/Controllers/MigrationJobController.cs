@@ -110,7 +110,10 @@ public class MigrationJobController : ControllerBase
             .Include(j => j.LlmUsageLogs)
             .Include(j => j.NodeExecutionLogs)
             .Include(j => j.ApprovalRecords)
+                .ThenInclude(a => a.ApproverUser)
             .Include(j => j.MigrationTasks)
+            .Include(j => j.Team)
+            .Include(j => j.AssignedToUser)
             .FirstOrDefaultAsync(j => j.Id == id);
             
         if (job == null)
@@ -123,6 +126,14 @@ public class MigrationJobController : ControllerBase
     [AllowAnonymous] // Open for testing, normally should be Authorize
     public async Task<IActionResult> Analyze([FromBody] AnalyzeRequest request, [FromServices] IServiceScopeFactory scopeFactory)
     {
+        var username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        var idClaim = User.FindFirst("id")?.Value;
+        int? assignedUserId = null;
+        if (int.TryParse(idClaim, out var uid))
+        {
+            assignedUserId = uid;
+        }
+
         // 1. Create the job in SQLite
         var job = new MigrationJob
         {
@@ -130,7 +141,8 @@ public class MigrationJobController : ControllerBase
             TargetBranch = request.TargetBranch,
             TargetCommit = request.TargetCommit,
             Status = "Analyzing",
-            CreatedBy = "user"
+            CreatedBy = username,
+            AssignedToUserId = assignedUserId
         };
         _context.MigrationJobs.Add(job);
         await _context.SaveChangesAsync();
@@ -236,6 +248,22 @@ public class MigrationJobController : ControllerBase
             Message = "Initiating execution phase...",
             Timestamp = DateTime.UtcNow
         });
+
+        // Record the Phase 1 approval
+        var idClaim = User.FindFirst("id")?.Value;
+        int? approverUserId = null;
+        if (int.TryParse(idClaim, out var uid))
+        {
+            approverUserId = uid;
+        }
+        
+        job.ApprovalRecords.Add(new ApprovalRecord
+        {
+            ApproverUserId = approverUserId,
+            ApprovedAt = DateTime.UtcNow,
+            ExecutionOverridePrompt = "Phase 1: Migration Plan Approved"
+        });
+
         await _context.SaveChangesAsync();
 
         var jobId = job.Id;
@@ -437,6 +465,21 @@ public class MigrationJobController : ControllerBase
             job.PrUrl = prUrl;
             job.CommitHash = commitHash;
             job.Status = "Approved and PR Created";
+
+            // Record the Phase 2 approval
+            var idClaim = User.FindFirst("id")?.Value;
+            int? approverUserId = null;
+            if (int.TryParse(idClaim, out var uid))
+            {
+                approverUserId = uid;
+            }
+            
+            job.ApprovalRecords.Add(new ApprovalRecord
+            {
+                ApproverUserId = approverUserId,
+                ApprovedAt = DateTime.UtcNow,
+                ExecutionOverridePrompt = "Phase 2: Code Changes Approved and PR Created"
+            });
         }
         catch (Exception ex)
         {
