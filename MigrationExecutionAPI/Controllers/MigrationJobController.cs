@@ -19,7 +19,7 @@ public class MigrationJobController : ControllerBase
     private readonly IFileService _fileService;
     
     private readonly GitHubService _githubService;
-    private static Dictionary<string, (decimal Prompt, decimal Completion)> _modelPricingCache = null;
+    private static Dictionary<string, (decimal Prompt, decimal Completion)>? _modelPricingCache = null;
     private static DateTime _cacheLastUpdated = DateTime.MinValue;
 
     private async Task<decimal> GetCostUsdAsync(string modelName, int promptTokens, int completionTokens)
@@ -41,7 +41,8 @@ public class MigrationJobController : ControllerBase
                         var promptStr = pricing.GetProperty("prompt").GetString();
                         var compStr = pricing.GetProperty("completion").GetString();
                         
-                        if (decimal.TryParse(promptStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) && 
+                        if (id != null && 
+                            decimal.TryParse(promptStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) && 
                             decimal.TryParse(compStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var c))
                         {
                             cache[id] = (p, c);
