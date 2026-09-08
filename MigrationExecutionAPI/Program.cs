@@ -52,7 +52,7 @@ builder.Services.AddScoped<IGitService, GitService>();
 builder.Services.AddScoped<GitHubService>();
 
 builder.Services.AddDbContext<MigrationDbContext>(options => {
-    options.UseSqlite("Data Source=migration.db");
+    options.UseSqlite("Data Source=migration.db", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
     options.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
@@ -118,7 +118,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 

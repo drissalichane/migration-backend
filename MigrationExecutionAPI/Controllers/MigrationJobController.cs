@@ -207,71 +207,6 @@ public class MigrationJobController : ControllerBase
                 {
                     currentJob.MigrationPlanJson = planJson;
                     currentJob.Status = "Pending Plan Approval";
-
-                    // Auto-generate MigrationTasks from "should" priority items
-                    try
-                    {
-                        var planObj = System.Text.Json.Nodes.JsonNode.Parse(planJson);
-                        var taskSections = new[] {
-                            ("package_updates", "name", (string?)null),
-                            ("startup_changes", "description", (string?)null),
-                            ("nuget_versions_needed", "package", (string?)null)
-                        };
-
-                        foreach (var (section, titleField, descField) in taskSections)
-                        {
-                            var items = planObj?[section]?.AsArray();
-                            if (items == null) continue;
-                            foreach (var item in items)
-                            {
-                                if (item?["priority"]?.GetValue<string>() != "should") continue;
-                                db.MigrationTasks.Add(new MigrationTask
-                                {
-                                    Title = $"[{section}] {item?[titleField]?.GetValue<string>() ?? "Unknown"}",
-                                    Description = descField != null 
-                                        ? (item?[descField]?.GetValue<string>() ?? "") 
-                                        : (item?.ToJsonString() ?? ""),
-                                    Status = "PendingApproval",
-                                    MigrationJobId = currentJob.Id,
-                                    CreatedAt = DateTime.UtcNow
-                                });
-                            }
-                        }
-
-                        // file_changes has per-change granularity
-                        var fileChangesArr = planObj?["file_changes"]?.AsArray();
-                        if (fileChangesArr != null)
-                        {
-                            foreach (var fc in fileChangesArr)
-                            {
-                                var file = fc?["file"]?.GetValue<string>();
-                                var changes = fc?["changes"]?.AsArray();
-                                if (changes == null) continue;
-                                foreach (var c in changes)
-                                {
-                                    if (c?["priority"]?.GetValue<string>() == "should")
-                                    {
-                                        db.MigrationTasks.Add(new MigrationTask
-                                        {
-                                            Title = $"[file_changes] {file}",
-                                            Description = c?["reason"]?.GetValue<string>() ?? "",
-                                            Status = "PendingApproval",
-                                            MigrationJobId = currentJob.Id,
-                                            CreatedAt = DateTime.UtcNow
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        db.JobLogs.Add(new JobLog {
-                            MigrationJobId = currentJob.Id, Level = "warn", Phase = "Analyze",
-                            Message = "Failed to auto-create tasks from should items: " + ex.Message,
-                            Timestamp = DateTime.UtcNow
-                        });
-                    }
                 }
                 await db.SaveChangesAsync();
             }
@@ -391,7 +326,7 @@ public class MigrationJobController : ControllerBase
                                 mustOnly.Add(item);
                             }
                         }
-                        planObj[key] = mustOnly;
+                        planObj![key] = mustOnly;
                     }
                     
                     var fileChangesArr = planObj?["file_changes"]?.AsArray();
@@ -408,13 +343,13 @@ public class MigrationJobController : ControllerBase
                                     }
                                 }
                                 if (mustChanges.Count > 0) {
-                                    fileChange["changes"] = mustChanges;
+                                    fileChange!["changes"] = mustChanges;
                                     fileChangesArr.Remove(fileChange);
                                     mustFileChanges.Add(fileChange);
                                 }
                             }
                         }
-                        planObj["file_changes"] = mustFileChanges;
+                        planObj!["file_changes"] = mustFileChanges;
                     }
 
                     filteredPlan = planObj?.ToJsonString() ?? filteredPlan;
@@ -602,6 +537,84 @@ public class MigrationJobController : ControllerBase
             job.PrUrl = prUrl;
             job.CommitHash = commitHash;
             job.Status = "Approved and PR Created";
+
+            // Auto-generate MigrationTasks from "should" priority items in the plan
+            if (!string.IsNullOrEmpty(job.MigrationPlanJson))
+            {
+                try
+                {
+                    var planObj = System.Text.Json.Nodes.JsonNode.Parse(job.MigrationPlanJson);
+                    var taskSections = new[] {
+                        ("package_updates", "name", (string?)null),
+                        ("startup_changes", "description", (string?)null),
+                        ("nuget_versions_needed", "package", (string?)null)
+                    };
+
+                    foreach (var (section, titleField, descField) in taskSections)
+                    {
+                        var items = planObj?[section]?.AsArray();
+                        if (items == null) continue;
+                        foreach (var item in items)
+                        {
+                            if (item?["priority"]?.GetValue<string>() != "should") continue;
+                            
+                            var title = $"[{section}] {item?[titleField]?.GetValue<string>() ?? "Unknown"}";
+                            if (!_context.MigrationTasks.Any(t => t.MigrationJobId == job.Id && t.Title == title))
+                            {
+                                _context.MigrationTasks.Add(new MigrationTask
+                                {
+                                    Title = title,
+                                    Description = descField != null 
+                                        ? (item?[descField]?.GetValue<string>() ?? "") 
+                                        : (item?.ToJsonString() ?? ""),
+                                    Status = "PendingApproval",
+                                    MigrationJobId = job.Id,
+                                    CreatedAt = DateTime.UtcNow
+                                });
+                            }
+                        }
+                    }
+
+                    var fileChangesArr = planObj?["file_changes"]?.AsArray();
+                    if (fileChangesArr != null)
+                    {
+                        foreach (var fc in fileChangesArr)
+                        {
+                            var file = fc?["file"]?.GetValue<string>();
+                            var changes = fc?["changes"]?.AsArray();
+                            if (changes == null) continue;
+                            foreach (var c in changes)
+                            {
+                                if (c?["priority"]?.GetValue<string>() == "should")
+                                {
+                                    var title = $"[file_changes] {file}";
+                                    var desc = c?["reason"]?.GetValue<string>() ?? "";
+                                    
+                                    if (!_context.MigrationTasks.Any(t => t.MigrationJobId == job.Id && t.Title == title && t.Description == desc))
+                                    {
+                                        _context.MigrationTasks.Add(new MigrationTask
+                                        {
+                                            Title = title,
+                                            Description = desc,
+                                            Status = "PendingApproval",
+                                            MigrationJobId = job.Id,
+                                            CreatedAt = DateTime.UtcNow
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _context.JobLogs.Add(new JobLog {
+                        MigrationJobId = job.Id, Level = "warn", Phase = "Approve",
+                        Message = "Failed to auto-create tasks from should items: " + ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+            }
 
             // Record the Phase 2 approval
             var idClaim = User.FindFirst("id")?.Value;
