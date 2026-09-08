@@ -207,6 +207,71 @@ public class MigrationJobController : ControllerBase
                 {
                     currentJob.MigrationPlanJson = planJson;
                     currentJob.Status = "Pending Plan Approval";
+
+                    // Auto-generate MigrationTasks from "should" priority items
+                    try
+                    {
+                        var planObj = System.Text.Json.Nodes.JsonNode.Parse(planJson);
+                        var taskSections = new[] {
+                            ("package_updates", "name", (string?)null),
+                            ("startup_changes", "description", (string?)null),
+                            ("nuget_versions_needed", "package", (string?)null)
+                        };
+
+                        foreach (var (section, titleField, descField) in taskSections)
+                        {
+                            var items = planObj?[section]?.AsArray();
+                            if (items == null) continue;
+                            foreach (var item in items)
+                            {
+                                if (item?["priority"]?.GetValue<string>() != "should") continue;
+                                db.MigrationTasks.Add(new MigrationTask
+                                {
+                                    Title = $"[{section}] {item?[titleField]?.GetValue<string>() ?? "Unknown"}",
+                                    Description = descField != null 
+                                        ? (item?[descField]?.GetValue<string>() ?? "") 
+                                        : (item?.ToJsonString() ?? ""),
+                                    Status = "PendingApproval",
+                                    MigrationJobId = currentJob.Id,
+                                    CreatedAt = DateTime.UtcNow
+                                });
+                            }
+                        }
+
+                        // file_changes has per-change granularity
+                        var fileChangesArr = planObj?["file_changes"]?.AsArray();
+                        if (fileChangesArr != null)
+                        {
+                            foreach (var fc in fileChangesArr)
+                            {
+                                var file = fc?["file"]?.GetValue<string>();
+                                var changes = fc?["changes"]?.AsArray();
+                                if (changes == null) continue;
+                                foreach (var c in changes)
+                                {
+                                    if (c?["priority"]?.GetValue<string>() == "should")
+                                    {
+                                        db.MigrationTasks.Add(new MigrationTask
+                                        {
+                                            Title = $"[file_changes] {file}",
+                                            Description = c?["reason"]?.GetValue<string>() ?? "",
+                                            Status = "PendingApproval",
+                                            MigrationJobId = currentJob.Id,
+                                            CreatedAt = DateTime.UtcNow
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        db.JobLogs.Add(new JobLog {
+                            MigrationJobId = currentJob.Id, Level = "warn", Phase = "Analyze",
+                            Message = "Failed to auto-create tasks from should items: " + ex.Message,
+                            Timestamp = DateTime.UtcNow
+                        });
+                    }
                 }
                 await db.SaveChangesAsync();
             }
@@ -231,9 +296,14 @@ public class MigrationJobController : ControllerBase
         return Ok(new { JobId = job.Id, Status = job.Status });
     }
 
+    public class ExecutePlanRequest
+    {
+        public string? UpdatedPlanJson { get; set; }
+    }
+
     [HttpPost("{id}/execute")]
     [AllowAnonymous]
-    public async Task<IActionResult> ExecutePlan(int id, [FromServices] IServiceScopeFactory scopeFactory)
+    public async Task<IActionResult> ExecutePlan(int id, [FromBody] ExecutePlanRequest request, [FromServices] IServiceScopeFactory scopeFactory)
     {
         var job = await _context.MigrationJobs.FindAsync(id);
         if (job == null) return NotFound(new { Message = "Job not found" });
@@ -263,6 +333,11 @@ public class MigrationJobController : ControllerBase
             ApprovedAt = DateTime.UtcNow,
             ExecutionOverridePrompt = "Phase 1: Migration Plan Approved"
         });
+
+        if (!string.IsNullOrEmpty(request.UpdatedPlanJson))
+        {
+            job.MigrationPlanJson = request.UpdatedPlanJson;
+        }
 
         await _context.SaveChangesAsync();
 
@@ -298,7 +373,69 @@ public class MigrationJobController : ControllerBase
                     }
                 }
 
-                var payload = new { job_id = currentJob.Id, migration_plan = currentJob.MigrationPlanJson };
+                string filteredPlan = currentJob.MigrationPlanJson ?? "{}";
+                try
+                {
+                    var planObj = System.Text.Json.Nodes.JsonNode.Parse(filteredPlan);
+                    var filterableKeys = new[] { "package_updates", "startup_changes", "nuget_versions_needed" };
+                    foreach (var key in filterableKeys)
+                    {
+                        var arr = planObj?[key]?.AsArray();
+                        if (arr == null) continue;
+                        var mustOnly = new System.Text.Json.Nodes.JsonArray();
+                        foreach (var item in arr.ToList())
+                        {
+                            if (item?["priority"]?.GetValue<string>() != "should")
+                            {
+                                arr.Remove(item);
+                                mustOnly.Add(item);
+                            }
+                        }
+                        planObj[key] = mustOnly;
+                    }
+                    
+                    var fileChangesArr = planObj?["file_changes"]?.AsArray();
+                    if (fileChangesArr != null) {
+                        var mustFileChanges = new System.Text.Json.Nodes.JsonArray();
+                        foreach (var fileChange in fileChangesArr.ToList()) {
+                            var changesArr = fileChange?["changes"]?.AsArray();
+                            if (changesArr != null) {
+                                var mustChanges = new System.Text.Json.Nodes.JsonArray();
+                                foreach(var change in changesArr.ToList()) {
+                                    if (change?["priority"]?.GetValue<string>() != "should") {
+                                        changesArr.Remove(change);
+                                        mustChanges.Add(change);
+                                    }
+                                }
+                                if (mustChanges.Count > 0) {
+                                    fileChange["changes"] = mustChanges;
+                                    fileChangesArr.Remove(fileChange);
+                                    mustFileChanges.Add(fileChange);
+                                }
+                            }
+                        }
+                        planObj["file_changes"] = mustFileChanges;
+                    }
+
+                    filteredPlan = planObj?.ToJsonString() ?? filteredPlan;
+                    
+                    db.JobLogs.Add(new JobLog {
+                        MigrationJobId = currentJob.Id, Level = "info", Phase = "Execute",
+                        Message = "Plan filtered to must-only items for execution",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+                catch (Exception ex)
+                {
+                    db.JobLogs.Add(new JobLog {
+                        MigrationJobId = currentJob.Id, Level = "warn", Phase = "Execute",
+                        Message = "Could not filter plan by priority, sending full plan: " + ex.Message,
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+                await db.SaveChangesAsync();
+
+                var payload = new { job_id = currentJob.Id, migration_plan = filteredPlan };
                 var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
                 var response = await httpClient.PostAsync("http://localhost:5678/webhook/net8-migration-execute", content);
