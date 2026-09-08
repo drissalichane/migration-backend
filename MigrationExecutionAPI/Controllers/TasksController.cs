@@ -68,6 +68,17 @@ public class TasksController : ControllerBase
         return Ok(task);
     }
 
+    [HttpPut("{id}/description")]
+    public async Task<IActionResult> UpdateDescription(int id, [FromBody] UpdateDescriptionRequest request)
+    {
+        var task = await _context.MigrationTasks.FindAsync(id);
+        if (task == null) return NotFound();
+
+        task.Description = request.Description;
+        await _context.SaveChangesAsync();
+        return Ok(task);
+    }
+
     [HttpPut("{id}/assign")]
     public async Task<IActionResult> AssignTask(int id, [FromBody] AssignTaskRequest request)
     {
@@ -160,4 +171,8 @@ public class UpdateStatusRequest {
 
 public class AssignTaskRequest {
     public int? UserId { get; set; }
+}
+
+public class UpdateDescriptionRequest {
+    public string Description { get; set; } = string.Empty;
 }
