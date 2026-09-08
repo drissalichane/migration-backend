@@ -13,6 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
@@ -47,8 +51,10 @@ builder.Services.AddScoped<IBuildService, BuildService>();
 builder.Services.AddScoped<IGitService, GitService>();
 builder.Services.AddScoped<GitHubService>();
 
-builder.Services.AddDbContext<MigrationDbContext>(options =>
-    options.UseSqlite("Data Source=migration.db"));
+builder.Services.AddDbContext<MigrationDbContext>(options => {
+    options.UseSqlite("Data Source=migration.db");
+    options.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 builder.Services.AddAuthentication(options =>
     {

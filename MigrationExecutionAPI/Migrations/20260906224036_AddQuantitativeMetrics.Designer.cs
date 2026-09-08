@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MigrationExecutionAPI.Data;
 
@@ -10,9 +11,11 @@ using MigrationExecutionAPI.Data;
 namespace MigrationExecutionAPI.Migrations
 {
     [DbContext(typeof(MigrationDbContext))]
-    partial class MigrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260906224036_AddQuantitativeMetrics")]
+    partial class AddQuantitativeMetrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -198,27 +201,12 @@ namespace MigrationExecutionAPI.Migrations
                     b.Property<bool>("IsArchived")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool?>("IsSuccess")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("MergeCommitSha")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MigrationPlanJson")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<long?>("Phase1ExecutionTimeMs")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool?>("Phase1Success")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long?>("Phase2ExecutionTimeMs")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool?>("Phase2Success")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("PrUrl")
                         .HasColumnType("TEXT");
@@ -364,36 +352,6 @@ namespace MigrationExecutionAPI.Migrations
                     b.ToTable("MigrationTasks");
                 });
 
-            modelBuilder.Entity("MigrationExecutionAPI.Models.NodeExecutionLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("ExecutionTimeMs")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MigrationJobId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("NodeName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Phase")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MigrationJobId");
-
-                    b.ToTable("NodeExecutionLogs");
-                });
-
             modelBuilder.Entity("MigrationExecutionAPI.Models.Organization", b =>
                 {
                     b.Property<int>("Id")
@@ -415,7 +373,7 @@ namespace MigrationExecutionAPI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 9, 8, 1, 12, 28, 59, DateTimeKind.Utc).AddTicks(1663),
+                            CreatedAt = new DateTime(2026, 9, 6, 22, 40, 34, 889, DateTimeKind.Utc).AddTicks(4979),
                             Name = "Global Corp"
                         });
                 });
@@ -717,17 +675,6 @@ namespace MigrationExecutionAPI.Migrations
                     b.Navigation("MigrationJob");
                 });
 
-            modelBuilder.Entity("MigrationExecutionAPI.Models.NodeExecutionLog", b =>
-                {
-                    b.HasOne("MigrationExecutionAPI.Models.MigrationJob", "MigrationJob")
-                        .WithMany("NodeExecutionLogs")
-                        .HasForeignKey("MigrationJobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MigrationJob");
-                });
-
             modelBuilder.Entity("MigrationExecutionAPI.Models.Project", b =>
                 {
                     b.HasOne("MigrationExecutionAPI.Models.User", "Manager")
@@ -826,8 +773,6 @@ namespace MigrationExecutionAPI.Migrations
                     b.Navigation("JobLogs");
 
                     b.Navigation("LlmUsageLogs");
-
-                    b.Navigation("NodeExecutionLogs");
 
                     b.Navigation("RepositoryProfile");
                 });

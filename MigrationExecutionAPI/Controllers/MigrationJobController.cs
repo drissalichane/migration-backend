@@ -17,7 +17,54 @@ public class MigrationJobController : ControllerBase
 {
     private readonly MigrationDbContext _context;
     private readonly IFileService _fileService;
+    
     private readonly GitHubService _githubService;
+    private static Dictionary<string, (decimal Prompt, decimal Completion)> _modelPricingCache = null;
+    private static DateTime _cacheLastUpdated = DateTime.MinValue;
+
+    private async Task<decimal> GetCostUsdAsync(string modelName, int promptTokens, int completionTokens)
+    {
+        try
+        {
+            if (_modelPricingCache == null || (DateTime.UtcNow - _cacheLastUpdated).TotalHours > 24)
+            {
+                var response = await _httpClient.GetAsync("https://openrouter.ai/api/v1/models");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonStr = await response.Content.ReadAsStringAsync();
+                    using var json = JsonDocument.Parse(jsonStr);
+                    var cache = new Dictionary<string, (decimal, decimal)>();
+                    foreach (var model in json.RootElement.GetProperty("data").EnumerateArray())
+                    {
+                        var id = model.GetProperty("id").GetString();
+                        var pricing = model.GetProperty("pricing");
+                        var promptStr = pricing.GetProperty("prompt").GetString();
+                        var compStr = pricing.GetProperty("completion").GetString();
+                        
+                        if (decimal.TryParse(promptStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) && 
+                            decimal.TryParse(compStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var c))
+                        {
+                            cache[id] = (p, c);
+                        }
+                    }
+                    _modelPricingCache = cache;
+                    _cacheLastUpdated = DateTime.UtcNow;
+                }
+            }
+
+            if (_modelPricingCache != null && _modelPricingCache.TryGetValue(modelName, out var rates))
+            {
+                return (promptTokens * rates.Prompt) + (completionTokens * rates.Completion);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching OpenRouter pricing: {ex.Message}");
+        }
+        
+        return 0; // Fallback
+    }
+
     private readonly HttpClient _httpClient;
 
     public MigrationJobController(MigrationDbContext context, IFileService fileService, GitHubService githubService)
@@ -34,6 +81,8 @@ public class MigrationJobController : ControllerBase
     {
         var jobs = await _context.MigrationJobs
             .Include(j => j.FileChanges)
+            .Include(j => j.LlmUsageLogs)
+            .Include(j => j.NodeExecutionLogs)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
         return Ok(jobs);
@@ -562,6 +611,94 @@ public class MigrationJobController : ControllerBase
 
         return Ok(logs);
     }
+
+    [HttpPost("{id}/metrics")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateMetrics(int id, [FromBody] UpdateMetricsRequest request)
+    {
+        var job = await _context.MigrationJobs.FindAsync(id);
+        if (job == null) return NotFound("Job not found");
+
+        if (request.Phase1ExecutionTimeMs.HasValue) {
+            job.Phase1ExecutionTimeMs = request.Phase1ExecutionTimeMs;
+            job.ExecutionTimeMs = request.Phase1ExecutionTimeMs;
+        }
+        if (request.Phase2ExecutionTimeMs.HasValue) {
+            job.Phase2ExecutionTimeMs = request.Phase2ExecutionTimeMs;
+            job.ExecutionTimeMs = (job.Phase1ExecutionTimeMs ?? 0) + request.Phase2ExecutionTimeMs.Value;
+        }
+        if (request.InitialErrorCount.HasValue) job.InitialErrorCount = request.InitialErrorCount;
+        if (request.ResidualErrorCount.HasValue) job.ResidualErrorCount = request.ResidualErrorCount;
+        if (request.ErrorFixerIterations.HasValue) job.ErrorFixerIterations = request.ErrorFixerIterations;
+        if (request.SuccessRate.HasValue) job.SuccessRate = request.SuccessRate;
+        if (request.RegressionRate.HasValue) job.RegressionRate = request.RegressionRate;
+        
+        if (request.Phase1Success.HasValue) job.Phase1Success = request.Phase1Success;
+        if (request.Phase2Success.HasValue) job.Phase2Success = request.Phase2Success;
+        if (request.IsSuccess.HasValue) job.IsSuccess = request.IsSuccess;
+
+        if (request.NodeExecutions != null)
+        {
+            foreach (var node in request.NodeExecutions)
+            {
+                _context.NodeExecutionLogs.Add(new NodeExecutionLog
+                {
+                    MigrationJobId = job.Id,
+                    NodeName = node.NodeName,
+                    Phase = node.Phase,
+                    ExecutionTimeMs = node.ExecutionTimeMs
+                });
+            }
+        }
+
+        if (request.LlmUsages != null)
+        {
+            foreach (var usage in request.LlmUsages)
+            {
+                var calculatedCost = await GetCostUsdAsync(usage.ModelName, usage.PromptTokens, usage.CompletionTokens);
+                _context.LlmUsageLogs.Add(new LlmUsageLog
+                {
+                    MigrationJobId = job.Id,
+                    AgentName = usage.AgentName,
+                    ModelName = usage.ModelName,
+                    Provider = usage.Provider,
+                    PromptTokens = usage.PromptTokens,
+                    CompletionTokens = usage.CompletionTokens,
+                    TotalTokens = usage.TotalTokens,
+                    TotalCostUsd = calculatedCost > 0 ? calculatedCost : usage.TotalCostUsd
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { Message = "Metrics updated successfully" });
+    }
+
+    [HttpPost("{id}/llm-usage")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AddLlmUsage(int id, [FromBody] AddLlmUsageRequest request)
+    {
+        var job = await _context.MigrationJobs.FindAsync(id);
+        if (job == null) return NotFound("Job not found");
+
+        var usage = new LlmUsageLog
+        {
+            MigrationJobId = job.Id,
+            AgentName = request.AgentName,
+            ModelName = request.ModelName,
+            Provider = request.Provider,
+            PromptTokens = request.PromptTokens,
+            CompletionTokens = request.CompletionTokens,
+            TotalTokens = request.TotalTokens,
+            TotalCostUsd = request.TotalCostUsd,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.LlmUsageLogs.Add(usage);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Message = "LLM Usage logged successfully", LogId = usage.Id });
+    }
 }
 
 public class BulkArchiveRequest
@@ -608,4 +745,55 @@ public class ApproveFileEdit
     public int FileChangeId { get; set; }
     public bool Accepted { get; set; }
     public string ManualReplacement { get; set; } = string.Empty;
+}
+
+public class UpdateMetricsRequest
+{
+    public long? ExecutionTimeMs { get; set; }
+    public long? Phase1ExecutionTimeMs { get; set; }
+    public long? Phase2ExecutionTimeMs { get; set; }
+    public int? InitialErrorCount { get; set; }
+    public int? ResidualErrorCount { get; set; }
+    public int? ErrorFixerIterations { get; set; }
+    public double? SuccessRate { get; set; }
+    public double? RegressionRate { get; set; }
+    public bool? Phase1Success { get; set; }
+    public bool? Phase2Success { get; set; }
+    public bool? IsSuccess { get; set; }
+    public List<NodeExecutionDto>? NodeExecutions { get; set; }
+    public List<LlmUsageDto>? LlmUsages { get; set; }
+}
+
+public class NodeExecutionDto
+{
+    public string NodeName { get; set; } = string.Empty;
+    public string Phase { get; set; } = string.Empty;
+    public long ExecutionTimeMs { get; set; }
+}
+
+public class LlmUsageDto
+{
+    public string AgentName { get; set; } = string.Empty;
+    public string ModelName { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
+    public int PromptTokens { get; set; }
+    public int CompletionTokens { get; set; }
+    public int TotalTokens { get; set; }
+    public decimal TotalCostUsd { get; set; }
+}
+
+public class AddLlmUsageRequest
+{
+    public string AgentName { get; set; } = string.Empty;
+    public string ModelName { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
+    public int PromptTokens { get; set; }
+    public int CompletionTokens { get; set; }
+    public int TotalTokens { get; set; }
+    public decimal TotalCostUsd { get; set; }
+}
+
+public class ExecuteRequest
+{
+    public string? CustomPrompt { get; set; }
 }

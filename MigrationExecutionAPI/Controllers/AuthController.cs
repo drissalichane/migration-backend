@@ -87,7 +87,7 @@ public class AuthController : ControllerBase
         var tokenString = tokenHandler.WriteToken(jwt);
 
         // Redirect back to frontend with the token and profile info
-        return Redirect($"http://localhost:5173/login?token={tokenString}&role={user.Role}&name={Uri.EscapeDataString(user.Username)}&avatar={Uri.EscapeDataString(user.AvatarUrl ?? "")}");
+        return Redirect($"http://localhost:5173/login?token={tokenString}&role={user.Role}&name={Uri.EscapeDataString(user.Username)}&avatar={Uri.EscapeDataString(user.AvatarUrl ?? "")}&userId={user.Id}&teamId={user.TeamId}");
     }
 
     [HttpPost("login")]
@@ -115,7 +115,7 @@ public class AuthController : ControllerBase
         };
         
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return Ok(new { Token = tokenHandler.WriteToken(token), Role = user.Role });
+        return Ok(new { token = tokenHandler.WriteToken(token), role = user.Role, userId = user.Id, teamId = user.TeamId });
     }
 
     [HttpPost("register")]

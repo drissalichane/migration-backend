@@ -10,4 +10,7 @@ public class User
     public string? GitHubId { get; set; }
     public string? GitHubToken { get; set; }
     public string? AvatarUrl { get; set; }
+
+    public int? TeamId { get; set; }
+    public Team? Team { get; set; }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MigrationExecutionAPI.Data;
 
@@ -10,9 +11,11 @@ using MigrationExecutionAPI.Data;
 namespace MigrationExecutionAPI.Migrations
 {
     [DbContext(typeof(MigrationDbContext))]
-    partial class MigrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907072611_AddNodeExecutionLogs")]
+    partial class AddNodeExecutionLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -198,9 +201,6 @@ namespace MigrationExecutionAPI.Migrations
                     b.Property<bool>("IsArchived")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool?>("IsSuccess")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("MergeCommitSha")
                         .HasColumnType("TEXT");
 
@@ -211,13 +211,7 @@ namespace MigrationExecutionAPI.Migrations
                     b.Property<long?>("Phase1ExecutionTimeMs")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool?>("Phase1Success")
-                        .HasColumnType("INTEGER");
-
                     b.Property<long?>("Phase2ExecutionTimeMs")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool?>("Phase2Success")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PrUrl")
@@ -415,7 +409,7 @@ namespace MigrationExecutionAPI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 9, 8, 1, 12, 28, 59, DateTimeKind.Utc).AddTicks(1663),
+                            CreatedAt = new DateTime(2026, 9, 7, 7, 26, 10, 341, DateTimeKind.Utc).AddTicks(1672),
                             Name = "Global Corp"
                         });
                 });

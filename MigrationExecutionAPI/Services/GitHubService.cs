@@ -216,4 +216,51 @@ public class GitHubService
                    .GetProperty("url")
                    .GetString() ?? "";
     }
+
+    public async Task<string> GetRepositoryProfileAsync(string token, string owner, string repoName, string? targetBranch)
+    {
+        var client = GetClient(token);
+        var repo = await client.Repository.Get(owner, repoName);
+        var baseBranch = !string.IsNullOrEmpty(targetBranch) ? targetBranch : repo.DefaultBranch;
+        var baseBranchRef = await client.Git.Reference.Get(owner, repoName, $"heads/{baseBranch}");
+
+        var tree = await client.Git.Tree.GetRecursive(owner, repoName, baseBranchRef.Object.Sha);
+        
+        var csprojFiles = tree.Tree.Where(t => t.Path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)).ToList();
+        var profiles = new List<object>();
+
+        foreach (var file in csprojFiles)
+        {
+            try
+            {
+                var contentBytes = await client.Git.Blob.Get(owner, repoName, file.Sha);
+                var xml = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(contentBytes.Content));
+
+                var tfMatch = Regex.Match(xml, @"<TargetFramework>(.*?)</TargetFramework>");
+                var tfsMatch = Regex.Match(xml, @"<TargetFrameworks>(.*?)</TargetFrameworks>");
+                var sdkMatch = Regex.Match(xml, @"<Project\s+[^>]*Sdk=""([^""]+)""");
+
+                var targetFramework = tfMatch.Success ? tfMatch.Groups[1].Value : (tfsMatch.Success ? tfsMatch.Groups[1].Value : "Unknown");
+                var sdk = sdkMatch.Success ? sdkMatch.Groups[1].Value : "Microsoft.NET.Sdk";
+
+                string projectType = "Class Library";
+                if (sdk.Contains("Microsoft.NET.Sdk.Web")) projectType = "Web API / MVC";
+                else if (xml.Contains("xunit") || xml.Contains("nunit") || xml.Contains("MSTest")) projectType = "Test Project";
+                else if (Regex.IsMatch(xml, @"<OutputType>Exe</OutputType>")) projectType = "Console App";
+
+                profiles.Add(new
+                {
+                    Path = file.Path,
+                    TargetFramework = targetFramework,
+                    ProjectType = projectType
+                });
+            }
+            catch
+            {
+                // Ignore parse errors for individual files
+            }
+        }
+
+        return System.Text.Json.JsonSerializer.Serialize(profiles, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
 }
