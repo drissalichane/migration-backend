@@ -73,7 +73,7 @@ public class MigrationJobController : ControllerBase
         _context = context;
         _fileService = fileService;
         _githubService = githubService;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(60) };
     }
 
     [HttpGet]
@@ -163,7 +163,7 @@ public class MigrationJobController : ControllerBase
         {
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<MigrationDbContext>();
-            var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+            var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(60) };
             
             try
             {
@@ -347,7 +347,7 @@ public class MigrationJobController : ControllerBase
         {
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<MigrationDbContext>();
-            var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+            var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(60) };
             try
             {
                 var currentJob = await db.MigrationJobs.FindAsync(jobId);
