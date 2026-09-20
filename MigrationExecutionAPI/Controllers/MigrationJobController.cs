@@ -377,6 +377,9 @@ public class MigrationJobController : ControllerBase
         await _context.SaveChangesAsync();
 
         var jobId = job.Id;
+        // Forwarded to Part 2 so the Migrator actually honours it. Until now this was recorded on
+        // the ApprovalRecord for audit and then dropped, so a reviewer's override changed nothing.
+        var overridePrompt = string.IsNullOrWhiteSpace(request.CustomPrompt) ? "" : request.CustomPrompt.Trim();
 
         _ = Task.Run(async () =>
         {
@@ -470,7 +473,17 @@ public class MigrationJobController : ControllerBase
                 }
                 await db.SaveChangesAsync();
 
-                var payload = new { job_id = currentJob.Id, migration_plan = filteredPlan };
+                // Part 2's Migrator and Error Fixer prompts already read body.target_framework and
+                // body.custom_prompt; neither was ever sent, so the Migrator prompt literally read
+                // "TARGET FRAMEWORK: undefined" and every reviewer override was discarded.
+                // custom_prompt is guarded by a truthy check upstream, so "" correctly omits the block.
+                var payload = new
+                {
+                    job_id = currentJob.Id,
+                    migration_plan = filteredPlan,
+                    target_framework = string.IsNullOrWhiteSpace(currentJob.TargetFramework) ? "net8.0" : currentJob.TargetFramework,
+                    custom_prompt = overridePrompt
+                };
                 var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
                 var response = await httpClient.PostAsync("http://localhost:5678/webhook/net8-migration-execute", content);
@@ -674,15 +687,24 @@ public class MigrationJobController : ControllerBase
             var repoParts = job.RepositoryUrl.Replace(".git", "").Split('/');
             var repoName = repoParts.Last();
             var owner = repoParts[repoParts.Length - 2];
+            // The branch name and PR title used to be hardcoded to "net8" regardless of what the
+            // job actually targeted, so a net9.0 migration opened a PR titled ".NET 8 Migration".
+            // TargetFramework is persisted now, so derive both from it.
+            var tfm = string.IsNullOrWhiteSpace(job.TargetFramework) ? "net8.0" : job.TargetFramework.Trim();
+            var tfmSlug = tfm.StartsWith("net", StringComparison.OrdinalIgnoreCase) ? tfm.Replace(".0", "") : tfm;
+            var tfmLabel = tfmSlug.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+                ? $".NET {tfmSlug[3..]}"
+                : tfm;
+
             // Honour the branch name the user typed on the ingest screen, falling back to the
             // generated default. Sanitized because it is free text and git rejects most punctuation.
-            var branchName = BranchNameSanitizer.Sanitize(job.CustomBranchName) ?? $"migration/net8-{job.Id}";
+            var branchName = BranchNameSanitizer.Sanitize(job.CustomBranchName) ?? $"migration/{tfmSlug}-{job.Id}";
 
             // Target branch is the selected one, or default to null (which means CreatePullRequestAsync should fall back to DefaultBranch)
             var targetBranch = job.TargetBranch;
 
             var (branch, prUrl, commitHash) = await _githubService.CreatePullRequestAsync(
-                githubToken, owner, repoName, branchName, "Automated .NET 8 Migration", fileChangesToCommit, targetBranch);
+                githubToken, owner, repoName, branchName, $"Automated {tfmLabel} Migration", fileChangesToCommit, targetBranch);
 
             job.BranchName = branch;
             job.PrUrl = prUrl;
