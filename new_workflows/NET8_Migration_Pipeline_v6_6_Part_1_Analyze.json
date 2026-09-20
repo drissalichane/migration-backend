@@ -1,5 +1,5 @@
 {
-  "name": "NET8 Migration Pipeline v6.5 (Part 1 - Analyze)",
+  "name": "NET8 Migration Pipeline v6.6 (Part 1 - Analyze)",
   "nodes": [
     {
       "parameters": {
@@ -59,7 +59,7 @@
     },
     {
       "parameters": {
-        "command": "=BASE=/projects/migration-{{ $('Webhook').first().json.body.job_id }}\n\necho '=== REPOSITORY FILE TREE ==='\ncd $BASE && git ls-files | grep -Ev '^(.*/)?(wwwroot|node_modules|bin|obj|\\.vs|packages)/' | grep -Ev '\\.(min\\.js|min\\.css|map|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$'\necho ''\n\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\nexport DOTNET_NOLOGO=1\n\n[ ! -f ~/.dotnet/tools/upgrade-assistant ] && dotnet tool install -g upgrade-assistant 2>/dev/null || true\n\nREPORT_PATH=/tmp/upgrade-report.sarif\ntimeout 60 ~/.dotnet/tools/upgrade-assistant analyze \"$BASE\" --format sarif --output \"$REPORT_PATH\" --non-interactive 2>&1 || true\n\necho '=== CSPROJ FILES ==='\nfind $BASE -name '*.csproj' | head -20 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== SOLUTION FILES ==='\nfind $BASE -name '*.sln' | head -5\n\necho '=== PROGRAM/STARTUP ==='\nfind $BASE \\( -name 'Program.cs' -o -name 'Startup.cs' \\) | head -10 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== CONTROLLERS (first 3) ==='\nfind $BASE -path '*/Controllers/*.cs' | head -3 | xargs -I {} sh -c 'echo \"--- {} ---\"; head -80 \"{}\"'\n\necho '=== UPGRADE ASSISTANT REPORT ==='\ncat \"$REPORT_PATH\" 2>/dev/null || echo 'NO_SARIF_REPORT'"
+        "command": "=BASE=/projects/migration-{{ $('Webhook').first().json.body.job_id }}\n\necho '=== REPOSITORY FILE TREE ==='\ncd $BASE && git ls-files | grep -Ev '^(.*/)?(wwwroot|node_modules|bin|obj|\\.vs|packages)/' | grep -Ev '\\.(min\\.js|min\\.css|map|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$'\necho ''\n\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\nexport DOTNET_NOLOGO=1\n\nTFM={{ $('Webhook').first().json.body.target_framework || 'net8.0' }}\n\n# The Upgrade Assistant analyses COMPILED ASSEMBLIES, so a freshly cloned repo\n# gives it nothing to look at. Build first; tolerate failure and show the tail\n# so the agent can see why if it did not build.\necho '=== BUILD (required before analysis) ==='\ncd \"$BASE\" && timeout 300 dotnet build -v quiet -nologo 2>&1 | tail -15 || true\necho ''\n\n# Point it at the solution (or a project). Measured on the fixture: analysing the\n# .sln found 47 incidents across both projects, while \"--source Folder\" on the\n# repo root found 0.\nUA_TARGET=$(find \"$BASE\" -name '*.sln' | head -1)\n[ -z \"$UA_TARGET\" ] && UA_TARGET=$(find \"$BASE\" -name '*.csproj' | head -1)\n# --report resolves relative to the directory of the analysed path, so a relative\n# name lands predictably at $BASE/ua-report.json. Absolute paths get concatenated.\nrm -f \"$BASE/ua-report.json\"\n# Discard stdout/stderr: on a non-English locale the tool crashes AFTER writing\n# the report (\"Could not find color or style 'surligner'\"), so trust the file.\n[ -n \"$UA_TARGET\" ] && timeout 240 upgrade-assistant analyze \"$UA_TARGET\" --targetFramework \"$TFM\" --report ua-report --serializer JSON --non-interactive >/dev/null 2>&1 || true\n\n# Emitted HERE, before the file dumps, on purpose: the formatter truncates this\n# stdout at 12000 chars and truncation eats the tail. These findings are the\n# highest-signal part of the output, so they must not be what gets cut.\necho '=== UPGRADE ASSISTANT FINDINGS ==='\nnode /projects/migration_backend/scripts/distill_ua_report.js \"$BASE/ua-report.json\" 2>/dev/null || echo 'NO_UPGRADE_ASSISTANT_REPORT'\n# Remove it from the working tree so Part 2 cannot commit the report into the PR.\nrm -f \"$BASE/ua-report.json\"\necho ''\n\necho '=== CSPROJ FILES ==='\nfind $BASE -name '*.csproj' | head -20 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== SOLUTION FILES ==='\nfind $BASE -name '*.sln' | head -5\n\necho '=== PROGRAM/STARTUP ==='\nfind $BASE \\( -name 'Program.cs' -o -name 'Startup.cs' \\) | head -10 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== CONTROLLERS (first 3) ==='\nfind $BASE -path '*/Controllers/*.cs' | head -3 | xargs -I {} sh -c 'echo \"--- {} ---\"; head -80 \"{}\"'\n\necho '=== END OF CONTEXT ==='"
       },
       "id": "77172019-39ab-4155-bc58-c2c7c48a737a",
       "name": "Run Roslyn Upgrade Assistant",
@@ -637,7 +637,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "ba3a7702-ee0f-4e68-b1b3-9a5cb42be90f",
+  "versionId": "8d095e19-d7f6-4995-8da2-28e3da8199d8",
   "meta": {
     "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
   },
