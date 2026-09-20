@@ -140,6 +140,11 @@ public class MigrationJobController : ControllerBase
             RepositoryUrl = request.RepositoryUrl,
             TargetBranch = request.TargetBranch,
             TargetCommit = request.TargetCommit,
+            // Mirror the pipeline's own default so the persisted record matches what actually ran
+            // (every n8n node reads `body.target_framework || 'net8.0'`).
+            TargetFramework = string.IsNullOrWhiteSpace(request.TargetFramework) ? "net8.0" : request.TargetFramework,
+            CustomPrompt = request.CustomPrompt,
+            CustomBranchName = request.CustomBranchName,
             Status = "Analyzing",
             CreatedBy = username,
             AssignedToUserId = assignedUserId
@@ -171,7 +176,9 @@ public class MigrationJobController : ControllerBase
                     repo_url = request.RepositoryUrl, 
                     job_id = jobId,
                     target_branch = request.TargetBranch,
-                    target_commit = request.TargetCommit
+                    target_commit = request.TargetCommit,
+                    target_framework = request.TargetFramework,
+                    custom_prompt = request.CustomPrompt
                 };
                 var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
@@ -207,6 +214,51 @@ public class MigrationJobController : ControllerBase
                 {
                     currentJob.MigrationPlanJson = planJson;
                     currentJob.Status = "Pending Plan Approval";
+
+                    // The analyzer detects the repo's current TFM; `source_framework` is a required
+                    // field in the Plan Validator, but tolerate it being absent rather than failing the job.
+                    try
+                    {
+                        var sourceFramework = JsonNode.Parse(planJson)?["source_framework"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(sourceFramework))
+                        {
+                            currentJob.SourceFramework = sourceFramework;
+                        }
+                    }
+                    catch { }
+
+                    // Persist NuGet resolver v5.1 fields
+                    var nugetWarnings = jsonNode?["nuget_warnings"];
+                    var nugetVulnerabilities = jsonNode?["nuget_vulnerabilities"];
+
+                    if (nugetWarnings != null)
+                    {
+                        currentJob.NugetWarnings = nugetWarnings.ToJsonString();
+                    }
+                    if (nugetVulnerabilities != null)
+                    {
+                        currentJob.NugetVulnerabilities = nugetVulnerabilities.ToJsonString();
+                    }
+
+                    // Auto-create MigrationTasks for warnings that need human review
+                    if (nugetWarnings is JsonArray warningsArr)
+                    {
+                        foreach (var warning in warningsArr)
+                        {
+                            var warningStr = warning?.GetValue<string>() ?? "";
+                            if (warningStr.Contains("needs human review", StringComparison.OrdinalIgnoreCase))
+                            {
+                                db.MigrationTasks.Add(new MigrationTask
+                                {
+                                    Title = "[NuGet] Package needs human review",
+                                    Description = warningStr,
+                                    Status = "Todo",
+                                    MigrationJobId = currentJob.Id,
+                                    CreatedAt = DateTime.UtcNow
+                                });
+                            }
+                        }
+                    }
                 }
                 await db.SaveChangesAsync();
             }
@@ -234,6 +286,7 @@ public class MigrationJobController : ControllerBase
     public class ExecutePlanRequest
     {
         public string? UpdatedPlanJson { get; set; }
+        public string? CustomPrompt { get; set; }
     }
 
     [HttpPost("{id}/execute")]
@@ -244,6 +297,21 @@ public class MigrationJobController : ControllerBase
         if (job == null) return NotFound(new { Message = "Job not found" });
         if (job.Status != "Pending Plan Approval" && job.Status != "Failed Execution") 
             return BadRequest(new { Message = "Job is not awaiting plan approval or failed execution." });
+
+        // NuGet vulnerabilities are surfaced on the plan review screen rather than blocking execution
+        // here: aborting after Phase 1 wastes the tokens already spent producing the plan. They are
+        // recorded in the job log so the decision to proceed stays auditable.
+        if (!string.IsNullOrEmpty(job.NugetVulnerabilities) && job.NugetVulnerabilities != "[]")
+        {
+            _context.JobLogs.Add(new JobLog {
+                MigrationJobId = job.Id,
+                Level = "warning",
+                Phase = "Execute",
+                Message = "Proceeding with execution despite known NuGet vulnerabilities.",
+                Details = job.NugetVulnerabilities,
+                Timestamp = DateTime.UtcNow
+            });
+        }
 
         job.Status = "Executing";
         _context.JobLogs.Add(new JobLog {
@@ -266,7 +334,11 @@ public class MigrationJobController : ControllerBase
         {
             ApproverUserId = approverUserId,
             ApprovedAt = DateTime.UtcNow,
-            ExecutionOverridePrompt = "Phase 1: Migration Plan Approved"
+            // The override prompt the reviewer typed on the plan screen, or null so the UI omits
+            // the row entirely rather than showing a placeholder as if it were user input.
+            ExecutionOverridePrompt = string.IsNullOrWhiteSpace(request.CustomPrompt)
+                ? null
+                : request.CustomPrompt.Trim()
         });
 
         if (!string.IsNullOrEmpty(request.UpdatedPlanJson))
@@ -574,7 +646,9 @@ public class MigrationJobController : ControllerBase
             var repoParts = job.RepositoryUrl.Replace(".git", "").Split('/');
             var repoName = repoParts.Last();
             var owner = repoParts[repoParts.Length - 2];
-            var branchName = $"migration/net8-{job.Id}";
+            // Honour the branch name the user typed on the ingest screen, falling back to the
+            // generated default. Sanitized because it is free text and git rejects most punctuation.
+            var branchName = BranchNameSanitizer.Sanitize(job.CustomBranchName) ?? $"migration/net8-{job.Id}";
 
             // Target branch is the selected one, or default to null (which means CreatePullRequestAsync should fall back to DefaultBranch)
             var targetBranch = job.TargetBranch;
@@ -961,11 +1035,40 @@ public class AddJobLogRequest
     public string? Details { get; set; }
 }
 
+/// <summary>
+/// Reduces free-text input to something git will accept as a branch name, or returns null if
+/// nothing usable survives (in which case the caller should use its own default).
+/// </summary>
+public static class BranchNameSanitizer
+{
+    public static string? Sanitize(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+
+        var cleaned = System.Text.RegularExpressions.Regex.Replace(raw.Trim(), @"\s+", "-");
+        // git check-ref-format: no ~ ^ : ? * [ \ or ASCII control characters
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"[~^:?*\[\]\\\x00-\x1F\x7F]", "");
+        // no leading/trailing slash or dot, no "..", no consecutive slashes
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\.{2,}", ".");
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"/{2,}", "/");
+        cleaned = cleaned.Trim('/', '.', '-');
+        if (cleaned.EndsWith(".lock", StringComparison.OrdinalIgnoreCase))
+        {
+            cleaned = cleaned[..^5].Trim('/', '.', '-');
+        }
+
+        return string.IsNullOrWhiteSpace(cleaned) ? null : cleaned;
+    }
+}
+
 public class AnalyzeRequest
 {
     public string RepositoryUrl { get; set; } = string.Empty;
     public string? TargetBranch { get; set; }
     public string? TargetCommit { get; set; }
+    public string? TargetFramework { get; set; }
+    public string? CustomPrompt { get; set; }
+    public string? CustomBranchName { get; set; }
 }
 
 public class SubmitPlanRequest

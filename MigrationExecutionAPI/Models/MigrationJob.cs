@@ -55,6 +55,10 @@ public class MigrationJob
     public bool? Phase2Success { get; set; }
     public bool? IsSuccess { get; set; }
 
+    // NuGet resolver v5.1 fields
+    public string? NugetWarnings { get; set; }
+    public string? NugetVulnerabilities { get; set; }
+
     public ICollection<JobLog> JobLogs { get; set; } = new List<JobLog>();
     public ICollection<LlmUsageLog> LlmUsageLogs { get; set; } = new List<LlmUsageLog>();
     public ICollection<NodeExecutionLog> NodeExecutionLogs { get; set; } = new List<NodeExecutionLog>();

@@ -29,3 +29,25 @@ public class CommandResponse : BaseResponse
     public string? StdOut { get; set; }
     public string? StdErr { get; set; }
 }
+
+public class PaginatedFileContentResponse
+{
+    public string FilePath { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public int TotalLines { get; set; }
+    public int ReturnedLines { get; set; }
+    public bool Truncated { get; set; }
+}
+
+public class GrepMatchDto
+{
+    public string FilePath { get; set; } = string.Empty;
+    public int LineNumber { get; set; }
+    public string Line { get; set; } = string.Empty;
+}
+
+public class GrepResponse
+{
+    public List<GrepMatchDto> Matches { get; set; } = new();
+    public bool Truncated { get; set; }
+}
