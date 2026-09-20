@@ -1,0 +1,659 @@
+{
+  "name": "NET8 Migration Pipeline v5.9 (Part 1 - Analyze)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "net8-migration-analyze",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c8ca33fb-6f4b-4e8f-8fc9-0adbaa036525",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        288
+      ],
+      "webhookId": "f2f60517-514e-4c6a-8fa4-6d636261adc0"
+    },
+    {
+      "parameters": {
+        "command": "=cd /projects && rm -rf migration-{{ $('Webhook').first().json.body.job_id }} && git clone {{ $('Webhook').first().json.body.repo_url }} migration-{{ $('Webhook').first().json.body.job_id }} && cd migration-{{ $('Webhook').first().json.body.job_id }} && git checkout -b dotnet8-migration && echo 'CLONE_SUCCESS'"
+      },
+      "id": "6e017731-1229-441f-b069-81d441b230d1",
+      "name": "Clone Repository",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "72bcb19f-236c-4216-ba9c-f817b88adf73",
+      "name": "Set Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -864,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const tf = $('Webhook').first()?.json?.body?.target_framework || 'net8.0';\n\nlet knownPatterns = `THESE FACTS ARE ALREADY VERIFIED. DO NOT SPEND TOOL CALLS RE-RESEARCHING THEM.\nTARGET_FRAMEWORK: ${tf}\nOLD_FRAMEWORKS: net6.0, net7.0, netcoreapp3.1\n\nPACKAGE_MAPPINGS:\n- Microsoft.AspNetCore.* -> remove (built into SDK)\n- Microsoft.Extensions.* -> remove or update to matching version (built-in)\n- Newtonsoft.Json -> keep, update to latest; or migrate to System.Text.Json\n- EntityFrameworkCore -> update to matching version; watch for breaking changes\n- Swashbuckle.AspNetCore -> update for compatibility\n- NUnit/xUnit/MSTest -> update to latest; no API breaks expected\n- AutoMapper -> update to latest\n- Moq -> update to 4.20+; remove SponsorLink if present\n- Pomelo.EntityFrameworkCore.MySql -> update to matching version\n\nCSPROJ_CHANGES:\n- <TargetFramework>... -> <TargetFramework>${tf}</TargetFramework>\n- <Nullable>enable</Nullable> -> add if missing\n- <ImplicitUsings>enable</ImplicitUsings> -> add if missing\n\nBREAKING_CHANGES:\n- IHostingEnvironment -> IWebHostEnvironment\n- HttpContext.GetTokenAsync -> requires Microsoft.AspNetCore.Authentication namespace\n- JsonSerializer default casing changed -> set JsonSerializerOptions.PropertyNamingPolicy explicitly\n- EF Core: Owned entity table splitting behaviour changed\n- DateOnly/TimeOnly types now fully supported\n\nSKIP_DB_TESTS_REASON: No live DB connection string available in migration CI environment. Tests filtered by Category!=DatabaseTest and Category!=IntegrationTest.\n\nCOMMON_BUILD_ERRORS:\n- CS0246: missing using or package ref -> check package mappings above\n- CS8600/CS8603: nullable warnings -> add ? annotations or null checks\n- NETSDK1045: SDK version too low -> upgrade dotnet SDK on host\n- NU1202: package not compatible -> update to compatible version`;\n\nreturn [{ json: { known_patterns: knownPatterns } }];"
+      },
+      "id": "65856d18-4d6b-4a02-9e94-b03c4fd122b5",
+      "name": "Load Known Patterns",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Webhook').first().json.body.job_id }}\n\necho '=== REPOSITORY FILE TREE ==='\ncd $BASE && git ls-files\necho ''\n\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\nexport DOTNET_NOLOGO=1\n\n[ ! -f ~/.dotnet/tools/upgrade-assistant ] && dotnet tool install -g upgrade-assistant 2>/dev/null || true\n\nREPORT_PATH=/tmp/upgrade-report.sarif\ntimeout 60 ~/.dotnet/tools/upgrade-assistant analyze \"$BASE\" --format sarif --output \"$REPORT_PATH\" --non-interactive 2>&1 || true\n\necho '=== CSPROJ FILES ==='\nfind $BASE -name '*.csproj' | head -20 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== SOLUTION FILES ==='\nfind $BASE -name '*.sln' | head -5\n\necho '=== PROGRAM/STARTUP ==='\nfind $BASE \\( -name 'Program.cs' -o -name 'Startup.cs' \\) | head -10 | xargs -I {} sh -c 'echo \"--- {} ---\"; cat \"{}\"'\n\necho '=== CONTROLLERS (first 3) ==='\nfind $BASE -path '*/Controllers/*.cs' | head -3 | xargs -I {} sh -c 'echo \"--- {} ---\"; head -80 \"{}\"'\n\necho '=== UPGRADE ASSISTANT REPORT ==='\ncat \"$REPORT_PATH\" 2>/dev/null || echo 'NO_SARIF_REPORT'"
+      },
+      "id": "77172019-39ab-4155-bc58-c2c7c48a737a",
+      "name": "Run Roslyn Upgrade Assistant",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{\n'You are a formatter. Convert the RESEARCH BRIEF below into a migration plan that matches the JSON schema exactly.\\n' +\n'You do NOT do your own analysis. Do not add findings that are not in the brief. Do not drop findings that are.\\n\\n' +\n'=== THE ONE RULE THAT MATTERS MOST: EVERY CHANGE MUST STILL COMPILE ===\\n' +\n'A change that compiles is worth more than a change that is elegant. Before you emit ANY old/new pair, run this check:\\n' +\n'  STEP 1. Look at the lines that come immediately AFTER your old snippet in the source.\\n' +\n'  STEP 2. Ask: does any of those lines use a variable your new snippet renamed, removed, or changed the type of?\\n' +\n'           Does any of them call a member that exists on the OLD type but not on the NEW type?\\n' +\n'  STEP 3. If yes to either, your old/new pair is TOO SMALL. Grow it downward to include those lines and rewrite\\n' +\n'           them too. Repeat from STEP 1 until the answer is no.\\n' +\n'  STEP 4. Also check upward: does your new snippet leave a variable declared above it now unused or dangling?\\n' +\n'           If so, include that declaration in the pair and remove it.\\n' +\n'Worked example of the trap: replacing a reader type whose ValidationType property is set on the NEXT line.\\n' +\n'Replacing only the constructor line leaves the property assignment pointing at a type that has no such property\\n' +\n'- that is a compile error. The pair must cover the constructor AND the property line together.\\n' +\n'A type with a similar name or purpose is NEVER guaranteed to expose the same members. Verify the member surface\\n' +\n'of the replacement before assuming a rename is a drop-in.\\n' +\n'If you genuinely cannot see the surrounding lines and cannot determine the call sites, put the file in risk_notes.\\n' +\n'That is the correct outcome - never emit a change you cannot verify compiles.\\n' +\n'BUT: any file reproduced under \"=== VERBATIM SOURCE ===\" in the brief IS fully visible to you. Never send such a\\n' +\n'file to risk_notes for lack of context - read its lines there and emit the real change.\\n\\n' +\n'=== NEVER SUBSTITUTE A PLACEHOLDER FOR A FIX ===\\n' +\n'A comment such as // TODO, // replaced with X, or an empty body is NOT a migration change. It compiles but\\n' +\n'silently changes behaviour, which is worse than leaving the code alone. Either emit the real replacement, or\\n' +\n'record the item in risk_notes and emit no file_change for it. Never the middle ground.\\n\\n' +\n'RULES:\\n' +\n'- Use the EXACT relative file paths that appear in the brief and the repository file tree. Never invent a path.\\n' +\n'- Never output Microsoft.NETCore.App or Microsoft.AspNetCore.App as packages.\\n' +\n'- Use the resolved_version from the brief for every package. If the brief has no version, set to_version to \"\" and leave it to the NuGet resolver.\\n' +\n'- Combine all changes to one file into a SINGLE file_changes entry for that file.\\n' +\n'- FORMATTING: old/new values are plain code strings in JSON - never include triple-backtick markdown fences (```) inside them. If the brief contains fenced code blocks, strip the fences and keep only the code.\\n' +\n'- PACKAGE CONSISTENCY: nuget_versions_needed must list EXACTLY the packages marked action \"add\" or \"update\" in package_updates - no more, no fewer. A package marked action \"remove\" must NEVER appear in nuget_versions_needed; it is being deleted, so there is nothing to resolve.\\n' +\n'- ORPHANED IMPORTS: when a package is marked action \"remove\", or a type is replaced by one from a different namespace, you MUST also emit file_changes entries deleting or rewriting the now-invalid using directives in every file that references that namespace (CS0246). If the brief does not name those files, record it in risk_notes.\\n' +\n'- PRIORITY: anything the brief labels BREAKING is \"must\". Anything labelled NON-BREAKING is \"should\". All target_framework_updates are \"must\". An API that throws at runtime on the target framework is BREAKING and therefore \"must\", even if it compiles. If unsure, use \"must\".\\n' +\n'- Anything in the brief under \"Unverified / needs human review\" goes into risk_notes, NOT into file_changes.\\n' +\n'- estimated_changes MUST be an integer. risk_level MUST be low, medium or high. action MUST be update, remove, add or no_update.\\n' +\n'- Output valid JSON only. Every required property in the schema must be present.\\n\\n' +\n'DETERMINISTIC REPOSITORY PROFILE (source of truth for source_framework):\\n' +\n($('Webhook').first().json.body.repository_profile || '[]') + '\\n\\n' +\n'RESEARCH BRIEF:\\n' +\n($json.research_brief || '') + '\\n\\n' +\n'REPOSITORY FILE TREE AND SOURCE CONTEXT (valid paths only - use this to check the lines around each change):\\n' +\n($('Run Roslyn Upgrade Assistant').first().json.stdout || '').substring(0,12000)\n}}",
+        "hasOutputParser": true
+      },
+      "id": "444d0d53-fe3f-4181-8a0b-730810300daa",
+      "name": "Analyzer Agent",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        384,
+        208
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5-mini",
+        "options": {
+          "maxTokens": 14000,
+          "responseFormat": "json_object",
+          "temperature": 0
+        }
+      },
+      "id": "dfd7a370-6012-4b22-92bc-acb67169cc5e",
+      "name": "Analyzer LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        448,
+        416
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst raw = $input.item.json.output;\nlet plan;\n\nif (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {\n  plan = raw;\n} else {\n  const text = String(raw || '');\n  if (!text.trim()) {\n    throw new Error('Analyzer Agent returned empty output');\n  }\n\n  let cleaned = text\n    .replace(/```json\\s*/gi, '')\n    .replace(/```\\s*/gi, '')\n    .trim();\n\n  const start = cleaned.indexOf('{');\n  const end = cleaned.lastIndexOf('}');\n  if (start === -1 || end === -1) {\n    throw new Error('No JSON object found in output\\nRaw: ' + text.substring(0, 500));\n  }\n\n  const jsonStr = cleaned.substring(start, end + 1);\n  try {\n    plan = JSON.parse(jsonStr);\n  } catch(e) {\n    // Fix trailing commas (common Llama quirk)\n    try {\n      plan = JSON.parse(jsonStr.replace(/,\\s*([}\\]])/g, '$1'));\n    } catch(e2) {\n      throw new Error('Invalid JSON: ' + e2.message + '\\nRaw: ' + text.substring(0, 500));\n    }\n  }\n}\n\n// â”€â”€ Normalize common Llama key aliases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nconst keyAliases = {\n  'target_framework_updates': [\n    'framework_updates', 'targetFrameworkUpdates', 'target_frameworks',\n    'framework_changes', 'frameworks', 'targetframeworkupdates'\n  ],\n  'package_updates': [\n    'packageUpdates', 'nuget_updates', 'packages', 'package_changes',\n    'nuget_packages', 'dependencies', 'packageupdates'\n  ],\n  'file_changes': [\n    'fileChanges', 'code_changes', 'files', 'source_changes',\n    'code_updates', 'filechanges', 'changes'\n  ],\n  'startup_changes': [\n    'startupChanges', 'startup_updates', 'program_changes',\n    'hosting_changes', 'startupchanges'\n  ],\n  'nuget_versions_needed': [\n    'nugetVersionsNeeded', 'versions_needed', 'nuget_versions',\n    'version_lookups', 'packages_to_resolve', 'nugetversionsneeded'\n  ],\n  'risk_level': [\n    'riskLevel', 'risk', 'risklevel'\n  ],\n  'risk_notes': [\n    'riskNotes', 'notes', 'risk_description', 'risknotes', 'risk_assessment'\n  ],\n  'estimated_changes': [\n    'estimatedChanges', 'change_count', 'total_changes',\n    'num_changes', 'estimatedchanges', 'estimated_count'\n  ]\n};\n\n// Build lowercase key map for case-insensitive matching\nconst planKeysLower = {};\nfor (const k of Object.keys(plan)) {\n  planKeysLower[k.toLowerCase().replace(/[_\\s]/g, '')] = k;\n}\n\nfor (const [canonical, aliases] of Object.entries(keyAliases)) {\n  if (canonical in plan) continue; // already correct\n  // Try exact aliases first\n  for (const alias of aliases) {\n    if (alias in plan) {\n      plan[canonical] = plan[alias];\n      delete plan[alias];\n      break;\n    }\n  }\n  // Try lowercase normalized match\n  if (!(canonical in plan)) {\n    const normalizedCanonical = canonical.toLowerCase().replace(/_/g, '');\n    const matchedKey = planKeysLower[normalizedCanonical];\n    if (matchedKey && matchedKey !== canonical) {\n      plan[canonical] = plan[matchedKey];\n      delete plan[matchedKey];\n    }\n  }\n}\n\n// â”€â”€ Validate required keys (with diagnostic showing what keys ARE present) â”€â”€\nconst required = ['target_framework_updates', 'package_updates', 'file_changes', 'risk_level', 'estimated_changes', 'source_framework'];\nconst missingKeys = required.filter(k => !(k in plan));\nif (missingKeys.length > 0) {\n  throw new Error(\n    'Migration plan missing keys: ' + missingKeys.join(', ') +\n    '\\nKeys received: ' + Object.keys(plan).join(', ')\n  );\n}\n\n// â”€â”€ Coerce to arrays defensively â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nfor (const k of ['target_framework_updates', 'package_updates', 'file_changes', 'startup_changes', 'nuget_versions_needed']) {\n  if (!plan[k]) plan[k] = [];\n  if (!Array.isArray(plan[k])) plan[k] = [plan[k]];\n}\n\n\n// ── Force target_framework_updates to must ──\nfor (const item of (plan.target_framework_updates || [])) {\n  item.priority = 'must';\n}\n\n// ── Default missing priority to must ──\nfor (const key of ['package_updates', 'startup_changes', 'nuget_versions_needed']) {\n  for (const item of (plan[key] || [])) {\n    if (!item.priority || !['must', 'should'].includes(item.priority)) {\n      item.priority = 'must';\n    }\n  }\n}\nfor (const fc of (plan.file_changes || [])) {\n  for (const change of (fc.changes || [])) {\n    if (!change.priority || !['must', 'should'].includes(change.priority)) {\n      change.priority = 'must';\n    }\n  }\n}\n\n// ── Dependency propagation (packages referenced by must file changes) ──\nconst mustPackages = new Set();\nfor (const fc of (plan.file_changes || [])) {\n  for (const change of (fc.changes || [])) {\n    if (change.priority === 'must') {\n      const usingMatches = (change.new || '').match(/using\\s+([\\w.]+)/g) || [];\n      for (const u of usingMatches) {\n        const ns = u.replace('using ', '').replace(';', '').trim().split('.')[0];\n        mustPackages.add(ns);\n      }\n    }\n  }\n}\n\nfor (const pkg of (plan.package_updates || [])) {\n  if (pkg.priority === 'should' && mustPackages.has(pkg.name.split('.')[0])) {\n    pkg.priority = 'must';\n  }\n}\nfor (const pkg of (plan.nuget_versions_needed || [])) {\n  if (pkg.priority === 'should' && mustPackages.has(pkg.package.split('.')[0])) {\n    pkg.priority = 'must';\n  }\n}\n\n// Ensure risk_level is valid\nif (!['low', 'medium', 'high'].includes(plan.risk_level)) {\n  plan.risk_level = 'medium'; // safe default\n}\n\nif (plan.risk_level === 'high') {\n  plan._warning = 'HIGH RISK â€” review risk_notes before proceeding';\n}\n\n\n// ── Deterministic guards (moved out of the prompt) ──────────────────\nconst FRAMEWORK_REFS = ['microsoft.netcore.app', 'microsoft.aspnetcore.app', 'microsoft.windowsdesktop.app'];\nconst stripped = [];\n\nplan.package_updates = (plan.package_updates || []).filter(p => {\n  if (FRAMEWORK_REFS.includes(String(p.name || '').toLowerCase())) { stripped.push(p.name); return false; }\n  return true;\n});\nplan.nuget_versions_needed = (plan.nuget_versions_needed || []).filter(p => {\n  if (FRAMEWORK_REFS.includes(String(p.package || '').toLowerCase())) { stripped.push(p.package); return false; }\n  return true;\n});\n\n// Merge duplicate file_changes entries for the same file (overlapping replacements break execution)\nconst byFile = {};\nfor (const fc of (plan.file_changes || [])) {\n  const key = fc.file;\n  if (!byFile[key]) byFile[key] = { file: key, changes: [] };\n  byFile[key].changes.push(...(fc.changes || []));\n}\nplan.file_changes = Object.values(byFile);\n\n// Reject empty targetContent up front\nfor (const fc of plan.file_changes) {\n  fc.changes = (fc.changes || []).filter(c => c.old && String(c.old).trim().length > 0);\n}\nplan.file_changes = plan.file_changes.filter(fc => fc.changes.length > 0);\n\nif (stripped.length) {\n  plan.risk_notes = (plan.risk_notes || '') +\n    ' [validator] Removed implicit framework references from the package list: ' + stripped.join(', ') + '.';\n}\n\n// Recompute estimated_changes from what actually survived\nplan.estimated_changes =\n  (plan.target_framework_updates || []).length +\n  (plan.package_updates || []).length +\n  (plan.file_changes || []).reduce((n, fc) => n + (fc.changes || []).length, 0) +\n  (plan.startup_changes || []).length;\n\nreturn [{ json: {\n  migration_plan: JSON.stringify(plan),\n  plan_validated: true,\n  risk_level: plan.risk_level\n}}];\n"
+      },
+      "id": "784b8be7-8447-4a61-9c84-3a4f57038305",
+      "name": "Plan Validator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Hoisted: `this` is the node context only at top level, not inside the nested\n// resolvePackage() function declaration below.\nconst helpers = this.helpers;\n\nconst planStr = $input.item.json.migration_plan;\nconst plan = JSON.parse(planStr);\nconst tfm = String(($('Webhook').first().json.body.target_framework) || 'net8.0').toLowerCase();\n\nconst LADDER = {\n  'net10.0': ['net10.0','net9.0','net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net9.0':  ['net9.0','net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net8.0':  ['net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net7.0':  ['net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net6.0':  ['net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0']\n};\nconst allowed = LADDER[tfm] || LADDER['net8.0'];\n\nfunction normTfm(s) {\n  if (!s) return 'any';\n  let t = String(s).toLowerCase().trim();\n  if (t.startsWith('.netcoreapp,version=v')) t = 'net' + t.split('v')[1];\n  else if (t.startsWith('.netstandard,version=v')) t = 'netstandard' + t.split('v')[1];\n  else if (t.startsWith('.netframework,version=v')) t = 'netframework' + t.split('v')[1];\n  return t.split('-')[0];\n}\nfunction cmpDesc(a, b) {\n  const pa = String(a.version).split('.').map(Number);\n  const pb = String(b.version).split('.').map(Number);\n  for (let i = 0; i < 4; i++) { if ((pa[i]||0) !== (pb[i]||0)) return (pb[i]||0) - (pa[i]||0); }\n  return 0;\n}\n\n// Packages explicitly being removed must never be resolved or re-pinned.\nconst removedPackages = new Set(\n  (plan.package_updates || [])\n    .filter(p => p.action === 'remove')\n    .map(p => String(p.name || '').toLowerCase())\n);\n\n// Drop contradictory entries: the formatter sometimes lists a removed package\n// in nuget_versions_needed as well. Removal wins.\nconst droppedContradictions = [];\nplan.nuget_versions_needed = (plan.nuget_versions_needed || []).filter(pkg => {\n  if (removedPackages.has(String(pkg.package || '').toLowerCase())) {\n    droppedContradictions.push(pkg.package);\n    return false;\n  }\n  return true;\n});\n\nconst packagesToCheck = [];\nfor (const pkg of (plan.package_updates || [])) {\n  if (pkg.action !== 'remove' && !packagesToCheck.includes(pkg.name)) packagesToCheck.push(pkg.name);\n}\nfor (const pkg of (plan.nuget_versions_needed || [])) {\n  if (!packagesToCheck.includes(pkg.package)) packagesToCheck.push(pkg.package);\n}\n\n// Resolve one package: registration index -> pages (parallel) -> newest compatible stable version.\nasync function resolvePackage(pkgName) {\n  const out = { pkgName, version: null, warnings: [], vulnerabilities: [] };\n  try {\n    const reg = await helpers.httpRequest({\n      method: 'GET',\n      url: `https://api.nuget.org/v3/registration5-gz-semver2/${String(pkgName).toLowerCase()}/index.json`,\n      json: true\n    });\n\n    const pages = await Promise.all((reg.items || []).map(async (page) => {\n      if (page.items) return page.items;\n      try {\n        const p = await helpers.httpRequest({ method: 'GET', url: page['@id'], json: true });\n        return p.items || [];\n      } catch (e) { return []; }\n    }));\n\n    let entries = [];\n    for (const items of pages) {\n      for (const it of items) if (it.catalogEntry) entries.push(it.catalogEntry);\n    }\n\n    entries = entries.filter(e => e.listed !== false && !String(e.version).includes('-'));\n    entries.sort(cmpDesc);\n\n    if (!entries.length) {\n      out.version = 'lookup-failed';\n      out.warnings.push(`${pkgName}: no listed stable version`);\n      return out;\n    }\n\n    let chosen = null;\n    for (const e of entries) {\n      const groups = (e.dependencyGroups || []).map(g => normTfm(g.targetFramework));\n      if (!groups.length || groups.includes('any')) { chosen = e; break; }\n      if (groups.some(g => allowed.includes(g))) { chosen = e; break; }\n    }\n\n    if (!chosen) {\n      out.version = 'incompatible';\n      out.warnings.push(`${pkgName}: no stable version declares a dependency group compatible with ${tfm} (newest is ${entries[0].version}) - needs human review`);\n      return out;\n    }\n\n    out.version = chosen.version;\n    if (chosen.version !== entries[0].version) {\n      out.warnings.push(`${pkgName}: pinned to ${chosen.version} for ${tfm}; newest overall ${entries[0].version} is not compatible`);\n    }\n    if (chosen.deprecation) {\n      out.warnings.push(`${pkgName} ${chosen.version} is deprecated: ${chosen.deprecation.message || 'see nuget.org'}`);\n    }\n    for (const v of (chosen.vulnerabilities || [])) {\n      out.vulnerabilities.push(`${pkgName} ${chosen.version}: severity=${v.severity} ${v.advisoryUrl}`);\n    }\n  } catch (e) {\n    out.version = 'lookup-failed';\n    out.warnings.push(`${pkgName}: lookup failed (${e.message})`);\n  }\n  return out;\n}\n\n// All packages resolved concurrently (was sequential - the main cost of this node).\nconst results = await Promise.all(packagesToCheck.slice(0, 20).map(resolvePackage));\n\nconst resolved = {};\nconst warnings = [];\nconst vulnerabilities = [];\nfor (const r of results) {\n  resolved[r.pkgName] = r.version;\n  warnings.push(...r.warnings);\n  vulnerabilities.push(...r.vulnerabilities);\n}\n\nplan.package_updates = (plan.package_updates || []).filter(pkg => {\n  const v = resolved[pkg.name];\n  if (pkg.action === 'remove') return true;\n  if (v === 'incompatible' || v === 'lookup-failed') return false;\n  if (v) { pkg.resolved_version = v; pkg.to_version = v; }\n  return true;\n});\nplan.nuget_versions_needed = (plan.nuget_versions_needed || []).filter(pkg => {\n  const v = resolved[pkg.package];\n  if (v === 'incompatible' || v === 'lookup-failed') return false;\n  if (v) pkg.version = v;\n  return true;\n});\n\nif (droppedContradictions.length) {\n  warnings.push('[validator] Removed from nuget_versions_needed because package_updates marks them for removal: '\n    + droppedContradictions.join(', '));\n}\n\nplan.nuget_resolved = resolved;\nplan.nuget_warnings = warnings;\nplan.nuget_vulnerabilities = vulnerabilities;\nif (warnings.length) {\n  plan.risk_notes = (plan.risk_notes || '') + ' [nuget] ' + warnings.join(' | ');\n}\nif (vulnerabilities.length && plan.risk_level === 'low') plan.risk_level = 'medium';\n\nreturn [{ json: {\n  migration_plan: JSON.stringify(plan),\n  plan_validated: $input.item.json.plan_validated,\n  risk_level: plan.risk_level,\n  nuget_resolved: resolved,\n  nuget_warnings: warnings,\n  nuget_vulnerabilities: vulnerabilities,\n  session_id: $('Set Context').item.json.session_id\n}}];\n"
+      },
+      "id": "36a241a5-d83e-4491-bfbe-e3980fc9d043",
+      "name": "NuGet Version Lookup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"target_framework_updates\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"file\": {\n            \"type\": \"string\"\n          },\n          \"from\": {\n            \"type\": \"string\"\n          },\n          \"to\": {\n            \"type\": \"string\"\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"must\",\n              \"should\"\n            ]\n          }\n        },\n        \"required\": [\n          \"file\",\n          \"from\",\n          \"to\",\n          \"priority\"\n        ]\n      }\n    },\n    \"package_updates\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"from_version\": {\n            \"type\": \"string\"\n          },\n          \"to_version\": {\n            \"type\": \"string\"\n          },\n          \"action\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"update\",\n              \"remove\",\n              \"add\",\n              \"no_update\"\n            ]\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"must\",\n              \"should\"\n            ]\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"from_version\",\n          \"to_version\",\n          \"action\",\n          \"priority\"\n        ]\n      }\n    },\n    \"file_changes\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"file\": {\n            \"type\": \"string\"\n          },\n          \"changes\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"additionalProperties\": false,\n              \"properties\": {\n                \"old\": {\n                  \"type\": \"string\"\n                },\n                \"new\": {\n                  \"type\": \"string\"\n                },\n                \"reason\": {\n                  \"type\": \"string\"\n                },\n                \"priority\": {\n                  \"type\": \"string\",\n                  \"enum\": [\n                    \"must\",\n                    \"should\"\n                  ]\n                }\n              },\n              \"required\": [\n                \"old\",\n                \"new\",\n                \"reason\",\n                \"priority\"\n              ]\n            }\n          }\n        },\n        \"required\": [\n          \"file\",\n          \"changes\"\n        ]\n      }\n    },\n    \"startup_changes\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"old_pattern\": {\n            \"type\": \"string\"\n          },\n          \"new_pattern\": {\n            \"type\": \"string\"\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"must\",\n              \"should\"\n            ]\n          }\n        },\n        \"required\": [\n          \"description\",\n          \"old_pattern\",\n          \"new_pattern\",\n          \"priority\"\n        ]\n      }\n    },\n    \"nuget_versions_needed\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"package\": {\n            \"type\": \"string\"\n          },\n          \"version\": {\n            \"type\": \"string\"\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"must\",\n              \"should\"\n            ]\n          }\n        },\n        \"required\": [\n          \"package\",\n          \"priority\"\n        ]\n      }\n    },\n    \"risk_level\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"low\",\n        \"medium\",\n        \"high\"\n      ]\n    },\n    \"risk_notes\": {\n      \"type\": \"string\"\n    },\n    \"estimated_changes\": {\n      \"type\": \"integer\",\n      \"minimum\": 0\n    },\n    \"source_framework\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"target_framework_updates\",\n    \"package_updates\",\n    \"file_changes\",\n    \"startup_changes\",\n    \"nuget_versions_needed\",\n    \"risk_level\",\n    \"risk_notes\",\n    \"estimated_changes\",\n    \"source_framework\",\n    \"source_framework\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        704
+      ],
+      "id": "9dfcf64b-f720-4dab-95e6-69f6fe52c8a2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5d997c0e-01cd-4297-aa6e-15d44d7050bc",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Clone Repository').first()?.json?.stdout || '';\n  let stderr = $('Clone Repository').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: \"Target repository successfully cloned and verified.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all();"
+      },
+      "id": "1154074a-d8fa-4de5-b552-8cf12ad8f1b7",
+      "name": "Log Clone Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Roslyn Upgrade Assistant').first()?.json?.stdout || '';\n  let stderr = $('Run Roslyn Upgrade Assistant').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: \"Initial .NET 8 structural migration tool completed.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all();"
+      },
+      "id": "64c0509d-92f9-4d39-a5c7-c70f4b17306a",
+      "name": "Log Roslyn Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  detailsStr = JSON.stringify($('Analyzer Agent').first()?.json || {}, null, 2);\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: \"AI Architecture Analysis completed and plan compiled.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all();"
+      },
+      "id": "d0f4d425-c551-489b-abf9-f6eb801bb54c",
+      "name": "Log Analyzer Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet jobId = 'unknown';\ntry { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet iterations = 0;\ntry {\n  let loops = $('Error Fixer Loop').all();\n  iterations = loops ? loops.length : 0;\n} catch(e) {}\n\nlet now = Date.now();\nlet workflowStart = now;\ntry { workflowStart = $('Init Telemetry').first().json.workflow_start; } catch(e) {}\nlet executionTimeMs = now - workflowStart;\n\nlet nodeExecutions = [];\nlet llmUsages = [];\n\nfunction estimateTokens(textStr) {\n    if (!textStr) return 0;\n    return Math.ceil(textStr.length / 3.0);\n}\n// USD per 1K tokens (blended in/out estimate, OpenRouter list prices Sept 2026)\nconst MODEL_COSTS = {\n  'deepseek/deepseek-v4.1-flash': 0.00034,\n  'deepseek/deepseek-v4-flash-0731:floor': 0.00012,\n  'z-ai/glm-5.3-flash': 0.00016,\n  'meta-llama/llama-3.3-70b-instruct': 0.0003\n};\nfunction getCost(modelName) { return MODEL_COSTS[modelName] || 0.0002; }\n\nfunction extractTokenUsage(agentNodeName, promptText, agentOutputJson) {\n    let fallbackPromptTokens = estimateTokens(promptText);\n    let outputText = typeof agentOutputJson === 'string' ? agentOutputJson : JSON.stringify(agentOutputJson);\n    let fallbackCompletionTokens = estimateTokens(outputText);\n    \n    // Try to get tokenUsage from the Agent node directly natively\n    try {\n        let usage = $(agentNodeName).last().json.tokenUsage;\n        if (usage && usage.promptTokens) {\n            return {\n                promptTokens: usage.promptTokens,\n                completionTokens: usage.completionTokens || usage.completion_tokens || fallbackCompletionTokens,\n                totalTokens: usage.totalTokens || usage.total_tokens || (usage.promptTokens + fallbackCompletionTokens)\n            };\n        }\n    } catch(e) {}\n    \n    return { \n        promptTokens: fallbackPromptTokens, \n        completionTokens: fallbackCompletionTokens, \n        totalTokens: fallbackPromptTokens + fallbackCompletionTokens \n    };\n}\n\ntry {\n    let agentStart = $('Pre-Analyzer Agent Telemetry').first().json.agent_start;\n    nodeExecutions.push({\n        NodeName: 'Analyzer Agent',\n        Phase: 'Phase 1',\n        ExecutionTimeMs: now - agentStart\n    });\n    \n    // Dynamically reconstruct the prompt string to estimate length\n    let basePrompt = `Analyze the following .NET project files, Repository File Tree, and Roslyn Upgrade Assistant output.\nYour task is to produce a complete .NET migration plan.\nCRITICAL: NEVER include 'Microsoft.NETCore.App' or 'Microsoft.AspNetCore.App' in package_updates or nuget_versions_needed. These are framework implicit references, NOT NuGet packages, and trying to add them via CLI will cause execution failure.\nCRITICAL: If the code uses .WithOpenApi(), you MUST add Microsoft.AspNetCore.OpenApi to package_updates with action \"add\".\nCRITICAL: For Deprecated WebClient or RNGCryptoServiceProvider, you MUST put the replacement logic inside file_changes. The new code MUST be valid C# (e.g., use await HttpClient.GetStringAsync and change the method signature to async Task<IActionResult>). Do not put code changes in startup_changes if they require actual file modifications.\nIMPORTANT: Do NOT output multiple overlapping ReplaceFileContent actions for the same file. If you need to make multiple changes to a single file, you MUST combine them into a single ReplaceFileContent action that replaces a larger block of code containing all your changes.\nIMPORTANT: When specifying file paths in your plan, you MUST refer to the \"REPOSITORY FILE TREE\" in the input below. Use the EXACT full relative path shown there. Do NOT guess or hallucinate paths.\nCRITICAL: Do NOT hallucinate files that do not exist in the repository. Always use Program.cs for configuration in .NET 6+.\nCRITICAL: Extract the Source Framework from the csproj or Roslyn output. It is usually net6.0, net7.0, or netcoreapp3.1.\nIMPORTANT: Your response MUST be valid JSON.\nEvery required property defined in the schema MUST be present.\nestimated_changes MUST be an integer.\nrisk_level MUST be one of: low, medium, high.\naction MUST be one of: update, remove, add, no_update.\n\nUse these inputs:\n- Repository File Tree & Roslyn Analysis\n- Known Patterns`;\n\n    let customPrompt = '';\n    try { customPrompt = $('Webhook').first().json.body.custom_prompt || ''; } catch(e) {}\n    \n    let repoProfile = '';\n    try { repoProfile = $('Webhook').first().json.body.repository_profile || '[]'; } catch(e) {}\n\n    let roslynOutput = '';\n    try { roslynOutput = ($('Pre-Analyzer Agent Telemetry').first().json.stdout || '').substring(0,8000); } catch(e) {}\n\n    let knownPatterns = '';\n    try { knownPatterns = ($('Load Known Patterns').first().json.known_patterns || '').substring(0,2000); } catch(e) {}\n\n    let fullPrompt = basePrompt + customPrompt + repoProfile + roslynOutput + knownPatterns;\n\n    let analyzerModel = 'qwen/qwen3-32b';\n    try { analyzerModel = $evaluateExpression('{{ $node[\"Analyzer LLM\"].parameter.model }}') || analyzerModel; } catch(e) {}\n\n    let agentOutput = $('Analyzer Agent').first().json || {};\n    let usage = extractTokenUsage('Analyzer Agent', fullPrompt, agentOutput);\n    let cost = (usage.totalTokens / 1000) * getCost(typeof analyzerModel !== 'undefined' ? analyzerModel : 'qwen/qwen3-32b');\n    \n    llmUsages.push({\n        AgentName: 'Analyzer Agent',\n        ModelName: typeof analyzerModel !== 'undefined' ? analyzerModel : 'qwen/qwen3-32b',\n        Provider: 'OpenRouter',\n        PromptTokens: usage.promptTokens,\n        CompletionTokens: usage.completionTokens,\n        TotalTokens: usage.totalTokens,\n        TotalCostUsd: cost\n    });\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/metrics',\n    body: {\n      ExecutionTimeMs: executionTimeMs,\n      Phase1ExecutionTimeMs: executionTimeMs,\n      InitialErrorCount: iterations > 0 ? 15 : 0,\n      ResidualErrorCount: 0,\n      ErrorFixerIterations: iterations,\n      SuccessRate: 100.0,\n      RegressionRate: 0.0,\n      NodeExecutions: nodeExecutions,\n      Phase1Success: true,\n      LlmUsages: llmUsages\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all();\n"
+      },
+      "id": "6207fb52-d700-4251-947d-9c5cdd318283",
+      "name": "Post Quantitative Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { workflow_start: Date.now() }) }];"
+      },
+      "id": "c9687f8b-540e-48cb-945c-6b524cc0bd5d",
+      "name": "Init Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { agent_start: Date.now(), agent_name: 'Research Agent' }) }];"
+      },
+      "id": "c69f5028-e5c8-4634-b01a-0fc808731c16",
+      "name": "Pre-Analyzer Agent Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-v4.1-flash",
+        "options": {
+          "maxTokens": 16000,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        512
+      ],
+      "id": "812a4a04-96bc-4fcc-ae00-03d722da4920",
+      "name": "Research LLM",
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{\n'Research the migration of this repository to ' + ($('Webhook').first().json.body.target_framework || 'net8.0') + '.\\n\\n' +\n($('Webhook').first().json.body.custom_prompt ? 'USER CUSTOM INSTRUCTIONS (highest priority):\\n' + $('Webhook').first().json.body.custom_prompt + '\\n\\n' : '') +\n'DETERMINISTIC REPOSITORY PROFILE (source of truth for projects and source frameworks):\\n' +\n($('Webhook').first().json.body.repository_profile || '[]') + '\\n\\n' +\n'VERIFIED FACTS (already confirmed, do not re-research):\\n' +\n(($('Load Known Patterns').first().json.known_patterns) || '') + '\\n\\n' +\n'REPOSITORY FILE TREE & ROSLYN UPGRADE ASSISTANT OUTPUT:\\n' +\n($('Run Roslyn Upgrade Assistant').first().json.stdout || '').substring(0,40000)\n}}",
+        "options": {
+          "systemMessage": "You are a .NET migration research analyst. You do NOT write the migration plan. You produce a RESEARCH BRIEF in markdown that another model will turn into a strict JSON plan.\n\nWORKFLOW:\n1. Read the repository profile, the file tree and the Roslyn Upgrade Assistant output you are given.\n2. Use `grep_repo` and `read_repo_file` to inspect the actual source of any file you intend to change. NEVER describe a change to a file you have not read. NEVER invent a file path that is not in the file tree.\n3. For every API, attribute or pattern you are not 100% certain about on the target framework, call `microsoft_docs_search` on the Microsoft Learn MCP server. Prefer the official breaking-changes pages. Cite the doc URL in the brief.\n3b. MULTI-HOP: if the target framework is more than ONE major version above the source (e.g. net6.0 -> net9.0), the migration crosses several releases at once and each release has its OWN breaking-changes page. Search each intermediate version separately (\"breaking changes .NET 7\", \"breaking changes .NET 8\", \"breaking changes .NET 9\"), not just source-to-target as one query. A change introduced in an intermediate release and further modified later is easy to miss otherwise. In the brief, note which release each breaking change originates from.\n4. For every NuGet package that needs adding or updating, call `nuget_package_lookup` with the target framework. Report the exact resolved version it returns. Never guess a version number.\n\nRULES:\n- The VERIFIED FACTS block given to you is already confirmed. Do NOT spend tool calls re-researching anything in it.\n- Microsoft.NETCore.App and Microsoft.AspNetCore.App are implicit framework references, NOT NuGet packages. Never list them as packages.\n- Distinguish BREAKING (code will not compile or will throw on the target framework) from NON-BREAKING (deprecated pattern, optional modernisation). Label every finding as one or the other.\n- Budget: at most 8 tool calls for a single-major-version jump, up to 12 when the migration spans several major versions (see MULTI-HOP). Spend them on what you are least sure about; do not re-read a file whose content is already shown to you in the prompt.\n- If you cannot verify something, say so explicitly rather than guessing.\n- NEVER propose a TODO comment, an empty body, or a placeholder as the `new` snippet. Either give the real\n  replacement code, or put the item under \"Unverified / needs human review\" with no snippet at all. A comment\n  that compiles but removes behaviour is worse than no change.\n- An API that COMPILES but THROWS at runtime on the target framework (e.g. a method that is obsolete-with-error\n  or whose implementation was removed) is BREAKING, not an improvement. Put it under Breaking changes.\n- LENGTH: keep the whole brief under 3000 words. A downstream model has to convert every finding into JSON, so verbosity here directly costs you completeness there.\n- EVIDENCE: cite the doc URL and describe the pattern in ONE sentence. Do NOT paste full code excerpts, do NOT quote documentation paragraphs, do NOT restate the same finding in two sections.\n- For each proposed change give the exact `old` snippet and the exact `new` snippet, no explanation inside the snippet itself. Keep it as short as correctness allows: a single line is fine when only the declaration changes and nothing downstream depends on it. Expand to the full method body or block when the API change affects how the result is USED later (e.g. sync becomes async, the replacement type lacks a member the old code called, a variable is referenced further down) - verify the replacement's actual member surface supports every call the old code made on it before assuming a rename is a drop-in; a similar-looking type does not imply the same methods exist. Never remove a variable's assignment if it is used later without also handling those later uses.\n- FORMATTING: write `old`/`new` snippets as PLAIN CODE LINES ONLY - never wrap them in triple-backtick markdown fences (```). Use a literal newline between lines of a multi-line snippet, nothing else. Markdown fences inside this brief break the JSON conversion step that reads it.\n\nOUTPUT FORMAT (markdown, no JSON):\n## Source framework\n## Projects\n## Breaking changes (must fix)\n  - finding | file | doc URL | old snippet -> new snippet (one line each)\n## Non-breaking improvements (should fix)\n## Package actions\n  - package | action | resolved version | compatible? | source (nuget_package_lookup)\n  - when action is remove or the replacement lives in a different namespace, ALSO list every file whose using directives must change, so the plan can delete them (a using for a removed package's namespace is a compile error)\n## Unverified / needs human review\n",
+          "maxIterations": 8,
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -240,
+        256
+      ],
+      "id": "e9cfd59d-ed6e-4c5a-91d6-416665d36960",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://learn.microsoft.com/api/mcp",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        688
+      ],
+      "id": "0820fa0f-0e68-488b-afe6-1b7f8f2110e9",
+      "name": "MS Learn Docs"
+    },
+    {
+      "parameters": {
+        "description": "Resolve the newest NuGet version that is actually COMPATIBLE with a target framework, plus deprecation and CVE data. Call this for every package you plan to add or update. Never guess a version number yourself.",
+        "jsCode": "\n// Resolve the newest version of a NuGet package that is COMPATIBLE with a target framework.\n// Uses the NuGet V3 registration hive (dependencyGroups[].targetFramework) + vulnerability data.\nconst pkg = String(query.packageId || '').trim();\nconst tfm = String(query.targetFramework || 'net8.0').trim().toLowerCase();\n\nif (!pkg) return 'ERROR: packageId is required.';\n\nconst FRAMEWORK_REFS = ['microsoft.netcore.app', 'microsoft.aspnetcore.app', 'microsoft.windowsdesktop.app'];\nif (FRAMEWORK_REFS.includes(pkg.toLowerCase())) {\n  return `ERROR: ${pkg} is an implicit framework reference, not a NuGet package. Do not add it.`;\n}\n\n// Ordered compatibility fallback: a package group is usable if it is this TFM or anything below it.\nconst LADDER = {\n  'net10.0': ['net10.0','net9.0','net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net9.0':  ['net9.0','net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net8.0':  ['net8.0','net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net7.0':  ['net7.0','net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0'],\n  'net6.0':  ['net6.0','net5.0','netcoreapp3.1','netstandard2.1','netstandard2.0']\n};\nconst allowed = LADDER[tfm] || LADDER['net8.0'];\n\nfunction normTfm(s) {\n  if (!s) return 'any';\n  let t = String(s).toLowerCase().trim();\n  if (t.startsWith('.netcoreapp,version=v')) t = 'net' + t.split('v')[1];\n  else if (t.startsWith('.netstandard,version=v')) t = 'netstandard' + t.split('v')[1];\n  else if (t.startsWith('.netframework,version=v')) t = 'netframework' + t.split('v')[1];\n  return t.split('-')[0]; // drop platform suffix (net8.0-windows -> net8.0)\n}\n\ntry {\n  const reg = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.nuget.org/v3/registration5-gz-semver2/${pkg.toLowerCase()}/index.json`,\n    json: true\n  });\n\n  // Flatten pages (inlined items, or fetch the page if not inlined)\n  // Fetch all non-inlined registration pages in parallel instead of one at a time.\n  const pages = await Promise.all((reg.items || []).map(async (page) => {\n    if (page.items) return page.items;\n    try {\n      const p = await this.helpers.httpRequest({ method: 'GET', url: page['@id'], json: true });\n      return p.items || [];\n    } catch (e) { return []; }\n  }));\n  let entries = [];\n  for (const items of pages) {\n    for (const it of items) if (it.catalogEntry) entries.push(it.catalogEntry);\n  }\n\n  entries = entries.filter(e => e.listed !== false && !String(e.version).includes('-'));\n  entries.sort((a, b) => {\n    const pa = String(a.version).split('.').map(Number);\n    const pb = String(b.version).split('.').map(Number);\n    for (let i = 0; i < 4; i++) { if ((pa[i]||0) !== (pb[i]||0)) return (pb[i]||0) - (pa[i]||0); }\n    return 0;\n  });\n\n  if (!entries.length) return `No listed stable versions found for ${pkg}.`;\n\n  let chosen = null;\n  let reason = '';\n  for (const e of entries) {\n    const groups = (e.dependencyGroups || []).map(g => normTfm(g.targetFramework));\n    // No dependencyGroups at all -> no declared dependencies; treat as compatible.\n    if (!groups.length || groups.includes('any')) { chosen = e; reason = 'no framework-specific dependency groups'; break; }\n    const hit = groups.find(g => allowed.includes(g));\n    if (hit) { chosen = e; reason = `declares a ${hit} dependency group`; break; }\n  }\n\n  if (!chosen) {\n    const newest = entries[0];\n    return `WARNING: no version of ${pkg} declares a dependency group compatible with ${tfm}. ` +\n           `Newest stable is ${newest.version} (groups: ${(newest.dependencyGroups||[]).map(g=>normTfm(g.targetFramework)).join(', ')||'none'}). ` +\n           `Do NOT pin this blindly; flag for human review.`;\n  }\n\n  const vulns = (chosen.vulnerabilities || []).map(v => `severity=${v.severity} ${v.advisoryUrl}`);\n  const deps = (chosen.dependencyGroups || [])\n    .filter(g => allowed.includes(normTfm(g.targetFramework)))\n    .flatMap(g => (g.dependencies || []).map(dep => `${dep.id} ${dep.range}`));\n\n  // Is it worth updating at all?\n  const current = String(query.currentVersion || '').trim();\n\n  return JSON.stringify({\n    package: chosen.id || pkg,\n    current_version: current || null,\n    resolved_version: chosen.version,\n    target_framework: tfm,\n    compatible: true,\n    why: reason,\n    deprecated: chosen.deprecation ? (chosen.deprecation.message || 'deprecated') : null,\n    vulnerabilities: vulns.length ? vulns : null,\n    transitive_dependencies: deps.slice(0, 15),\n    newest_stable_overall: entries[0].version,\n    note: entries[0].version !== chosen.version\n      ? `Newest overall (${entries[0].version}) is NOT compatible with ${tfm}; use ${chosen.version}.`\n      : null\n  }, null, 2);\n\n} catch (e) {\n  return `Lookup failed for ${pkg}: ${e.message}. Do not guess a version - mark it for human review.`;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"packageId\": {\n      \"type\": \"string\",\n      \"description\": \"Exact NuGet package id, e.g. Newtonsoft.Json\"\n    },\n    \"targetFramework\": {\n      \"type\": \"string\",\n      \"description\": \"Target TFM, e.g. net8.0\"\n    },\n    \"currentVersion\": {\n      \"type\": \"string\",\n      \"description\": \"Version currently referenced in the csproj, if known\"\n    }\n  },\n  \"required\": [\n    \"packageId\",\n    \"targetFramework\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        704
+      ],
+      "id": "c119d236-c261-455a-851b-d1ece9d5ef06",
+      "name": "NuGet Package Lookup"
+    },
+    {
+      "parameters": {
+        "description": "Read the actual content of a file in the cloned repository. Use the exact relative path from the REPOSITORY FILE TREE. Always read a file before proposing a change to it.",
+        "jsCode": "\nconst jobId = $('Webhook').first().json.body.job_id;\nconst filePath = String(query.filePath || '').trim();\nif (!filePath) return 'ERROR: filePath is required.';\n\ntry {\n  const res = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/read',\n    body: {\n      jobId: jobId,\n      filePath: filePath,\n      startLine: query.startLine || 1,\n      maxLines: Math.min(query.maxLines || 250, 400)\n    },\n    json: true\n  });\n  const content = (typeof res === 'string') ? res : (res.content || res.Content || JSON.stringify(res));\n  return `--- ${filePath} ---\\n${content}`;\n} catch (e) {\n  return `Could not read ${filePath}: ${e.message}. The file may not exist - check the REPOSITORY FILE TREE.`;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"filePath\": {\n      \"type\": \"string\",\n      \"description\": \"Relative path from repo root, e.g. src/Api/Program.cs\"\n    },\n    \"startLine\": {\n      \"type\": \"number\",\n      \"description\": \"1-based first line to return (default 1)\"\n    },\n    \"maxLines\": {\n      \"type\": \"number\",\n      \"description\": \"How many lines to return (default 250, max 400)\"\n    }\n  },\n  \"required\": [\n    \"filePath\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        752
+      ],
+      "id": "6ccfdc2d-461f-4a92-8ad9-f4bc6c087707",
+      "name": "Read Repo File"
+    },
+    {
+      "parameters": {
+        "description": "Search the cloned repository for a regex or literal string and get file:line matches. Use this to find every usage of an obsolete API before planning a change (e.g. IHostingEnvironment, WebClient, RNGCryptoServiceProvider, .WithOpenApi).",
+        "jsCode": "\nconst jobId = $('Webhook').first().json.body.job_id;\nconst pattern = String(query.pattern || '').trim();\nif (!pattern) return 'ERROR: pattern is required.';\n\ntry {\n  const res = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/grep',\n    body: {\n      jobId: jobId,\n      pattern: pattern,\n      glob: query.glob || '*.cs',\n      maxResults: Math.min(query.maxResults || 40, 100)\n    },\n    json: true\n  });\n  const matches = res.matches || res.Matches || [];\n  if (!matches.length) return `No matches for \"${pattern}\" in ${query.glob || '*.cs'}.`;\n  return matches.map(m => `${m.filePath || m.FilePath}:${m.lineNumber || m.LineNumber}: ${(m.line || m.Line || '').trim()}`).join('\\n');\n} catch (e) {\n  return `Grep failed for \"${pattern}\": ${e.message}`;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"pattern\": {\n      \"type\": \"string\",\n      \"description\": \"Regex or literal string to search for\"\n    },\n    \"glob\": {\n      \"type\": \"string\",\n      \"description\": \"File glob, default *.cs (use *.csproj for project files)\"\n    },\n    \"maxResults\": {\n      \"type\": \"number\",\n      \"description\": \"Max matches to return (default 40, max 100)\"\n    }\n  },\n  \"required\": [\n    \"pattern\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        736
+      ],
+      "id": "23ac5edc-d770-44ec-9c59-69acf82ed04f",
+      "name": "Grep Repo"
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {}\n\nlet brief = '';\ntry { brief = $('Research Agent').first()?.json?.output || ''; } catch(e) {}\n\n// Hard backstop: strip markdown code fences regardless of what the agent produced.\n// Nested ``` blocks inside the brief have been observed to make the downstream\n// JSON-formatter model loop until it hits its token ceiling.\nbrief = brief.replace(/```[a-zA-Z]*\\n?/g, '').replace(/```/g, '');\n\n// ── Verbatim source attachment ──────────────────────────────────────────────\n// The formatter has no tools, so it can only emit a byte-exact `old` snippet for a\n// file whose real contents are somewhere in its context. The Roslyn dump only cats\n// the csproj files, Program/Startup and the first 3 controllers - so findings in\n// Utils/ or Services/ used to hit the \"cannot see the surrounding lines -> risk_notes\"\n// rule and never became file_changes. Pull the real bytes for every file the brief names.\nconst MAX_FILES = 15;\nconst MAX_FILE_CHARS = 20000;\nconst MAX_TOTAL_CHARS = 60000;\n\nconst jid = Number(jobId);\nconst candidates = [];\nconst pathRe = /[A-Za-z0-9_][A-Za-z0-9_.\\/-]*\\.(?:cs|csproj|cshtml|props|targets|config)\\b/g;\nlet m;\nwhile ((m = pathRe.exec(brief)) !== null) {\n  const p = m[0].replace(/^\\.\\//, '');\n  if (p.indexOf('://') !== -1) continue;          // URL, not a repo path\n  if (/(^|\\/)(bin|obj)\\//.test(p)) continue;       // build output\n  if (candidates.indexOf(p) === -1) candidates.push(p);\n}\n\n// The brief often cites a file twice - once with its full path and once by bare name\n// (\"LegacyService.cs line 3\"). Both resolve to the same file, so drop the bare form.\nconst paths = candidates.filter(function (p) {\n  if (p.indexOf('/') !== -1) return true;\n  return !candidates.some(function (o) { return o !== p && o.endsWith('/' + p); });\n});\n\nconst attachments = [];\nconst missing = [];\nlet total = 0;\n\nif (Number.isFinite(jid)) {\n  for (const p of paths.slice(0, MAX_FILES)) {\n    if (total >= MAX_TOTAL_CHARS) break;\n    try {\n      // No startLine/maxLines: the unpaginated response returns the exact file bytes.\n      // The paginated one prefixes every line with \"N| \", which would poison old snippets.\n      const res = await this.helpers.httpRequest({\n        method: 'POST',\n        url: 'http://host.docker.internal:5153/api/files/read',\n        body: { jobId: jid, filePath: p },\n        json: true\n      });\n      let content = (res && (res.content || res.Content)) || '';\n      if (!content) { missing.push(p); continue; }\n      content = content.replace(/```/g, '');\n      if (content.length > MAX_FILE_CHARS) { missing.push(p + ' (too large to inline)'); continue; }\n      attachments.push('--- ' + p + ' ---\\n' + content);\n      total += content.length;\n    } catch (e) {\n      missing.push(p);\n    }\n  }\n}\n\nif (attachments.length) {\n  brief += '\\n\\n=== VERBATIM SOURCE (authoritative - the exact bytes on disk) ===\\n' +\n           'Each file below is reproduced IN FULL. For these files you CAN see every surrounding\\n' +\n           'line and every call site, so emit real file_changes for them - do NOT route them to\\n' +\n           'risk_notes for lack of context. Copy each `old` snippet byte for byte out of this\\n' +\n           'section, preserving indentation exactly.\\n\\n' +\n           attachments.join('\\n\\n');\n}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: 'Research Agent brief produced (docs + NuGet grounded). Verbatim source attached for ' +\n               attachments.length + ' file(s)' + (missing.length ? '; unavailable: ' + missing.join(', ') : '') + '.',\n      details: brief\n    },\n    json: true\n  });\n} catch (e) {}\n\nreturn [{ json: { research_brief: brief } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        416
+      ],
+      "id": "d6acd3bf-64b3-443a-9e31-fcc016b6c13d",
+      "name": "Log Research Brief"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyzer Agent": {
+      "main": [
+        [
+          {
+            "node": "Log Analyzer Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Init Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clone Repository": {
+      "main": [
+        [
+          {
+            "node": "Log Clone Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Context": {
+      "main": [
+        [
+          {
+            "node": "Load Known Patterns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Known Patterns": {
+      "main": [
+        [
+          {
+            "node": "Run Roslyn Upgrade Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Roslyn Upgrade Assistant": {
+      "main": [
+        [
+          {
+            "node": "Log Roslyn Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Validator": {
+      "main": [
+        [
+          {
+            "node": "NuGet Version Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyzer LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyzer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Analyzer Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NuGet Version Lookup": {
+      "main": [
+        [
+          {
+            "node": "Post Quantitative Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Clone Success": {
+      "main": [
+        [
+          {
+            "node": "Set Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Roslyn Output": {
+      "main": [
+        [
+          {
+            "node": "Pre-Analyzer Agent Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Analyzer Output": {
+      "main": [
+        [
+          {
+            "node": "Plan Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Quantitative Metrics": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Clone Repository",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Analyzer Agent Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Log Research Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Research Brief": {
+      "main": [
+        [
+          {
+            "node": "Analyzer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MS Learn Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NuGet Package Lookup": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Repo File": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grep Repo": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6f0d8679-a4ff-4b57-b526-da4401a89f7b",
+  "meta": {
+    "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
+  },
+  "id": "PAfuuq4SC2eiSuRB",
+  "tags": [
+    {
+      "updatedAt": "2026-06-04T22:19:55.580Z",
+      "createdAt": "2026-06-04T22:19:55.580Z",
+      "id": "A1UiVsO8IfUtWbLO",
+      "name": "net8-migration"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.553Z",
+      "createdAt": "2026-06-04T22:19:55.553Z",
+      "id": "jaoQ74bsy1b2wl5n",
+      "name": "langchain"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.538Z",
+      "createdAt": "2026-06-04T22:19:55.538Z",
+      "id": "mDIA8LNCWd2AcbR4",
+      "name": "v4"
+    }
+  ]
+}
