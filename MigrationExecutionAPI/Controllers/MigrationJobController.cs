@@ -203,7 +203,35 @@ public class MigrationJobController : ControllerBase
                 }
 
                 var n8nResponse = await response.Content.ReadAsStringAsync();
-                var jsonNode = JsonNode.Parse(n8nResponse);
+
+                // n8n answers 2xx with an EMPTY body when the workflow dies before reaching
+                // "Respond to Webhook" (a node failing outright, e.g. the MCP server being
+                // unreachable). Parsing that throws "The input does not contain any JSON tokens",
+                // which told the user nothing about the real cause. Record the status and the raw
+                // body so the job log points at the n8n execution instead of a parser artifact.
+                JsonNode? jsonNode;
+                try
+                {
+                    jsonNode = JsonNode.Parse(n8nResponse);
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    currentJob.Status = "Failed";
+                    var bodyDescription = string.IsNullOrWhiteSpace(n8nResponse)
+                        ? "an empty body"
+                        : $"a body that is not JSON ({n8nResponse.Length} chars)";
+                    db.JobLogs.Add(new JobLog {
+                        MigrationJobId = currentJob.Id,
+                        Level = "error",
+                        Phase = "Analyze",
+                        Message = $"n8n returned HTTP {(int)response.StatusCode} with {bodyDescription}. The workflow most likely failed before reaching 'Respond to Webhook' - open the n8n execution log for this run to see which node errored.",
+                        Details = n8nResponse.Length > 4000 ? n8nResponse[..4000] + "\n...(truncated)" : n8nResponse,
+                        Timestamp = DateTime.UtcNow
+                    });
+                    await db.SaveChangesAsync();
+                    return;
+                }
+
                 var planJson = jsonNode?["migration_plan"]?.ToString();
                 
                 if (string.IsNullOrEmpty(planJson))
