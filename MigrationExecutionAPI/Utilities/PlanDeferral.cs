@@ -56,6 +56,13 @@ namespace MigrationExecutionAPI.Utilities
             // read - so the log, the PR body and the report counted 6 deferred items for 5,
             // one of them apparently blank. One entry per package, keeping whichever says more.
             var packageAt = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            // The plan screen toggles package_updates but not nuget_versions_needed, so a
+            // reviewer who promotes a package leaves its twin at "should". Build Action List
+            // merges the two by name and applies it; it must not be reported as deferred.
+            var mustPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (section, nameField) in new[] { ("package_updates", "name"), ("nuget_versions_needed", "package") })
+                foreach (var p in plan[section]?.AsArray() ?? new JsonArray())
+                    if (Str(p?["priority"]) != "should" && (Str(p?[nameField]) ?? Str(p?["name"])) is { } n) mustPackages.Add(n);
             foreach (var (section, nameField) in new[]
                      { ("package_updates", "name"), ("nuget_versions_needed", "package"), ("startup_changes", "file") })
             {
@@ -65,6 +72,7 @@ namespace MigrationExecutionAPI.Utilities
                     if (Str(p?["priority"]) != "should") continue;
                     var name = Str(p?[nameField]) ?? Str(p?["name"]);
                     if (name == null && isPackage) continue;   // a package with no name gives the reviewer nothing to act on
+                    if (isPackage && mustPackages.Contains(name!)) continue;
                     var target = name ?? "(unnamed)";
                     var reason = Str(p?["reason"]) ?? Str(p?["description"])
                                  ?? $"{Str(p?["from_version"])} -> {Str(p?["resolved_version"]) ?? Str(p?["to_version"]) ?? Str(p?["version"])}".Trim(' ', '-', '>');
