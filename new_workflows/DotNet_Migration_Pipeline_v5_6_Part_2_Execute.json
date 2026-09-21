@@ -769,7 +769,7 @@
         6304,
         720
       ],
-      "id": "0c30fdfa-8d54-4aff-afff-3a9fe876f4b8",
+      "id": "f5cc7dde-3926-4b56-9f94-00c69bce321b",
       "name": "Collect Actual Changes"
     }
   ],
@@ -1284,36 +1284,15 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "aee8f38f-ebcb-4403-81e2-08fee8152db7",
+  "versionId": "54a3ef45-75c9-491a-a688-d401b790d7b3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
-  },
-  "id": "gJ9WUoi7aQAIT7qb",
-  "tags": [
-    {
-      "updatedAt": "2026-06-04T22:19:55.580Z",
-      "createdAt": "2026-06-04T22:19:55.580Z",
-      "id": "A1UiVsO8IfUtWbLO",
-      "name": "dotnet-migration"
-    },
-    {
-      "updatedAt": "2026-06-04T22:19:55.553Z",
-      "createdAt": "2026-06-04T22:19:55.553Z",
-      "id": "jaoQ74bsy1b2wl5n",
-      "name": "langchain"
-    },
-    {
-      "updatedAt": "2026-06-04T22:19:55.538Z",
-      "createdAt": "2026-06-04T22:19:55.538Z",
-      "id": "mDIA8LNCWd2AcbR4",
-      "name": "v4"
-    }
-  ]
+  }
 }
