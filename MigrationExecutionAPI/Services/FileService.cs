@@ -5,6 +5,18 @@ namespace MigrationExecutionAPI.Services;
 
 public class FileService : IFileService
 {
+    // One gate per file. Agents issue tool calls in parallel: on job 100 the Error
+    // Fixer sent three replace_in_file calls to the same file within 51 ms, and the
+    // read-modify-write below has no locking, so two failed with IOException (a 500).
+    // Reproduced in isolation: 24 concurrent edits to one file, 23 threw. Edits to
+    // the same file now queue; edits to different files still run in parallel.
+    // Static because the service is registered per request.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> FileGates =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private static SemaphoreSlim GateFor(string fullPath) =>
+        FileGates.GetOrAdd(Path.GetFullPath(fullPath), _ => new SemaphoreSlim(1, 1));
+
     private readonly ILogger<FileService> _logger;
 
     public FileService(ILogger<FileService> logger)
@@ -66,7 +78,16 @@ public class FileService : IFileService
             Directory.CreateDirectory(directory);
         }
 
-        await File.WriteAllTextAsync(fullPath, content);
+        var gate = GateFor(fullPath);
+        await gate.WaitAsync();
+        try
+        {
+            await File.WriteAllTextAsync(fullPath, content);
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 
     public async Task ReplaceFileContentAsync(string repositoryPath, string filePath, string targetContent, string replacementContent)
@@ -75,8 +96,24 @@ public class FileService : IFileService
         
         var fullPath = ResolveFilePath(repositoryPath, filePath);
 
+        // The whole read-modify-write holds the file's gate: a concurrent edit must see
+        // this one's result, not the content from before it.
+        var gate = GateFor(fullPath);
+        await gate.WaitAsync();
+        try
+        {
+            await ReplaceUnderGateAsync(fullPath, targetContent, replacementContent);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private static async Task ReplaceUnderGateAsync(string fullPath, string targetContent, string replacementContent)
+    {
         var rawContent = await File.ReadAllTextAsync(fullPath);
-        
+
         var content = rawContent.Replace("\r\n", "\n");
         targetContent = targetContent.Replace("\r\n", "\n");
         replacementContent = replacementContent.Replace("\r\n", "\n");

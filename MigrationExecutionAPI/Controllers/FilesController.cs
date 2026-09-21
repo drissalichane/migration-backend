@@ -240,6 +240,51 @@ public class FilesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Lists a job's repository files (repo-relative, forward slashes), skipping build
+    /// output and VCS folders. Added for the Part 2 Error Fixer: on job 100 it asked
+    /// for a non-existent `LegacyMvcApp/Utils/RestClient.cs` 18 times in a row, because
+    /// a 404 gave it nothing to do next. The file list goes into its prompt, and the
+    /// read tool uses it to suggest real files when a path is wrong.
+    /// </summary>
+    [HttpPost("list")]
+    public async Task<IActionResult> ListFiles()
+    {
+        try
+        {
+            Request.EnableBuffering();
+            using var reader = new StreamReader(Request.Body, leaveOpen: true);
+            var body = await reader.ReadToEndAsync();
+            Request.Body.Position = 0;
+
+            var (jobId, _, _) = ParseFileRequest(body);
+
+            // Deliberately no GetLatestRepo() fallback: a file list from ANOTHER job's
+            // workspace would send the agent after files that are not in its repository.
+            if (!jobId.HasValue)
+                return BadRequest(new BaseResponse { Success = false, Message = "jobId is required (as a number)." });
+
+            var root = Path.GetFullPath(ResolveRepositoryPath(jobId));
+            if (!Directory.Exists(root))
+                return NotFound(new BaseResponse { Success = false, Message = $"No workspace for job {jobId}." });
+
+            var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bin", "obj", ".git", ".vs", "node_modules" };
+            const int cap = 2000;
+            var all = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+                .Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))
+                .Where(rel => !rel.Split('/').Any(seg => skip.Contains(seg)))
+                .OrderBy(rel => rel, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            return Ok(new { success = true, files = all.Take(cap), truncated = all.Count > cap });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error listing files");
+            return StatusCode(500, new BaseResponse { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpPost("grep")]
     public async Task<IActionResult> Grep()
     {
