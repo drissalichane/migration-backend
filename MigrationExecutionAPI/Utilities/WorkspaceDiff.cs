@@ -33,6 +33,9 @@ namespace MigrationExecutionAPI.Utilities
         /// <summary>Cap on the diff text returned. Part 2 trims it again for the LLM.</summary>
         public const int MaxDiffChars = 200_000;
 
+        private static readonly HashSet<string> BuildDirs =
+            new(StringComparer.OrdinalIgnoreCase) { "bin", "obj", ".vs", "node_modules", "TestResults" };
+
         public static async Task<Result> ReadAsync(string repoRoot, CancellationToken ct = default)
         {
             if (!Directory.Exists(Path.Combine(repoRoot, ".git")))
@@ -57,10 +60,55 @@ namespace MigrationExecutionAPI.Utilities
             if (truncated) diff = diff[..MaxDiffChars];
 
             // Files the Error Fixer created with write_file. `git diff` does not show them.
+            // Build output is left out even when the repository has no .gitignore for it:
+            // /approve commits this list.
             var (c3, others, _) = await RunGitAsync(repoRoot, ct, "ls-files", "--others", "--exclude-standard");
-            var untracked = c3 == 0 ? Lines(others).ToList() : new List<string>();
+            var untracked = c3 == 0
+                ? Lines(others).Where(p => !p.Split('/').Any(seg => BuildDirs.Contains(seg))).ToList()
+                : new List<string>();
 
             return new Result(true, "", files, untracked, diff, truncated);
+        }
+
+        /// <summary>
+        /// The files a PR should contain: every file that differs from the cloned commit,
+        /// plus new ones, read from disk. /approve used to commit the files that had an
+        /// edit record, but `dotnet add/remove` runs in the container and records nothing,
+        /// so a project changed only by package commands would have been left out.
+        /// Deleted and binary files are reported rather than committed (the GitHub commit
+        /// is built from text blobs). If git cannot be read, falls back to the recorded
+        /// paths, one entry per file.
+        /// </summary>
+        public static async Task<(List<(string FilePath, string Content)> Files, List<string> Skipped, bool FromDiff)> CommitSetAsync(
+            string repoRoot, IEnumerable<string> recordedPaths, CancellationToken ct = default)
+        {
+            var files = new List<(string FilePath, string Content)>();
+            var skipped = new List<string>();
+            var diff = await ReadAsync(repoRoot, ct);
+            if (diff.Success)
+            {
+                foreach (var f in diff.Files)
+                {
+                    var full = Path.Combine(repoRoot, f.Path);
+                    if (!File.Exists(full)) { skipped.Add(f.Path + " (deleted - the PR cannot delete files yet)"); continue; }
+                    if (f.Added == null) { skipped.Add(f.Path + " (binary)"); continue; }
+                    files.Add((f.Path, await File.ReadAllTextAsync(full, ct)));
+                }
+                foreach (var u in diff.Untracked)
+                {
+                    var bytes = await File.ReadAllBytesAsync(Path.Combine(repoRoot, u), ct);
+                    if (Array.IndexOf(bytes, (byte)0) >= 0) { skipped.Add(u + " (new binary file)"); continue; }
+                    files.Add((u, await File.ReadAllTextAsync(Path.Combine(repoRoot, u), ct)));
+                }
+                return (files, skipped, true);
+            }
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in recordedPaths)
+            {
+                var full = Path.Combine(repoRoot, p);
+                if (File.Exists(full) && seen.Add(Path.GetFullPath(full))) files.Add((p, await File.ReadAllTextAsync(full, ct)));
+            }
+            return (files, skipped, false);
         }
 
         private static Result Fail(string message) => new(false, message, new(), new(), "", false);

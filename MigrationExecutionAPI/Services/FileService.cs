@@ -57,6 +57,11 @@ public class FileService : IFileService
         throw new FileNotFoundException($"File '{filePath}' does not exist in the repository.");
     }
 
+    // Edit records keep the path as it was requested, and ResolveFilePath may have
+    // matched it by file name elsewhere in the tree. Anything that later acts on a
+    // recorded edit (the PR review) has to land on the same file.
+    public string ResolveExistingPath(string repositoryPath, string filePath) => ResolveFilePath(repositoryPath, filePath);
+
     public async Task<string> ReadFileAsync(string repositoryPath, string filePath)
     {
         _logger.LogInformation("Reading file {FilePath} in repository {RepositoryPath}", filePath, repositoryPath);

@@ -48,6 +48,27 @@ public class FilesController : ControllerBase
     }
 
     /// <summary>
+    /// The job a file edit is recorded on. The edit names its job; use that one. The
+    /// fallback used to be the only rule - "the newest job that is Executing or Pending
+    /// PR Review" - so with two jobs in flight, one job's edits were recorded on the
+    /// other: shown on the wrong review screen, and reverted in the wrong workspace if
+    /// the reviewer unticked them.
+    /// </summary>
+    private async Task<MigrationJob?> FindRecordingJobAsync(int? jobId)
+    {
+        if (jobId.HasValue)
+        {
+            var named = await _context.MigrationJobs.Include(j => j.FileChanges).FirstOrDefaultAsync(j => j.Id == jobId.Value);
+            if (named != null) return named;
+        }
+        return await _context.MigrationJobs
+            .Include(j => j.FileChanges)
+            .Where(j => j.Status == "Executing" || j.Status == "Pending PR Review")
+            .OrderByDescending(j => j.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
     /// Parses common fields (jobId, filePath) from the raw request body using the same
     /// multi-format parsing strategy that existing endpoints use for n8n compatibility.
     /// </summary>
@@ -526,15 +547,16 @@ public class FilesController : ControllerBase
                 return Ok(new BaseResponse { Success = false, Message = "File path cannot be empty" });
             }
 
+            // What the file held before, so the PR review can withdraw this write. Recorded
+            // as "" before; a whole-file write could then never be undone.
+            string previousContent = "";
+            try { previousContent = await _fileService.ReadFileAsync(repositoryPath, filePath); } catch (FileNotFoundException) { }
+
             await _fileService.WriteFileAsync(repositoryPath, filePath, content ?? "");
-            // Auto-record the file change on the latest executing job
+            // Record the file change on the job whose workspace this is
             try
             {
-                var activeJob = await _context.MigrationJobs
-                    .Include(j => j.FileChanges)
-                    .Where(j => j.Status == "Executing" || j.Status == "Pending PR Review")
-                    .OrderByDescending(j => j.Id)
-                    .FirstOrDefaultAsync();
+                var activeJob = await FindRecordingJobAsync(jobId);
 
                 if (activeJob != null)
                 {
@@ -542,7 +564,7 @@ public class FilesController : ControllerBase
                     {
                         FilePath = filePath,
                         Action = "WriteFile",
-                        TargetContent = "",
+                        TargetContent = previousContent,
                         ReplacementContent = content ?? "",
                         Accepted = true
                     });
@@ -627,14 +649,10 @@ public class FilesController : ControllerBase
 
             await _fileService.ReplaceFileContentAsync(repositoryPath, filePath, targetContent, replacementContent ?? "");
 
-            // Auto-record the file change on the latest executing job
+            // Record the file change on the job whose workspace this is
             try
             {
-                var activeJob = await _context.MigrationJobs
-                    .Include(j => j.FileChanges)
-                    .Where(j => j.Status == "Executing" || j.Status == "Pending PR Review")
-                    .OrderByDescending(j => j.Id)
-                    .FirstOrDefaultAsync();
+                var activeJob = await FindRecordingJobAsync(jobId);
 
                 if (activeJob != null)
                 {

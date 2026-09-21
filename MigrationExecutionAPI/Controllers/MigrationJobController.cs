@@ -668,46 +668,61 @@ public class MigrationJobController : ControllerBase
             .FirstOrDefaultAsync(j => j.Id == id);
 
         if (job == null) return NotFound("Job not found");
-        if (job.Status != "Pending PR Review") return BadRequest("Job is not pending PR review.");
+        // "Rejected" is the review screen's saved draft ("Reject & Save"), whose panel offers
+        // "Create PR". This used to answer 400, so a draft could never become a PR.
+        if (job.Status != "Pending PR Review" && job.Status != "Rejected") return BadRequest("Job is not pending PR review.");
 
         var githubToken = User.FindFirst("github_token")?.Value;
         if (string.IsNullOrEmpty(githubToken)) return Unauthorized("User has no GitHub token. Please re-login with GitHub.");
 
-        var fileChangesToCommit = new List<(string FilePath, string Content)>();
-        // One entry per file. There is a FileChange row per EDIT, and every accepted row
-        // re-reads the whole file from disk, so a file edited twice was committed twice and
-        // counted twice: job 100 would have announced "15 file(s) changed" for 6.
-        var committedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var jobWorkspace = $"C:/Users/grandy/projects/migration-{job.Id}";
 
-        foreach (var change in job.FileChanges)
+        // 1. The reviewer's choices go into the workspace first. They used to be stored on
+        //    the rows only, and the commit read the files from disk: a hand edit never
+        //    reached the PR, and unticking one edit of a file changed nothing.
+        var (reviewError, reviewSteps) = await ApplyReviewAsync(job, request, jobWorkspace);
+        if (reviewError != null) return Conflict(new { Message = reviewError });
+
+        // 2. Commit what differs from the cloned commit - including project files changed only
+        //    by `dotnet add/remove`, which leave no edit record. One entry per file: committing
+        //    one per record announced "15 file(s) changed" for job 100's 6.
+        var (fileChangesToCommit, notCommitted, fromDiff) = await MigrationExecutionAPI.Utilities.WorkspaceDiff.CommitSetAsync(
+            jobWorkspace, job.FileChanges.Where(f => f.Accepted).Select(f => f.FilePath));
+        if (fileChangesToCommit.Count == 0)
         {
-            var userEdit = request.FileEdits.FirstOrDefault(e => e.FileChangeId == change.Id);
-            if (userEdit != null)
-            {
-                change.Accepted = userEdit.Accepted;
-                if (!string.IsNullOrEmpty(userEdit.ManualReplacement))
-                {
-                    change.ReplacementContent = userEdit.ManualReplacement;
-                }
-            }
-
-            if (change.Accepted)
-            {
-                // Note: The actual file on disk is already updated by the execution step.
-                // But for GitHub API, we need to read it or use the ReplacementContent.
-                // ReplacementContent is a partial diff. We must use the full file content!
-                // Actually, wait, ReplacementContent is full file? No, earlier I saw ReplacementChunks.
-                // Wait! n8n execution step actually replaced the file on disk. 
-                // So we can just read the modified file from disk!
-                var jobWorkspace = $"C:/Users/grandy/projects/migration-{job.Id}";
-                var fullPath = Path.Combine(jobWorkspace, change.FilePath);
-                if (System.IO.File.Exists(fullPath) && committedPaths.Add(Path.GetFullPath(fullPath)))
-                {
-                    var fullContent = await System.IO.File.ReadAllTextAsync(fullPath);
-                    fileChangesToCommit.Add((change.FilePath, fullContent));
-                }
-            }
+            await _context.SaveChangesAsync();
+            return BadRequest(new { Message = "Nothing to commit: after the review, no file differs from the original code." });
         }
+
+        // 3. The pipeline built this code before the review. If the reviewer changed it, build
+        //    again - the PR says whether it still compiles; the reviewer's choice stands.
+        (bool? Builds, string Detail)? rebuilt = reviewSteps.Count > 0 ? await BuildAfterReviewAsync(job.Id) : null;
+        var reviewSummary = DescribeReview(reviewSteps);
+        if (reviewSteps.Count > 0)
+        {
+            _context.JobLogs.Add(new JobLog {
+                MigrationJobId = job.Id, Phase = "Approve",
+                Level = rebuilt?.Builds == true ? "info" : "warning",
+                Message = $"Applied the reviewer's changes to the workspace ({reviewSummary}). " + rebuilt switch
+                {
+                    { Builds: true } => "Rebuilt: it builds.",
+                    { Builds: false } r => "Rebuilt: it does NOT build. " + r.Detail,
+                    { } r => "Could not rebuild: " + r.Detail,
+                    _ => ""
+                },
+                Details = string.Join("\n", reviewSteps.Select(s => $"#{s.RowId} {s.FilePath}: {s.Kind}")),
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        // Files with no edit record were never on the review screen - say which.
+        var recorded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var fc in job.FileChanges)
+        {
+            try { recorded.Add(Path.GetFullPath(_fileService.ResolveExistingPath(jobWorkspace, fc.FilePath))); } catch { }
+        }
+        var unrecorded = fileChangesToCommit.Select(f => f.FilePath)
+            .Where(p => !recorded.Contains(Path.GetFullPath(Path.Combine(jobWorkspace, p)))).ToList();
 
         try
         {
@@ -767,6 +782,21 @@ public class MigrationJobController : ControllerBase
                               (planComparison == null ? ". See the job log before merging." : "."));
             if (planComparison != null)
                 bodyLines.Add($"- {(planComparison.Level == "info" ? "✅" : "⚠️")} {planComparison.Message}");
+            if (unrecorded.Count > 0)
+                bodyLines.Add("- Not on the review screen, because no edit was recorded for them (for project files: the " +
+                              "pipeline's `dotnet add/remove` package commands): " + string.Join(", ", unrecorded.Select(p => $"`{p}`")));
+            if (reviewSteps.Count > 0)
+                bodyLines.Add($"- Reviewer changes: {reviewSummary}. " + rebuilt switch
+                {
+                    { Builds: true } => "✅ Rebuilt after the review: it builds.",
+                    { Builds: false } r => "⚠️ **Rebuilt after the review: it does NOT build.** " + r.Detail,
+                    { } r => $"⚠️ Could not rebuild after the review ({r.Detail}), so this code is unverified.",
+                    _ => ""
+                });
+            if (notCommitted.Count > 0)
+                bodyLines.Add("- Not included in this PR: " + string.Join(", ", notCommitted.Select(p => $"`{p}`")));
+            if (!fromDiff)
+                bodyLines.Add("- The file list comes from the edit records: the workspace diff could not be read.");
             var deferredSection = MigrationExecutionAPI.Utilities.PlanDeferral.PrSection(deferred, tfm, job.Id);
             if (deferredSection.Length > 0) { bodyLines.Add(""); bodyLines.Add(deferredSection); }
             var prBody = string.Join("\n", bodyLines);
@@ -788,7 +818,9 @@ public class MigrationJobController : ControllerBase
                 Message = $"Pull request opened by {approverName}: {prUrl}",
                 Details = $"Branch: {branch}\nCommit: {commitHash}\nFiles committed: {fileChangesToCommit.Count}\n" +
                           $"Deferred \"should\" changes: {deferred.Count}" +
-                          (failedEdits > 0 ? $"\nPlanned edits that did not apply: {failedEdits}" : ""),
+                          (failedEdits > 0 ? $"\nPlanned edits that did not apply: {failedEdits}" : "") +
+                          (reviewSteps.Count > 0 ? $"\nReviewer changes: {reviewSummary}" : "") +
+                          (unrecorded.Count > 0 ? $"\nCommitted without an edit record: {string.Join(", ", unrecorded)}" : ""),
                 Timestamp = DateTime.UtcNow
             });
 
@@ -913,25 +945,100 @@ public class MigrationJobController : ControllerBase
             .FirstOrDefaultAsync(j => j.Id == id);
 
         if (job == null) return NotFound("Job not found");
-        if (job.Status != "Pending PR Review") return BadRequest("Job is not pending PR review.");
+        if (job.Status != "Pending PR Review" && job.Status != "Rejected") return BadRequest("Job is not pending PR review.");
 
-        foreach (var change in job.FileChanges)
+        // The draft's choices go into the workspace, as in /approve, so the rows keep
+        // describing it. They used to be saved on the rows only - overwriting the text the
+        // pipeline had written, after which that edit could no longer be found or undone.
+        var (reviewError, reviewSteps) = await ApplyReviewAsync(job, request, $"C:/Users/grandy/projects/migration-{job.Id}");
+        if (reviewError != null) return Conflict(new { Message = reviewError });
+        if (reviewSteps.Count > 0)
         {
-            var userEdit = request.FileEdits.FirstOrDefault(e => e.FileChangeId == change.Id);
-            if (userEdit != null)
-            {
-                change.Accepted = userEdit.Accepted;
-                if (!string.IsNullOrEmpty(userEdit.ManualReplacement))
-                {
-                    change.ReplacementContent = userEdit.ManualReplacement;
-                }
-            }
+            _context.JobLogs.Add(new JobLog {
+                MigrationJobId = job.Id, Level = "info", Phase = "Approve",
+                Message = $"Review saved as a draft ({DescribeReview(reviewSteps)}); the workspace holds these choices.",
+                Details = string.Join("\n", reviewSteps.Select(s => $"#{s.RowId} {s.FilePath}: {s.Kind}")),
+                Timestamp = DateTime.UtcNow
+            });
         }
 
         job.Status = "Rejected";
         await _context.SaveChangesAsync();
 
         return Ok(new { Message = "Job marked as draft/rejected and changes saved." });
+    }
+
+    /// <summary>
+    /// Applies the review screen's choices to the workspace (Utilities/ReviewApplier) and
+    /// records them on the rows, so each row still describes what its file holds. On an
+    /// error nothing was changed, on disk or on the rows.
+    /// </summary>
+    private async Task<(string? Error, List<MigrationExecutionAPI.Utilities.ReviewApplier.Step> Steps)> ApplyReviewAsync(
+        MigrationJob job, ApproveRequest request, string workspace)
+    {
+        var rows = job.FileChanges.Select(f => new MigrationExecutionAPI.Utilities.ReviewApplier.Row(
+            f.Id, f.FilePath, f.Action, f.TargetContent, f.ReplacementContent, f.Accepted)).ToList();
+        var decisions = request.FileEdits.Select(e => new MigrationExecutionAPI.Utilities.ReviewApplier.Decision(
+            e.FileChangeId, e.Accepted, e.ManualReplacement)).ToList();
+        var steps = MigrationExecutionAPI.Utilities.ReviewApplier.Plan(rows, decisions);
+        if (steps.Count == 0) return (null, steps);
+
+        var error = await MigrationExecutionAPI.Utilities.ReviewApplier.ApplyAsync(steps,
+            path => _fileService.ResolveExistingPath(workspace, path),
+            (path, from, to) => _fileService.ReplaceFileContentAsync(workspace, path, from, to));
+        if (error != null) return (error, steps);
+
+        foreach (var s in steps)
+        {
+            var row = job.FileChanges.First(f => f.Id == s.RowId);
+            if (s.Kind == MigrationExecutionAPI.Utilities.ReviewApplier.Kind.Withdraw) row.Accepted = false;
+            else { row.Accepted = true; row.ReplacementContent = s.To; }
+        }
+        return (null, steps);
+    }
+
+    private static string DescribeReview(IReadOnlyCollection<MigrationExecutionAPI.Utilities.ReviewApplier.Step> steps)
+    {
+        var parts = new List<string>();
+        void Add(MigrationExecutionAPI.Utilities.ReviewApplier.Kind kind, string label)
+        {
+            var n = steps.Count(s => s.Kind == kind);
+            if (n > 0) parts.Add($"{n} edit(s) {label}");
+        }
+        Add(MigrationExecutionAPI.Utilities.ReviewApplier.Kind.Withdraw, "withdrawn");
+        Add(MigrationExecutionAPI.Utilities.ReviewApplier.Kind.Rewrite, "rewritten by hand");
+        Add(MigrationExecutionAPI.Utilities.ReviewApplier.Kind.Restore, "re-applied");
+        return string.Join(", ", parts);
+    }
+
+    /// <summary>
+    /// Builds the job's workspace in the n8n container through the 'NET8 Migration Build
+    /// Tool' workflow - the same build the Error Fixer's `build` tool uses, with the
+    /// container's SDKs. Never throws: an unavailable build tool is reported, not fatal.
+    /// </summary>
+    private static async Task<(bool? Builds, string Detail)> BuildAfterReviewAsync(int jobId)
+    {
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(6) };
+            using var res = await http.PostAsync("http://localhost:5678/webhook/migration-build-tool",
+                new StringContent(System.Text.Json.JsonSerializer.Serialize(new { jobId }), System.Text.Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (null, $"the build tool answered HTTP {(int)res.StatusCode}; is the 'NET8 Migration Build Tool' workflow active?");
+            var (builds, errors) = MigrationExecutionAPI.Utilities.BuildToolResult.Parse(await res.Content.ReadAsStringAsync());
+            return builds switch
+            {
+                true => (true, ""),
+                false => (false, errors.Count == 0
+                    ? "No compiler errors could be read from the output."
+                    : string.Join("; ", errors.Take(3).Select(e => $"`{e}`")) + (errors.Count > 3 ? $" and {errors.Count - 3} more" : "")),
+                _ => (null, "the build tool's answer was not recognised")
+            };
+        }
+        catch (Exception ex)
+        {
+            return (null, ex.Message);
+        }
     }
 
     [HttpPost("{id}/sync")]
