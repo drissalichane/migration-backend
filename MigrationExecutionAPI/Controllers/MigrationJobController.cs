@@ -411,6 +411,10 @@ public class MigrationJobController : ControllerBase
                     }
                 }
 
+                // Everything the must-only filter below leaves out. Computed once and used three
+                // times: the execute log, the Part 2 payload (so the Reporter can list it), and
+                // the fallback that appends it to the report if the Reporter does not.
+                var deferred = MigrationExecutionAPI.Utilities.PlanDeferral.Collect(currentJob.MigrationPlanJson);
                 string filteredPlan = currentJob.MigrationPlanJson ?? "{}";
                 try
                 {
@@ -461,7 +465,6 @@ public class MigrationJobController : ControllerBase
                     // no count, no files. On job 99 it silently dropped 8 of 16 changes, the
                     // entire SYSLIB modernization. Say what was left out, and warn when it is
                     // non-empty so the dashboard terminal highlights it.
-                    var deferred = MigrationExecutionAPI.Utilities.PlanDeferral.Collect(currentJob.MigrationPlanJson);
                     db.JobLogs.Add(new JobLog {
                         MigrationJobId = currentJob.Id,
                         Level = deferred.Count > 0 ? "warning" : "info",
@@ -485,12 +488,17 @@ public class MigrationJobController : ControllerBase
                 // body.custom_prompt; neither was ever sent, so the Migrator prompt literally read
                 // "TARGET FRAMEWORK: undefined" and every reviewer override was discarded.
                 // custom_prompt is guarded by a truthy check upstream, so "" correctly omits the block.
+                var targetTfm = string.IsNullOrWhiteSpace(currentJob.TargetFramework) ? "net8.0" : currentJob.TargetFramework;
                 var payload = new
                 {
                     job_id = currentJob.Id,
                     migration_plan = filteredPlan,
-                    target_framework = string.IsNullOrWhiteSpace(currentJob.TargetFramework) ? "net8.0" : currentJob.TargetFramework,
-                    custom_prompt = overridePrompt
+                    target_framework = targetTfm,
+                    custom_prompt = overridePrompt,
+                    // Part 2 v5.4's Reporter lists these. Before, it only ever saw the filtered
+                    // plan, so its report described a complete migration while every "should"
+                    // item was still in the code.
+                    deferred_changes = MigrationExecutionAPI.Utilities.PlanDeferral.ForPayload(deferred)
                 };
                 var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
@@ -512,29 +520,10 @@ public class MigrationJobController : ControllerBase
                 }
 
                 var responseBody = await response.Content.ReadAsStringAsync();
-                bool isStructuredSuccess = false;
-                try
-                {
-                    using var jsonDoc = JsonDocument.Parse(responseBody);
-                    if (jsonDoc.RootElement.TryGetProperty("output", out var outputElement))
-                    {
-                        currentJob.ExecutionReport = outputElement.GetString();
-                        isStructuredSuccess = true;
-                    }
-                    else if (jsonDoc.RootElement.TryGetProperty("text", out var textElement))
-                    {
-                        currentJob.ExecutionReport = textElement.GetString();
-                        isStructuredSuccess = true;
-                    }
-                    else
-                    {
-                        currentJob.ExecutionReport = "Workflow execution stopped unexpectedly. Raw response: " + responseBody;
-                    }
-                }
-                catch
-                {
-                    currentJob.ExecutionReport = responseBody;
-                }
+                // Part 2 v5.4 sends an explicit `outcome`; older exports make this fall back to the
+                // old text heuristic, which wrongly fails a successful report containing "Error:".
+                var result = MigrationExecutionAPI.Utilities.Part2Outcome.Decide(responseBody);
+                currentJob.ExecutionReport = result.Report;
 
                 // Parse tasks from Reporter LLM if present
                 if (!string.IsNullOrEmpty(currentJob.ExecutionReport))
@@ -585,16 +574,28 @@ public class MigrationJobController : ControllerBase
                     }
                 }
 
-                if (!isStructuredSuccess ||
-                    currentJob.ExecutionReport?.Contains("BUILD_FAILED") == true ||
-                    currentJob.ExecutionReport?.Contains("errorMessage") == true ||
-                    currentJob.ExecutionReport?.Contains("Error:") == true)
+                currentJob.Status = result.Status;
+                db.JobLogs.Add(new JobLog {
+                    MigrationJobId = currentJob.Id, Level = result.LogLevel, Phase = "Execute",
+                    Message = result.LogMessage,
+                    Timestamp = DateTime.UtcNow
+                });
+
+                // The Reporter is asked (v5.4) to list the deferred changes. If it did not, append
+                // them - the report is what the dashboard shows as the account of this migration.
+                if (result.Status == MigrationExecutionAPI.Utilities.Part2Outcome.Success)
                 {
-                    currentJob.Status = "Failed Execution";
-                }
-                else
-                {
-                    currentJob.Status = "Pending PR Review";
+                    var (withDeferred, appended) = MigrationExecutionAPI.Utilities.PlanDeferral.EnsureInReport(
+                        currentJob.ExecutionReport, deferred, targetTfm, currentJob.Id);
+                    currentJob.ExecutionReport = withDeferred;
+                    if (appended)
+                    {
+                        db.JobLogs.Add(new JobLog {
+                            MigrationJobId = currentJob.Id, Level = "warning", Phase = "Execute",
+                            Message = $"The Reporter did not list the {deferred.Count} deferred change(s); the backend appended them to the report.",
+                            Timestamp = DateTime.UtcNow
+                        });
+                    }
                 }
                 
                 await db.SaveChangesAsync();

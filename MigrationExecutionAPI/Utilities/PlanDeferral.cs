@@ -106,6 +106,34 @@ namespace MigrationExecutionAPI.Utilities
             return sb.ToString().TrimEnd();
         }
 
+        /// <summary>
+        /// Shape sent to Part 2 as `deferred_changes`, so the Reporter can list them.
+        /// </summary>
+        public static object[] ForPayload(IReadOnlyCollection<Item> items) =>
+            items.Select(i => (object)new
+            {
+                section = i.Section,
+                target = i.Target,
+                reason = Trim(i.Reason, 200),
+                pragma_suppressed = i.PragmaSuppressed
+            }).ToArray();
+
+        /// <summary>
+        /// Part 2 v5.4 asks the Reporter to list the deferred changes. Prompt rules in
+        /// these workflows have been ignored three times in a row, so if the report
+        /// comes back without them, append the deterministic section - labelled as added
+        /// by the backend. Never touches a report that already covers them.
+        /// </summary>
+        public static (string Report, bool Appended) EnsureInReport(
+            string? report, IReadOnlyCollection<Item> items, string targetFramework, int jobId)
+        {
+            report ??= "";
+            if (items.Count == 0) return (report, false);
+            if (report.Contains("deferred", StringComparison.OrdinalIgnoreCase)) return (report, false);
+            var section = PrSection(items, targetFramework, jobId);
+            return (report.TrimEnd() + "\n\n---\n_Added by the backend: the report did not list the deferred changes._\n\n" + section, true);
+        }
+
         private static string? Str(JsonNode? n)
         {
             try { var s = n?.GetValue<string>(); return string.IsNullOrWhiteSpace(s) ? null : s; }
