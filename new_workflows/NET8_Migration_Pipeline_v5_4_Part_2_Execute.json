@@ -18,8 +18,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        -46752,
-        36896
+        3984,
+        2080
       ]
     },
     {
@@ -51,8 +51,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -46336,
-        36864
+        4304,
+        2016
       ]
     },
     {
@@ -84,8 +84,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -45984,
-        36848
+        4592,
+        2000
       ]
     },
     {
@@ -101,8 +101,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -45472,
-        36320
+        5040,
+        1792
       ],
       "retryOnFail": true,
       "maxTries": 5,
@@ -123,8 +123,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        -44784,
-        35968
+        5312,
+        1152
       ]
     },
     {
@@ -136,8 +136,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        -44592,
-        35968
+        5600,
+        1152
       ]
     },
     {
@@ -169,26 +169,22 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -44432,
-        35872
+        5824,
+        1168
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Generate the migration report.\\n\\n' + (Array.isArray($('Execute Webhook').first().json.body.deferred_changes) && $('Execute Webhook').first().json.body.deferred_changes.length ? \"DEFERRED CHANGES - these were in the reviewed plan but were deliberately NOT applied. They are marked \\\"should\\\" (deprecated but still working on the target framework), and execution applies \\\"must\\\" items only, so they are all still in the code.\\nYour report MUST include a section headed \\\"## Deferred\\\" that lists every one of them, and must NOT describe this migration as complete or as a full modernization.\\n\" + $('Execute Webhook').first().json.body.deferred_changes.map(d => '- ' + d.target + ': ' + d.reason + (d.pragma_suppressed ? ' (its compiler warning is suppressed by #pragma, so the build does not flag it)' : '')).join('\\n') + '\\n\\n' : '') + 'Migration Plan:\\n' + $('Execute Webhook').first().json.body.migration_plan + '\\n\\nBuild Output:\\n' + $('Store Build Output').first().json.build_output + '\\n\\nCVE Audit:\\n' + $('Security Patch CVE Check').first().json.stdout + '\\n\\nTest Results:\\n' + $json.stdout + '\\n\\nAnalyze your final report for any further improvements, manual code reviews, or checks needed. Output them at the very end of your response exactly in this JSON format:\\n---TASKS---\\n[\\n  { \"title\": \"Task Title\", \"description\": \"Task description\" }\\n]' }}",
-        "options": {
-          "maxIterations": 10,
-          "returnIntermediateSteps": false
-        }
+        "text": "={{ 'Generate the migration report.\\n\\n' + (Array.isArray($('Execute Webhook').first().json.body.deferred_changes) && $('Execute Webhook').first().json.body.deferred_changes.length ? \"DEFERRED CHANGES - these were in the reviewed plan but were deliberately NOT applied. They are marked \\\"should\\\" (deprecated but still working on the target framework), and execution applies \\\"must\\\" items only, so they are all still in the code.\\nYour report MUST include a section headed \\\"## Deferred\\\" that lists every one of them, and must NOT describe this migration as complete or as a full modernization.\\n\" + $('Execute Webhook').first().json.body.deferred_changes.map(d => '- ' + d.target + ': ' + d.reason + (d.pragma_suppressed ? ' (its compiler warning is suppressed by #pragma, so the build does not flag it)' : '')).join('\\n') + '\\n\\n' : '') + 'Migration Plan:\\n' + $('Execute Webhook').first().json.body.migration_plan + '\\n\\nBuild Output:\\n' + $('Store Build Output').first().json.build_output + '\\n\\nCVE Audit:\\n' + $('Security Patch CVE Check').first().json.stdout + '\\n\\nTest Results:\\n' + $json.stdout + '\\n\\nAnalyze your final report for any further improvements, manual code reviews, or checks needed. Output them at the very end of your response exactly in this JSON format:\\n---TASKS---\\n[\\n  { \"title\": \"Task Title\", \"description\": \"Task description\" }\\n]' }}"
       },
       "id": "23fc7669-df5a-494c-99e0-2ce4c6d92b5b",
       "name": "Reporter Agent",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        -44064,
-        35840
+        6432,
+        912
       ]
     },
     {
@@ -204,8 +200,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -44208,
-        36080
+        6288,
+        1152
       ],
       "retryOnFail": true,
       "maxTries": 5,
@@ -226,8 +222,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -43760,
-        35920
+        6944,
+        928
       ]
     },
     {
@@ -239,8 +235,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -43408,
-        36864
+        6752,
+        1312
       ]
     },
     {
@@ -252,8 +248,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -45616,
-        36752
+        5136,
+        2176
       ]
     },
     {
@@ -271,8 +267,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        -45600,
-        36464
+        5120,
+        1536
       ]
     },
     {
@@ -284,8 +280,8 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -47504,
-        35504
+        3104,
+        1280
       ]
     },
     {
@@ -347,8 +343,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        -47280,
-        35520
+        3328,
+        1184
       ]
     },
     {
@@ -365,8 +361,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -47056,
-        35296
+        3632,
+        1088
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -381,8 +377,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        -47072,
-        35504
+        3600,
+        1280
       ]
     },
     {
@@ -394,8 +390,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        -47232,
-        36800
+        3504,
+        1984
       ],
       "executeOnce": true
     },
@@ -411,8 +407,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -48992,
-        35984
+        1584,
+        1760
       ],
       "webhookId": "dbc5f4d0-6ddc-4528-a18c-eadebbdcaae5"
     },
@@ -425,8 +421,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -43376,
-        36384
+        7216,
+        1808
       ]
     },
     {
@@ -438,8 +434,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -48480,
-        35696
+        2096,
+        1472
       ]
     },
     {
@@ -451,8 +447,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -45232,
-        36464
+        5744,
+        1600
       ]
     },
     {
@@ -464,8 +460,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -47024,
-        36912
+        3712,
+        2096
       ]
     },
     {
@@ -477,8 +473,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -45024,
-        35952
+        4656,
+        1168
       ]
     },
     {
@@ -490,8 +486,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -43760,
-        36688
+        7056,
+        1088
       ]
     },
     {
@@ -503,8 +499,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -43568,
-        36480
+        7216,
+        1136
       ]
     },
     {
@@ -516,8 +512,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -48720,
-        36128
+        1856,
+        1904
       ]
     },
     {
@@ -529,8 +525,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -44320,
-        35840
+        6176,
+        912
       ]
     },
     {
@@ -542,8 +538,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -48272,
-        35712
+        2304,
+        1488
       ]
     },
     {
@@ -555,8 +551,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -45856,
-        36464
+        4816,
+        1584
       ]
     },
     {
@@ -568,8 +564,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -47632,
-        35840
+        2832,
+        1584
       ]
     },
     {
@@ -581,8 +577,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -45408,
-        36624
+        5504,
+        1504
       ]
     },
     {
@@ -594,8 +590,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -43872,
-        36000
+        6768,
+        912
       ]
     },
     {
@@ -605,8 +601,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -48016,
-        35712
+        2560,
+        1488
       ],
       "id": "dfa2ef4e-5cc6-4681-8f57-3cd6ff9862e0",
       "name": "Build Action List"
@@ -618,8 +614,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -46906,
-        35416
+        3776,
+        864
       ],
       "id": "7d28ca20-056f-40b3-b2f2-fcdbf17aeea1",
       "name": "Check Replace Applied"
@@ -636,8 +632,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolCode",
       "typeVersion": 1.1,
       "position": [
-        -45800,
-        36724
+        5120,
+        1952
       ],
       "id": "efb0b95e-46ba-4935-b88c-b25c624dc339",
       "name": "EF Read File"
@@ -654,8 +650,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolCode",
       "typeVersion": 1.1,
       "position": [
-        -45610,
-        36724
+        5248,
+        1936
       ],
       "id": "88519314-eab5-4169-906c-7ff3e6241961",
       "name": "EF Replace In File"
@@ -672,8 +668,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolCode",
       "typeVersion": 1.1,
       "position": [
-        -45420,
-        36724
+        5408,
+        1920
       ],
       "id": "a9aed696-c93e-412c-a587-8f7233ec8db3",
       "name": "EF Write File"
@@ -690,8 +686,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolCode",
       "typeVersion": 1.1,
       "position": [
-        -45230,
-        36724
+        5584,
+        1888
       ],
       "id": "e6d2ccc0-cf51-4f7b-8c75-6aa1da96c417",
       "name": "EF Manage Package"
@@ -1159,7 +1155,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "638ee9fb-d8e9-4ff0-910e-ab744467db76",
+  "versionId": "7d73d704-0690-468f-b333-04e47dbdd3e1",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
