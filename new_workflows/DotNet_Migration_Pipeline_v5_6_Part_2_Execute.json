@@ -1,5 +1,5 @@
 {
-  "name": "NET8 Migration Pipeline v5.6 (Part 2 - Execute)",
+  "name": "DotNet Migration Pipeline v5.6 (Part 2 - Execute)",
   "nodes": [
     {
       "parameters": {
@@ -398,7 +398,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "net8-migration-execute",
+        "path": "dotnet-migration-execute",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -745,7 +745,7 @@
       "parameters": {
         "name": "build",
         "description": "Build the project and return the compiler errors, or BUILD SUCCEEDED. Call it after your edits: it is the only way to know a fix works. Takes about a minute.",
-        "jsCode": "// Error Fixer tool: build the workspace and report the errors.\n//\n// v5.5. On job 100 every attempt ended \"The build error is fixed\" without having\n// built anything; the outer loop then built, failed, and started a FRESH agent.\n// With this the agent verifies inside its own attempt and sees the compiler's\n// answer to each edit.\n//\n// A toolCode node cannot run a shell, and the backend's /api/build is unusable here\n// (it builds GetLatestRepo(), not a given job, and on the host rather than the\n// container). So the build runs in n8n itself, in a small separate workflow\n// ('NET8 Migration Build Tool') behind a fixed webhook path - same container, same\n// SDKs, same /projects mount as 'Run Build'. That workflow must be imported and\n// ACTIVE; if it is not, this tool says so and the agent carries on without it.\nconst helpers = this.helpers;\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\n\nlet res;\ntry {\n  res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://localhost:5678/webhook/migration-build-tool',\n    body: { jobId: jobId },\n    json: true,\n    timeout: 400000\n  });\n} catch (e) {\n  return 'BUILD TOOL UNAVAILABLE (' + e.message + '). The \\'NET8 Migration Build Tool\\' workflow is probably not ' +\n    'imported or not active. Continue without it; the pipeline builds again after you finish.';\n}\n\nconst out = String((res && (res.stdout || res.output)) || (typeof res === 'string' ? res : ''));\nif (!out.trim()) {\n  return 'BUILD TOOL returned nothing - it probably failed inside n8n. Continue without it.';\n}\nif (/BUILD_SUCCESS\\s*$/.test(out.trim())) {\n  return 'BUILD SUCCEEDED: 0 errors. The fix works - stop editing and write your summary.';\n}\n\n// dotnet prints each diagnostic twice (while building and in the summary), with\n// absolute container paths. Deduplicate and make paths repo-relative.\nconst seen = new Set();\nconst errors = [];\nfor (const line of out.split('\\n')) {\n  const m = line.match(/([^\\s]*\\.(?:cs|csproj|sln|props|targets)\\(\\d+,\\d+\\)|[^\\s]*\\.csproj)\\s*:\\s*error\\s+([A-Z]+\\d+)\\s*:\\s*([^[]*)/);\n  if (!m) continue;\n  const where = m[1].replace(/^.*\\/projects\\/migration-\\d+\\//, '');\n  const key = where + m[2] + m[3].trim();\n  if (seen.has(key)) continue;\n  seen.add(key);\n  errors.push(where + ': error ' + m[2] + ': ' + m[3].trim());\n}\nif (!errors.length) {\n  const tail = out.trim().split('\\n').slice(-15).join('\\n');\n  return 'BUILD FAILED, but no compiler errors could be parsed. Last lines:\\n' + tail;\n}\nreturn 'BUILD FAILED: ' + errors.length + ' error(s)\\n' + errors.slice(0, 40).join('\\n') +\n  (errors.length > 40 ? '\\n...and ' + (errors.length - 40) + ' more' : '');\n",
+        "jsCode": "// Error Fixer tool: build the workspace and report the errors.\n//\n// v5.5. On job 100 every attempt ended \"The build error is fixed\" without having\n// built anything; the outer loop then built, failed, and started a FRESH agent.\n// With this the agent verifies inside its own attempt and sees the compiler's\n// answer to each edit.\n//\n// A toolCode node cannot run a shell, and the backend's /api/build is unusable here\n// (it builds GetLatestRepo(), not a given job, and on the host rather than the\n// container). So the build runs in n8n itself, in a small separate workflow\n// ('DotNet Migration Build Tool') behind a fixed webhook path - same container, same\n// SDKs, same /projects mount as 'Run Build'. That workflow must be imported and\n// ACTIVE; if it is not, this tool says so and the agent carries on without it.\nconst helpers = this.helpers;\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\n\nlet res;\ntry {\n  res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://localhost:5678/webhook/migration-build-tool',\n    body: { jobId: jobId },\n    json: true,\n    timeout: 400000\n  });\n} catch (e) {\n  return 'BUILD TOOL UNAVAILABLE (' + e.message + '). The \\'DotNet Migration Build Tool\\' workflow is probably not ' +\n    'imported or not active. Continue without it; the pipeline builds again after you finish.';\n}\n\nconst out = String((res && (res.stdout || res.output)) || (typeof res === 'string' ? res : ''));\nif (!out.trim()) {\n  return 'BUILD TOOL returned nothing - it probably failed inside n8n. Continue without it.';\n}\nif (/BUILD_SUCCESS\\s*$/.test(out.trim())) {\n  return 'BUILD SUCCEEDED: 0 errors. The fix works - stop editing and write your summary.';\n}\n\n// dotnet prints each diagnostic twice (while building and in the summary), with\n// absolute container paths. Deduplicate and make paths repo-relative.\nconst seen = new Set();\nconst errors = [];\nfor (const line of out.split('\\n')) {\n  const m = line.match(/([^\\s]*\\.(?:cs|csproj|sln|props|targets)\\(\\d+,\\d+\\)|[^\\s]*\\.csproj)\\s*:\\s*error\\s+([A-Z]+\\d+)\\s*:\\s*([^[]*)/);\n  if (!m) continue;\n  const where = m[1].replace(/^.*\\/projects\\/migration-\\d+\\//, '');\n  const key = where + m[2] + m[3].trim();\n  if (seen.has(key)) continue;\n  seen.add(key);\n  errors.push(where + ': error ' + m[2] + ': ' + m[3].trim());\n}\nif (!errors.length) {\n  const tail = out.trim().split('\\n').slice(-15).join('\\n');\n  return 'BUILD FAILED, but no compiler errors could be parsed. Last lines:\\n' + tail;\n}\nreturn 'BUILD FAILED: ' + errors.length + ' error(s)\\n' + errors.slice(0, 40).join('\\n') +\n  (errors.length > 40 ? '\\n...and ' + (errors.length - 40) + ' more' : '');\n",
         "specifyInputSchema": true,
         "schemaType": "manual",
         "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Optional: what you expect this build to confirm\"\n    }\n  }\n}"
@@ -769,7 +769,7 @@
         6304,
         720
       ],
-      "id": "4ded45ab-0a72-4ea3-97c4-9cf8528dfcc3",
+      "id": "0c30fdfa-8d54-4aff-afff-3a9fe876f4b8",
       "name": "Collect Actual Changes"
     }
   ],
@@ -1290,7 +1290,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "14a4572f-a111-4f8e-92dd-721f1d2b60e6",
+  "versionId": "aee8f38f-ebcb-4403-81e2-08fee8152db7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
@@ -1301,7 +1301,7 @@
       "updatedAt": "2026-06-04T22:19:55.580Z",
       "createdAt": "2026-06-04T22:19:55.580Z",
       "id": "A1UiVsO8IfUtWbLO",
-      "name": "net8-migration"
+      "name": "dotnet-migration"
     },
     {
       "updatedAt": "2026-06-04T22:19:55.553Z",

@@ -1,10 +1,10 @@
 {
-  "name": "NET8 Migration Pipeline v6.9 (Part 1 - Analyze)",
+  "name": "DotNet Migration Pipeline v6.9 (Part 1 - Analyze)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "net8-migration-analyze",
+        "path": "dotnet-migration-analyze",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "command": "=cd /projects && rm -rf migration-{{ $('Webhook').first().json.body.job_id }} && git clone {{ $('Webhook').first().json.body.repo_url }} migration-{{ $('Webhook').first().json.body.job_id }} && cd migration-{{ $('Webhook').first().json.body.job_id }} && git checkout -b dotnet8-migration && echo 'CLONE_SUCCESS'"
+        "command": "=cd /projects && rm -rf migration-{{ $('Webhook').first().json.body.job_id }} && git clone {{ $('Webhook').first().json.body.repo_url }} migration-{{ $('Webhook').first().json.body.job_id }} && cd migration-{{ $('Webhook').first().json.body.job_id }} && git checkout -b dotnet-migration && echo 'CLONE_SUCCESS'"
       },
       "id": "6e017731-1229-441f-b069-81d441b230d1",
       "name": "Clone Repository",
@@ -184,7 +184,7 @@
     },
     {
       "parameters": {
-        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Roslyn Upgrade Assistant').first()?.json?.stdout || '';\n  let stderr = $('Run Roslyn Upgrade Assistant').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\n// Slice the distilled Upgrade Assistant findings out of stdout so the Research\n// Agent can be handed them as verified fact instead of having to spot them inside\n// a 10KB dump. Split on the section that FOLLOWS them rather than on /^=== /,\n// because the distiller's own output opens with a \"=== ... ===\" banner.\nlet uaFindings = '';\ntry {\n  const after = ($('Run Roslyn Upgrade Assistant').first()?.json?.stdout || '')\n    .split('=== UPGRADE ASSISTANT FINDINGS ===')[1] || '';\n  uaFindings = after.split('=== CSPROJ FILES ===')[0].trim();\n  if (/NO_UPGRADE_ASSISTANT_REPORT/.test(uaFindings)) uaFindings = '';\n} catch (e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: \"Initial .NET 8 structural migration tool completed.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all().map(i => ({ json: Object.assign({}, i.json, { ua_findings: uaFindings }) }));"
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Roslyn Upgrade Assistant').first()?.json?.stdout || '';\n  let stderr = $('Run Roslyn Upgrade Assistant').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\n// Slice the distilled Upgrade Assistant findings out of stdout so the Research\n// Agent can be handed them as verified fact instead of having to spot them inside\n// a 10KB dump. Split on the section that FOLLOWS them rather than on /^=== /,\n// because the distiller's own output opens with a \"=== ... ===\" banner.\nlet uaFindings = '';\ntry {\n  const after = ($('Run Roslyn Upgrade Assistant').first()?.json?.stdout || '')\n    .split('=== UPGRADE ASSISTANT FINDINGS ===')[1] || '';\n  uaFindings = after.split('=== CSPROJ FILES ===')[0].trim();\n  if (/NO_UPGRADE_ASSISTANT_REPORT/.test(uaFindings)) uaFindings = '';\n} catch (e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Analyze',\n      message: \"Initial structural analysis completed (build and Upgrade Assistant).\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all().map(i => ({ json: Object.assign({}, i.json, { ua_findings: uaFindings }) }));"
       },
       "id": "64c0509d-92f9-4d39-a5c7-c70f4b17306a",
       "name": "Log Roslyn Output",
@@ -669,7 +669,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "8e2ded9a-62ca-48cd-b6bd-8f638c02a334",
+  "versionId": "f4b3aec6-3837-46d7-843b-afb0213c14df",
   "meta": {
     "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
   },
@@ -679,7 +679,7 @@
       "updatedAt": "2026-06-04T22:19:55.580Z",
       "createdAt": "2026-06-04T22:19:55.580Z",
       "id": "A1UiVsO8IfUtWbLO",
-      "name": "net8-migration"
+      "name": "dotnet-migration"
     },
     {
       "updatedAt": "2026-06-04T22:19:55.553Z",

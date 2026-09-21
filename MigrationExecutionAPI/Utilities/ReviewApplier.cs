@@ -102,7 +102,7 @@ namespace MigrationExecutionAPI.Utilities
     }
 
     /// <summary>
-    /// Reads the answer of the 'NET8 Migration Build Tool' n8n workflow - the build the
+    /// Reads the answer of the 'DotNet Migration Build Tool' n8n workflow - the build the
     /// Error Fixer's `build` tool uses - as the backend gets it: the Build Workspace
     /// item as JSON, whose stdout ends in BUILD_SUCCESS or BUILD_FAILED.
     /// </summary>

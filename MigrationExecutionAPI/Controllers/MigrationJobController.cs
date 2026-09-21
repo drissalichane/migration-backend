@@ -68,6 +68,17 @@ public class MigrationJobController : ControllerBase
 
     private readonly HttpClient _httpClient;
 
+    // The n8n webhooks of the two pipeline workflows. Renamed from net8-migration-* on
+    // 2026-09-21 together with the workflows (DotNet_Migration_Pipeline_*.json); an export
+    // still on the old path answers 404 until the renamed one is imported and active.
+    private const string AnalyzeWebhookPath = "dotnet-migration-analyze";
+    private const string ExecuteWebhookPath = "dotnet-migration-execute";
+
+    private static string WebhookHint(System.Net.HttpStatusCode status, string path, string part) =>
+        status == System.Net.HttpStatusCode.NotFound
+            ? $" - n8n has no active workflow on /webhook/{path}. Import and activate the current {part} workflow."
+            : "";
+
     public MigrationJobController(MigrationDbContext context, IFileService fileService, GitHubService githubService)
     {
         _context = context;
@@ -182,8 +193,10 @@ public class MigrationJobController : ControllerBase
                 };
                 var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
-                var response = await httpClient.PostAsync("http://localhost:5678/webhook/net8-migration-analyze", content);
-                
+                // Was /webhook/net8-migration-analyze: the pipeline targets any framework, and
+                // the path said otherwise. Renamed together with the workflow (2026-09-21).
+                var response = await httpClient.PostAsync($"http://localhost:5678/webhook/{AnalyzeWebhookPath}", content);
+
                 var currentJob = await db.MigrationJobs.FindAsync(jobId);
                 if (currentJob == null) return;
 
@@ -195,7 +208,7 @@ public class MigrationJobController : ControllerBase
                         MigrationJobId = currentJob.Id,
                         Level = "error",
                         Phase = "Analyze",
-                        Message = $"Webhook failed with status {response.StatusCode}: {errorResponse}",
+                        Message = $"Webhook failed with status {response.StatusCode}: {errorResponse}" + WebhookHint(response.StatusCode, AnalyzeWebhookPath, "Part 1"),
                         Timestamp = DateTime.UtcNow
                     });
                     await db.SaveChangesAsync();
@@ -517,8 +530,8 @@ public class MigrationJobController : ControllerBase
                 };
                 var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
-                var response = await httpClient.PostAsync("http://localhost:5678/webhook/net8-migration-execute", content);
-                
+                var response = await httpClient.PostAsync($"http://localhost:5678/webhook/{ExecuteWebhookPath}", content);
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorResponse = await response.Content.ReadAsStringAsync();
@@ -527,7 +540,7 @@ public class MigrationJobController : ControllerBase
                         MigrationJobId = currentJob.Id,
                         Level = "error",
                         Phase = "Execute",
-                        Message = $"Webhook failed with status {response.StatusCode}: {errorResponse}",
+                        Message = $"Webhook failed with status {response.StatusCode}: {errorResponse}" + WebhookHint(response.StatusCode, ExecuteWebhookPath, "Part 2"),
                         Timestamp = DateTime.UtcNow
                     });
                     await db.SaveChangesAsync();
@@ -1012,7 +1025,7 @@ public class MigrationJobController : ControllerBase
     }
 
     /// <summary>
-    /// Builds the job's workspace in the n8n container through the 'NET8 Migration Build
+    /// Builds the job's workspace in the n8n container through the 'DotNet Migration Build
     /// Tool' workflow - the same build the Error Fixer's `build` tool uses, with the
     /// container's SDKs. Never throws: an unavailable build tool is reported, not fatal.
     /// </summary>
@@ -1024,7 +1037,7 @@ public class MigrationJobController : ControllerBase
             using var res = await http.PostAsync("http://localhost:5678/webhook/migration-build-tool",
                 new StringContent(System.Text.Json.JsonSerializer.Serialize(new { jobId }), System.Text.Encoding.UTF8, "application/json"));
             if (!res.IsSuccessStatusCode)
-                return (null, $"the build tool answered HTTP {(int)res.StatusCode}; is the 'NET8 Migration Build Tool' workflow active?");
+                return (null, $"the build tool answered HTTP {(int)res.StatusCode}; is the 'DotNet Migration Build Tool' workflow active?");
             var (builds, errors) = MigrationExecutionAPI.Utilities.BuildToolResult.Parse(await res.Content.ReadAsStringAsync());
             return builds switch
             {

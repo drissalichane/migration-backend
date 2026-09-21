@@ -1,5 +1,5 @@
 {
-  "name": "NET8 Migration Build Tool",
+  "name": "DotNet Migration Build Tool",
   "nodes": [
     {
       "parameters": {
@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "4cb02cb6-01a8-4cb7-8b35-b01d9ab0f877",
+      "id": "2cab7646-f34a-4017-8f7a-0e6eae521d13",
       "name": "Build Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
@@ -16,13 +16,13 @@
         0,
         0
       ],
-      "webhookId": "a6cbe0b4-3ad2-46f4-b4dc-29f237f8fc31"
+      "webhookId": "ca067ca9-a7ac-4424-bb20-c30f7f91aae8"
     },
     {
       "parameters": {
         "jsCode": "\n// The job id is interpolated into a shell path below. The webhook is reachable from\n// the host (port 5678 is published), so accept a positive integer and nothing else.\nconst b = $input.first().json.body || {};\nconst id = Number(b.jobId !== undefined ? b.jobId : b.job_id);\nif (!Number.isInteger(id) || id <= 0) {\n  throw new Error('jobId must be a positive integer, got ' + JSON.stringify(b.jobId !== undefined ? b.jobId : b.job_id));\n}\nreturn [{ json: { jobId: id } }];\n"
       },
-      "id": "5007297e-fca7-49d8-9f9b-a65f203a3449",
+      "id": "a9533513-427d-47dc-992c-4e95eeb981be",
       "name": "Validate Job Id",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -35,7 +35,7 @@
       "parameters": {
         "command": "=BASE=/projects/migration-{{ $json.jobId }}\nif [ ! -d \"$BASE\" ]; then echo \"NO_WORKSPACE: $BASE\"; echo BUILD_FAILED; exit 0; fi\nTARGET=$(find \"$BASE\" -name '*.sln' -not -path '*/bin/*' -not -path '*/obj/*' | head -1)\n[ -z \"$TARGET\" ] && TARGET=$(find \"$BASE\" -name '*.csproj' -not -path '*/bin/*' -not -path '*/obj/*' | head -1)\nif [ -z \"$TARGET\" ]; then echo \"NO_PROJECT_FOUND\"; echo BUILD_FAILED; exit 0; fi\nOUT=$(dotnet build \"$TARGET\" -nologo 2>&1)\nCODE=$?\n# Only the diagnostics the Error Fixer acts on, not the whole build log - it goes\n# back into an LLM context. The sentinel is decided by the exit code.\necho \"$OUT\" | grep -E \": error |error NU|error MSB\" | head -200\nif [ $CODE -ne 0 ]; then echo BUILD_FAILED; else echo BUILD_SUCCESS; fi"
       },
-      "id": "0951faa3-b318-4d33-b199-93992e1d3f31",
+      "id": "92867579-cdca-40fe-bb87-3db120b130e1",
       "name": "Build Workspace",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -48,7 +48,7 @@
       "parameters": {
         "options": {}
       },
-      "id": "d72d63e7-3602-45c4-9bbf-f0441854aa33",
+      "id": "39299e56-a8de-4160-a7cd-5239a7d4082b",
       "name": "Respond With Build",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
@@ -97,6 +97,6 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "99bf18b6-4e7f-4c78-a206-a512b9e7305d",
+  "versionId": "6f550cab-1b9c-4e20-8c63-cd671dd0a713",
   "pinData": {}
 }
