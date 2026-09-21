@@ -50,15 +50,33 @@ namespace MigrationExecutionAPI.Utilities
                 }
             }
 
+            // A package can appear in both package_updates and nuget_versions_needed (Build
+            // Action List merges the two for the same reason). Job 100 listed MailKit in
+            // both, and the second entry keeps its version in `version`, which was never
+            // read - so the log, the PR body and the report counted 6 deferred items for 5,
+            // one of them apparently blank. One entry per package, keeping whichever says more.
+            var packageAt = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var (section, nameField) in new[]
                      { ("package_updates", "name"), ("nuget_versions_needed", "package"), ("startup_changes", "file") })
             {
+                var isPackage = section != "startup_changes";
                 foreach (var p in plan[section]?.AsArray() ?? new JsonArray())
                 {
                     if (Str(p?["priority"]) != "should") continue;
-                    var target = Str(p?[nameField]) ?? Str(p?["name"]) ?? "(unnamed)";
+                    var name = Str(p?[nameField]) ?? Str(p?["name"]);
+                    if (name == null && isPackage) continue;   // a package with no name gives the reviewer nothing to act on
+                    var target = name ?? "(unnamed)";
                     var reason = Str(p?["reason"]) ?? Str(p?["description"])
-                                 ?? $"{Str(p?["from_version"])} -> {Str(p?["resolved_version"]) ?? Str(p?["to_version"])}".Trim(' ', '-', '>');
+                                 ?? $"{Str(p?["from_version"])} -> {Str(p?["resolved_version"]) ?? Str(p?["to_version"]) ?? Str(p?["version"])}".Trim(' ', '-', '>');
+                    if (isPackage)
+                    {
+                        if (packageAt.TryGetValue(target, out var at))
+                        {
+                            if (items[at].Reason.Length == 0 && reason.Length > 0) items[at] = items[at] with { Reason = reason };
+                            continue;
+                        }
+                        packageAt[target] = items.Count;
+                    }
                     items.Add(new Item(section, target, reason, false));
                 }
             }

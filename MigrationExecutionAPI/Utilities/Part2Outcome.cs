@@ -60,13 +60,20 @@ namespace MigrationExecutionAPI.Utilities
 
             var report = Str(root, "report") ?? Str(root, "output") ?? Str(root, "text");
             var outcome = Str(root, "outcome");
+            // v5.6 says whether tests actually ran. Before it, a solution with no test
+            // project reported TESTS_PASSED, so "passed" and "absent" could not be told apart.
+            var tests = Str(root, "tests");
 
             if (outcome != null)
             {
                 return outcome switch
                 {
-                    "success" => new Result(Success, report, outcome, "info",
-                        "Part 2 finished: build passed, tests passed or absent. Ready for PR review."),
+                    "success" => new Result(Success, report, outcome, "info", tests switch
+                    {
+                        "passed" => "Part 2 finished: build passed, tests passed. Ready for PR review.",
+                        "none" => "Part 2 finished: build passed. The solution has no test project, so nothing was tested. Ready for PR review.",
+                        _ => "Part 2 finished: build passed, tests passed or absent. Ready for PR review."
+                    }),
                     "build_failed" => new Result(Failed, report, outcome, "error",
                         "Part 2 finished with the build still failing after the Error Fixer's retries. No PR should be opened."),
                     "tests_failed" => new Result(Failed, report, outcome, "error",

@@ -285,6 +285,51 @@ public class FilesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// What the migration actually changed in a job's workspace: `git diff` against the
+    /// cloned commit, per-file line counts, and untracked new files (see
+    /// Utilities/WorkspaceDiff). Part 2 v5.6 writes its report from this instead of from
+    /// the plan. Requires jobId for the same reason as /list: another job's diff would
+    /// be worse than none.
+    /// </summary>
+    [HttpPost("diff")]
+    public async Task<IActionResult> DiffWorkspace()
+    {
+        try
+        {
+            Request.EnableBuffering();
+            using var reader = new StreamReader(Request.Body, leaveOpen: true);
+            var body = await reader.ReadToEndAsync();
+            Request.Body.Position = 0;
+
+            var (jobId, _, _) = ParseFileRequest(body);
+            if (!jobId.HasValue)
+                return BadRequest(new BaseResponse { Success = false, Message = "jobId is required (as a number)." });
+
+            var root = Path.GetFullPath(ResolveRepositoryPath(jobId));
+            if (!Directory.Exists(root))
+                return NotFound(new BaseResponse { Success = false, Message = $"No workspace for job {jobId}." });
+
+            var r = await MigrationExecutionAPI.Utilities.WorkspaceDiff.ReadAsync(root, HttpContext.RequestAborted);
+            if (!r.Success)
+                return StatusCode(500, new BaseResponse { Success = false, Message = r.Message });
+
+            return Ok(new
+            {
+                success = true,
+                files = r.Files.Select(f => new { path = f.Path, added = f.Added, removed = f.Removed }),
+                untracked = r.Untracked,
+                diff = r.Diff,
+                truncated = r.Truncated
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading workspace diff");
+            return StatusCode(500, new BaseResponse { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpPost("grep")]
     public async Task<IActionResult> Grep()
     {

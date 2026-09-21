@@ -1,0 +1,1319 @@
+{
+  "name": "NET8 Migration Pipeline v5.6 (Part 2 - Execute)",
+  "nodes": [
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "build_output",
+              "stringValue": "={{ $json.stdout }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "af410c09-9e74-4905-8be8-d6ac0b13e9e4",
+      "name": "Store Build Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        3984,
+        2080
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.build_output }}",
+              "rightValue": "BUILD_SUCCESS",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2267f973-26e7-4fa8-b2ce-299a5a0bb221",
+      "name": "Build Succeeded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4304,
+        2016
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ 'RES_' + ($runIndex >= 3) }}",
+              "rightValue": "RES_true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8ef57a20-0656-4a8f-86d2-b639970c7487",
+      "name": "Max Retries Reached?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4592,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "model": "z-ai/glm-5.3-flash:floor",
+        "options": {
+          "maxTokens": 12000,
+          "temperature": 0.1
+        }
+      },
+      "id": "a66e148f-8aa6-46bd-88b7-0ede1ac69a03",
+      "name": "Error Fixer LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        5040,
+        1792
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\nSLN=$(find $BASE -name '*.sln' | head -1)\necho '=== CVE DEPENDENCY AUDIT ==='\nif [ -n \"$SLN\" ]; then\n  dotnet list \"$SLN\" package --vulnerable --include-transitive 2>&1 || echo 'AUDIT_UNAVAILABLE'\nelse\n  find $BASE -name '*.csproj' | head -5 | while read f; do\n    dotnet list \"$f\" package --vulnerable --include-transitive 2>&1\n  done\nfi\necho 'CVE_CHECK_COMPLETE'"
+      },
+      "id": "4b5ef6c8-d8ca-4098-abd0-a9ad29455a71",
+      "name": "Security Patch CVE Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        5312,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\n# Decide from the project files whether any tests exist. `dotnet test` on a solution\n# with no test project exits 0 having run nothing, which v5.3-v5.5 reported as\n# TESTS_PASSED - and job 100's report turned that into \"Tests: PASSED\".\nTESTPROJ=$(grep -rilE --include='*.csproj' 'Microsoft\\.NET\\.Test\\.Sdk|<IsTestProject>[[:space:]]*true|MSTest\\.Sdk|xunit|nunit|mstest|TUnit' \"$BASE\" 2>/dev/null | grep -v -e '/bin/' -e '/obj/' | head -1)\nif [ -z \"$TESTPROJ\" ]; then\n  echo 'NO_TEST_PROJECT_FOUND'\n  exit 0\nfi\nTARGET=$(find \"$BASE\" \\( -name '*.sln' -o -name '*.slnx' \\) -not -path '*/bin/*' -not -path '*/obj/*' | head -1)\nif [ -z \"$TARGET\" ]; then TARGET=\"$TESTPROJ\"; fi\nFILTER='Category!=DatabaseTest&Category!=IntegrationTest'\nOUT=$(dotnet test \"$TARGET\" --filter \"$FILTER\" --logger 'console;verbosity=normal' 2>&1)\nCODE=$?\necho \"$OUT\" | tail -100\n# Sentinel from the exit code, last line, so the gate never depends on wording.\nif [ $CODE -ne 0 ]; then echo 'TESTS_FAILED'; else echo 'TESTS_PASSED'; fi"
+      },
+      "id": "ff6a74b6-6140-4104-93d2-db398c7add02",
+      "name": "Run Tests",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        5600,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "tg1",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "TESTS_FAILED",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0b95a1c-b1b1-438d-9ff1-f066b95478ea",
+      "name": "Test Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5824,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \"You write two sections of a migration report for the engineer who will review the pull request. Everything else in the report - the result, the changed files, package changes, planned edits that did not apply, what the Error Fixer did, and the deferred items - is generated automatically from the migrated workspace. Those facts are below so you can refer to them. Do not repeat them as lists.\\n\\nWrite exactly these two sections, in markdown:\\n\\n## Summary\\nThree to six sentences: what this migration changed and why, in plain words. If the Error Fixer ran, say what it fixed. If no tests ran, say so.\\n\\n## Risks and items for human review\\nBullet points: behaviour that can change at runtime even though the build passes (serialization formats, async signatures, changed defaults such as connection encryption), third-party package upgrades whose code changes were written from model knowledge rather than checked against the package, licence changes, and anything the facts flag. Draw on the plan's risk notes and warnings.\\n\\nTHE ONE RULE\\nThe DIFF is the only record of what changed. Describe a change only if you can see it in the diff or in the facts. The plan context says what was intended; it is not evidence that anything happened, and a planned change that is not in the diff did not happen.\\n\\nUse bullet lists, not tables. Do not output JSON except in the tasks block.\\n\\nAfter the two sections, output follow-up tasks for the reviewer at the very end, exactly in this format:\\n---TASKS---\\n[\\n  { \\\"title\\\": \\\"Task title\\\", \\\"description\\\": \\\"Task description\\\" }\\n]\\n\" + '\\nTARGET FRAMEWORK: ' + ($('Execute Webhook').first().json.body.target_framework || 'net8.0') + '\\n\\n=== FACTS (generated from the workspace; already in the report) ===\\n' + ($json.report_result_md || '(unavailable)') + '\\n\\n' + ($json.report_changes_md || '') + '\\n\\n' + ($json.report_deferred_md || '') + '\\n\\n=== PLAN CONTEXT (intent and risk notes only) ===\\n' + ($json.report_plan_digest || '(unavailable)') + '\\n\\n=== DIFF OF THE MIGRATED WORKSPACE ===\\n' + ($json.report_diff || '(unavailable)') }}"
+      },
+      "id": "23fc7669-df5a-494c-99e0-2ce4c6d92b5b",
+      "name": "Reporter Agent",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        6432,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "model": "z-ai/glm-5.3-flash:floor",
+        "options": {
+          "maxTokens": 12500,
+          "temperature": 0.2
+        }
+      },
+      "id": "068d3c6a-860e-4160-89fd-63ae5c213a76",
+      "name": "Reporter LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        6288,
+        1152
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openRouterApi": {
+          "id": "4KZRvsAl9UYZcHo6",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Part 2 v5.6 terminal node: the migration built and its tests passed, or there are\n// none. v5.4 made this node send an explicit `outcome`. v5.6 also assembles the\n// report: the fact sections come from 'Collect Actual Changes' (the workspace diff,\n// the job log, the plan compared with the final files) and the Reporter contributes\n// only its Summary and Risks sections. Job 100's v5.5 report was the Reporter's text\n// alone and claimed two changes that never happened.\nconst j = $input.first().json || {};\nconst llm = String(j.text || j.output || '');\nlet f = {};\ntry { f = $('Collect Actual Changes').first().json || {}; } catch (e) {}\n\n// The backend cuts everything after ---TASKS--- into follow-up tasks, so the tasks\n// block has to stay last.\nconst cut = llm.indexOf('---TASKS---');\nconst prose = (cut >= 0 ? llm.slice(0, cut) : llm).trim();\nconst tasks = cut >= 0 ? llm.slice(cut).trim() : '';\nconst section = (heading) => {\n  const m = prose.match(heading);\n  if (!m) return '';\n  const rest = prose.slice(m.index + m[0].length);\n  const next = rest.search(/^#{1,2}\\s/m);\n  return (next >= 0 ? rest.slice(0, next) : rest).trim();\n};\nconst summary = section(/^#{1,3}\\s*summary\\b.*$/im);\nconst risks = section(/^#{1,3}\\s*risks?\\b.*$/im);\n\nlet report;\nif (f.report_result_md) {\n  const parts = [f.report_header, f.report_result_md];\n  if (summary) parts.push('## Summary\\n' + summary);\n  // The model ignored the two-section format. Keep what it wrote, but say whose it is:\n  // everything else in this report is generated from the workspace.\n  else if (!risks && prose) parts.push(\"## Reporter's notes\\n_Written by the model, not generated from the workspace._\\n\\n\" + prose);\n  parts.push(f.report_changes_md);\n  if (risks) parts.push('## Risks and items for human review\\n' + risks);\n  parts.push(f.report_deferred_md);\n  report = parts.filter(Boolean).join('\\n\\n');\n} else {\n  // Collect Actual Changes produced nothing usable: the v5.5 behaviour.\n  report = prose;\n}\nif (tasks) report += '\\n\\n' + tasks;\n\n// Keep every incoming field (downstream nodes and older backends read `text`).\nreturn [{ json: Object.assign({}, j, {\n  outcome: 'success',\n  report: report,\n  tests: ((f.report_facts || {}).tests) || 'unknown'\n}) }];\n"
+      },
+      "id": "6a702286-4285-48c1-8ab7-75fb68c7405a",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6944,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Part 2 v5.4 terminal node: the migrated code builds, but its tests fail.\n// Reached from 'Test Gate' (false branch), whose input is Run Tests - which since\n// v5.3 ends with the exit-code sentinel TESTS_FAILED.\n// Until v5.4 this was an empty Set node, and the backend reported the run as\n// \"Workflow execution stopped unexpectedly\", which is not what happened.\nconst j = $input.first().json || {};\nconst out = String(j.stdout || '');\nconst tail = out.split('\\n').slice(-80).join('\\n');\nconst report =\n  '## Migration did not complete\\n\\n' +\n  'The migrated code builds, but its tests fail, so no pull request should be opened. ' +\n  'A compile-clean migration can still break behaviour at runtime - BinaryFormatter and ' +\n  'Thread.Abort both compile on .NET 9 and throw when called - which is exactly what tests exist to catch.\\n\\n' +\n  '### Test output (tail)\\n\\n' + tail;\nreturn [{ json: { outcome: 'tests_failed', report: report, test_output: out } }];\n"
+      },
+      "id": "0890f7bd-791e-452d-ace8-2134aa3b8031",
+      "name": "Test Failure Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6752,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Part 2 v5.4 terminal node: the build still fails after the Error Fixer's last\n// attempt. Reached from 'Max Retries Reached?', whose input is Store Build Output.\n// Until v5.4 this was an empty Set node, and the backend only knew the run failed\n// because the passed-through body happened to contain \"BUILD_FAILED\".\nconst j = $input.first().json || {};\nconst out = String(j.build_output || j.stdout || '');\nconst tail = out.split('\\n').slice(-60).join('\\n');\nconst report =\n  '## Migration did not complete\\n\\n' +\n  'The build still fails after the Error Fixer\\'s last attempt, so no pull request should be opened. ' +\n  'The workspace is left as the Error Fixer last had it.\\n\\n' +\n  '### Last build output (tail)\\n\\n' + tail;\nreturn [{ json: { outcome: 'build_failed', report: report, build_output: out } }];\n"
+      },
+      "id": "568610e8-00cf-4c75-941e-80bd55769ab7",
+      "name": "Failure Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5136,
+        2176
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \"You are fixing build errors in a .NET repository that has just been migrated to a new target framework. You have tools that read, search and edit the files, look up Microsoft documentation, and build the project. Work until the build succeeds, then stop and summarise what you changed.\\n\\nHOW TO WORK\\n1. Read the build errors below. Group them: several errors usually share one cause.\\n2. If the context below lists PLANNED EDITS WHOSE INTENDED CODE IS NOT IN THE FILE, start there: that is the code the migration plan meant to produce, and it is usually the fix.\\n3. For each file you intend to change, call read_file FIRST. The code has already been modified by the migration, so it does not look like the original plan any more.\\n4. Do not guess an API. If you are unsure which namespace a type lives in, or which constructor or method exists, look it up with docs_search (Microsoft types) or grep_repo (this repository's own code and usings) before editing.\\n5. Make ONE edit at a time with replace_in_file and read its result before the next. Never send several edits to the same file in one step. If an edit reports FAILED, the file is unchanged - read it again and copy the current text exactly rather than guessing.\\n6. Fix causes, not symptoms. A missing using directive can produce a dozen CS0246 errors; add the using once.\\n7. After your edits, call build. It is the only way to know the fix works. If it still fails, read the new errors and continue. Never report the build as fixed unless build returned BUILD SUCCEEDED.\\n\\nTHE EDIT THAT WILL ACTUALLY APPLY\\nreplace_in_file matches oldText literally against the file. It falls back to whitespace-insensitive line matching, but nothing else - it will not find a paraphrase.\\nCopy oldText out of what read_file returned. Include just enough surrounding code to appear exactly once in the file: a bare `public IActionResult` will match many places and fail, the same line with its method name will not. That is the whole rule - long enough to be unique, no longer.\\nNever send an empty oldText. To insert code, include the existing lines around the insertion point in both oldText and newText.\\n\\nWHEN TO REWRITE THE WHOLE FILE\\nUse write_file when the errors are structural - CS1022, CS1513, CS1002, unbalanced braces, a duplicated block. A targeted edit reliably misses a trailing brace at the end of the file. Pass the complete file, top to bottom. For anything else prefer replace_in_file.\\n\\nPACKAGES\\nUse manage_package, never a file edit, for PackageReference changes. On NU1605 (package downgrade) take the required version from the error text itself - do not invent one. Microsoft.NETCore.App and Microsoft.AspNetCore.App are implicit framework references, not packages; adding them breaks the build.\\n\\nPATHS\\nBuild output shows absolute paths like /projects/migration-42/Utils/Thing.cs. Always pass the repo-relative path: Utils/Thing.cs. Only files in the REPOSITORY FILES list below exist - never request any other path, and if read_file answers NOT FOUND, do not ask for that path again.\\n\\nTWO THINGS THAT LOOK LIKE FIXES AND ARE NOT\\n- A TODO comment, an empty method body or a swallowed exception makes the build pass while removing behaviour. If you genuinely cannot fix something, say so in your summary and leave it.\\n- Changing a declaration without its call sites. If you make a method async or rename it, update everything that calls it in the same pass - grep for it if you are unsure it is unused.\\n\\nCOMMENTS THE FIX MAKES WRONG\\nIf a comment or an [Obsolete] attribute inside the code you are replacing describes what the old code did, rewrite or delete it in the same edit. Leaving \\\"// WebClient is obsolete\\\" above code that no longer uses WebClient is misleading, and a stale [Obsolete] attribute also warns at every call site.\\n\\nWHEN YOU ARE DONE\\nReply with a short plain-text summary: which files you changed, what each fix addressed, the result of your last build call, and anything you could not fix and why. The next attempt, if there is one, reads this summary - be accurate about what you changed. Do not output JSON.\\n\" + '\\n\\nThis is attempt ' + ($runIndex + 1) + ' of 3.\\n\\nTARGET FRAMEWORK: ' + ($('Execute Webhook').first().json.body.target_framework || 'net8.0') + ($('Execute Webhook').first().json.body.custom_prompt ? '\\n\\nUSER INSTRUCTIONS:\\n' + $('Execute Webhook').first().json.body.custom_prompt : '') + ($json.ef_context ? '\\n\\n' + $json.ef_context : '') + '\\n\\nBUILD ERRORS:\\n' + String($('Store Build Output').first().json.build_output || '').slice(-20000) }}",
+        "options": {
+          "systemMessage": "You are a .NET build-error fixer. You edit files through tools. You never output JSON.",
+          "maxIterations": 25,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "4709cb4f-b4bc-40c1-a37e-5315ad5313de",
+      "name": "Error Fixer Chain",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        5120,
+        1536
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b67db7df-27c0-42ce-9194-724fa501401e",
+      "name": "Loop Plan Steps",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3104,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ReplaceFileContent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ReplaceFileContent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "c2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ExecuteCommand",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ExecuteCommand"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ce693a6-aacb-40b9-8ddb-9be5f138bbe4",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        3328,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5153/api/files/replace",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jobId: $('Execute Webhook').first().json.body.job_id, filePath: $json.filePath, targetContent: $json.targetContent, replacementContent: $json.replacementContent }) }}",
+        "options": {}
+      },
+      "id": "e3999a14-8a6a-422e-a6e9-df804319bfdf",
+      "name": "API ReplaceFileContent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3632,
+        1088
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "command": "={{ 'cd /projects/migration-' + $('Execute Webhook').first().json.body.job_id + ' && ' + $json.command }}"
+      },
+      "id": "372d9ab4-2856-402b-b442-b8ae4a842724",
+      "name": "API ExecuteCommand",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=BASE=/projects/migration-{{ $('Execute Webhook').first().json.body.job_id }}\nSLN=$(find $BASE -name '*.sln' | head -1)\n\nif [ -n \"$SLN\" ]; then\n  OUTPUT=$(dotnet build \"$SLN\" 2>&1)\n  STATUS=$?\nelse\n  PROJ=$(find $BASE -name '*.csproj' | head -1)\n  if [ -n \"$PROJ\" ]; then\n    OUTPUT=$(dotnet build \"$PROJ\" 2>&1)\n    STATUS=$?\n  else\n    OUTPUT=\"NO_PROJECT_FOUND\"\n    STATUS=1\n  fi\nfi\n\nif [ $STATUS -ne 0 ]; then\n  echo \"$OUTPUT\"\n  # v5.3: the per-file `cat` that used to live here is gone. The Error Fixer\n  # is a tool-using agent now and calls read_file for what it actually needs,\n  # instead of every failing file being pasted into the prompt and staying in\n  # context for the rest of the run.\n  echo \"BUILD_FAILED\"\nelse\n  echo \"$OUTPUT\"\n  echo \"BUILD_SUCCESS\"\nfi"
+      },
+      "id": "c9c92a61-4468-43af-9356-12688e02f29d",
+      "name": "Run Build",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3504,
+        1984
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "net8-migration-execute",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f373e91a-240f-4db8-a436-b043d9c39e2d",
+      "name": "Execute Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        1760
+      ],
+      "webhookId": "dbc5f4d0-6ddc-4528-a18c-eadebbdcaae5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1086fa3b-8f24-4e16-af5f-f39cf799247a",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        7216,
+        1808
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Started Execution Phase.\"\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "1a75061f-e93a-4b3a-8f8d-b53a9147f87e",
+      "name": "Log Execution Start",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  const cur = $input.first().json || {};\n  detailsStr = String(cur.output || cur.text || '');\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Error Fixer finished an attempt.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "bb04b509-5045-4862-84ca-b9baa0e8bc79",
+      "name": "Log Error Fixer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5744,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Build').first()?.json?.stdout || '';\n  let stderr = $('Run Build').first()?.json?.stderr || '';\n  detailsStr = stdout + '\\n' + stderr;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Build executed.\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "da09ce7e-e8e3-4412-8da8-fe74bdf967d3",
+      "name": "Log Build Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3712,
+        2096
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let stdout = $('Run Build').first()?.json?.stdout || '';\n  detailsStr = stdout;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Build succeeded! Running CVE security audit and unit tests...\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "d455f025-01bc-42b1-a61f-679f69fd3160",
+      "name": "Log Build Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4656,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let jobId = 'unknown';\ntry { jobId = $json.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\nif (!jobId || jobId === 'unknown') { try { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet detailsStr = '';\ntry {\n  let tests = $('Run Tests').first()?.json?.stdout || '';\n  let security = $('Security Patch CVE Check').first()?.json?.stdout || '';\n  detailsStr = \"=== Security Audit ===\\n\" + security + \"\\n\\n=== Unit Tests ===\\n\" + tests;\n} catch(e) {}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: 'info',\n      phase: 'Execute',\n      message: \"Migration execution completed successfully! Generating file diffs for review...\",\n      details: detailsStr.trim()\n    },\n    json: true\n  });\n} catch (e) {\n  // ignore network errors so we don't break pipeline\n}\nreturn $input.all();"
+      },
+      "id": "fa1fb106-62c1-44da-90da-857cf32b47ac",
+      "name": "Log Generating Diffs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7056,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet jobId = 'unknown';\ntry { jobId = $('Execute Webhook').first()?.json?.body?.job_id; } catch(e) {}\nif (!jobId || jobId === 'unknown') { try { jobId = $('Webhook').first()?.json?.body?.job_id; } catch(e) {} }\n\nlet iterations = 0;\ntry {\n  let loops = $('Error Fixer Chain').all();\n  iterations = loops ? loops.length : 0;\n} catch(e) {}\n\nlet buildErrorsStr = \"\";\ntry { buildErrorsStr = $('Execute Webhook').first()?.json?.body?.build_errors || \"\"; } catch(e) {}\nlet initialErrorCount = (buildErrorsStr.match(/error CS/g) || []).length;\nif (initialErrorCount === 0 && iterations > 0) initialErrorCount = 5;\n\nlet now = Date.now();\nlet workflowStart = now;\ntry { workflowStart = $('Init Telemetry').first().json.workflow_start; } catch(e) {}\nlet executionTimeMs = now - workflowStart;\n\nlet nodeExecutions = [];\nlet llmUsages = [];\n\nfunction estimateTokens(textStr) {\n    if (!textStr) return 0;\n    return Math.ceil(textStr.length / 3.0);\n}\n// USD per 1K tokens (blended in/out estimate, OpenRouter list prices Sept 2026)\nconst MODEL_COSTS = {\n  'z-ai/glm-5.3-flash:floor': 0.00016,\n  'z-ai/glm-5.3-flash': 0.00016,\n  'deepseek/deepseek-v4.1-flash': 0.00034,\n  'meta-llama/llama-3.3-70b-instruct': 0.0003\n};\nfunction getCost(modelName) { return MODEL_COSTS[modelName] || 0.0002; }\n\nfunction extractTokenUsage(agentNodeName, promptText, agentOutputJson) {\n    let fallbackPromptTokens = estimateTokens(promptText);\n    let outputText = typeof agentOutputJson === 'string' ? agentOutputJson : JSON.stringify(agentOutputJson);\n    let fallbackCompletionTokens = estimateTokens(outputText);\n    \n    // Try natively\n    try {\n        let usage = $(agentNodeName).last().json.tokenUsage;\n        if (usage && usage.promptTokens) {\n            return {\n                promptTokens: usage.promptTokens,\n                completionTokens: usage.completionTokens || usage.completion_tokens || fallbackCompletionTokens,\n                totalTokens: usage.totalTokens || usage.total_tokens || (usage.promptTokens + fallbackCompletionTokens)\n            };\n        }\n    } catch(e) {}\n    \n    return { \n        promptTokens: fallbackPromptTokens, \n        completionTokens: fallbackCompletionTokens, \n        totalTokens: fallbackPromptTokens + fallbackCompletionTokens \n    };\n}\n\ntry {\n    let migStart = $('Pre-Migrator Chain Telemetry').first()?.json?.agent_start || 0;\n    \n    let errorFixerStarts = [];\n    try {\n        let eStarts = $('Pre-Error Fixer Chain Telemetry').all();\n        if (eStarts) errorFixerStarts = eStarts.map(s => s.json.agent_start);\n    } catch(e) {}\n    \n    let repStart = $('Pre-Reporter Agent Telemetry').first()?.json?.agent_start || 0;\n    \n    \n    // Precise execution times from Post nodes\n    let migEnd = $('Post-Migrator Chain Telemetry').first()?.json?.agent_end || migStart + 45000;\n    let migTime = migEnd - migStart;\n    \n    let errTime = 0;\n    if (errorFixerStarts.length > 0) {\n        try {\n            let eEnds = $('Post-Error Fixer Chain Telemetry').all();\n            for (let i = 0; i < Math.min(errorFixerStarts.length, eEnds.length); i++) {\n                errTime += (eEnds[i].json.agent_end - errorFixerStarts[i]);\n            }\n        } catch(e) {}\n    }\n    \n    let repEnd = $('Post-Reporter Agent Telemetry').first()?.json?.agent_end || repStart + 15000;\n    let repTime = repEnd - repStart;\n\n    nodeExecutions.push({ NodeName: 'Build Action List', Phase: 'Phase 2', ExecutionTimeMs: migTime });\n    if (errorFixerStarts.length > 0) {\n        nodeExecutions.push({ NodeName: 'Error Fixer Chain', Phase: 'Phase 2', ExecutionTimeMs: errTime });\n    }\n    nodeExecutions.push({ NodeName: 'Reporter Agent', Phase: 'Phase 2', ExecutionTimeMs: repTime });\n    \n    // LLM Usages\n    \n    // v5.2: no Migrator LLM - that step is a Code node now.\n    let errModel = \"z-ai/glm-5.3-flash:floor\";\n    try { errModel = $evaluateExpression('{{ $node[\"Error Fixer LLM\"].parameter.model }}') || errModel; } catch(e) {}\n    let repModel = \"z-ai/glm-5.3-flash:floor\";\n    try { repModel = $evaluateExpression('{{ $node[\"Reporter LLM\"].parameter.model }}') || repModel; } catch(e) {}\n    \n    // v5.2: the Migrator is a Code node - no model, no tokens, no usage row.\n    \n    if (errorFixerStarts.length > 0) {\n        let errOutput = $('Error Fixer Chain').last()?.json || {};\n        let errPromptStr = \"Error Fixer Prompt\" + (JSON.stringify($('Log Build Output').last()?.json) || \"\").substring(0, 15000);\n        let errUsage = extractTokenUsage('Error Fixer Chain', errPromptStr, errOutput);\n        llmUsages.push({\n            AgentName: 'Error Fixer Chain',\n            ModelName: errModel,\n            Provider: 'OpenRouter (estimated)',\n            PromptTokens: errUsage.promptTokens * errorFixerStarts.length,\n            CompletionTokens: errUsage.completionTokens * errorFixerStarts.length,\n            TotalTokens: errUsage.totalTokens * errorFixerStarts.length,\n            TotalCostUsd: ((errUsage.totalTokens * errorFixerStarts.length) / 1000) * getCost(errModel)\n        });\n    }\n    \n    let repOutput = $('Reporter Agent').last()?.json || {};\n    let repPromptStr = \"Reporter Prompt\" + (JSON.stringify($('Log Generating Diffs').first()?.json) || \"\").substring(0, 5000);\n    let repUsage = extractTokenUsage('Reporter Agent', repPromptStr, repOutput);\n    llmUsages.push({\n        AgentName: 'Reporter Agent',\n        ModelName: repModel,\n        Provider: 'OpenRouter (estimated)',\n        PromptTokens: repUsage.promptTokens,\n        CompletionTokens: repUsage.completionTokens,\n        TotalTokens: repUsage.totalTokens,\n        TotalCostUsd: (repUsage.totalTokens / 1000) * getCost(repModel)\n    });\n    \n} catch(e) {\n    // If it fails, log error string instead of crashing silently\n    llmUsages.push({\n        AgentName: 'TelemetryScriptError',\n        ModelName: e.message.substring(0,50),\n        Provider: 'Error',\n        PromptTokens: 0,\n        CompletionTokens: 0,\n        TotalTokens: 0,\n        TotalCostUsd: 0\n    });\n}\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/metrics',\n    body: {\n      ExecutionTimeMs: executionTimeMs,\n      Phase2ExecutionTimeMs: executionTimeMs,\n      InitialErrorCount: initialErrorCount,\n      ResidualErrorCount: 0,\n      ErrorFixerIterations: iterations,\n      SuccessRate: 100.0,\n      RegressionRate: 0.0,\n      NodeExecutions: nodeExecutions,\n      Phase2Success: true,\n      IsSuccess: true,\n      LlmUsages: llmUsages\n    },\n    json: true\n  });\n} catch (e) {}\nreturn $input.all();\n"
+      },
+      "id": "1801159c-c847-4ba3-815e-c314ea585095",
+      "name": "Post Quantitative Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7216,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { workflow_start: Date.now() }) }];"
+      },
+      "id": "01a9d217-c65e-4c39-900b-82b6d1d4f550",
+      "name": "Init Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { agent_start: Date.now(), agent_name: 'Reporter Agent' }) }];"
+      },
+      "id": "0cdcfd43-9470-4ac5-8d58-9d1e9ec8dbe5",
+      "name": "Pre-Reporter Agent Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6176,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { agent_start: Date.now(), agent_name: 'Migrator Chain' }) }];"
+      },
+      "id": "9f0fd4a6-1c71-498c-ab5e-540aaff826ae",
+      "name": "Pre-Migrator Chain Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: Object.assign({}, $input.first().json, { agent_start: Date.now(), agent_name: 'Error Fixer Chain' }) }];"
+      },
+      "id": "e3aa1327-7490-4de4-b5c3-5d4890125e7a",
+      "name": "Pre-Error Fixer Chain Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4816,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet newItems = [];\nfor (let item of items) {\n    let newItem = {\n        json: Object.assign({}, item.json, { agent_end: Date.now() })\n    };\n    if (item.binary) newItem.binary = item.binary;\n    newItems.push(newItem);\n}\nreturn newItems;"
+      },
+      "id": "380ceb34-bbb8-42bc-b5da-e1095f38a3b4",
+      "name": "Post-Migrator Chain Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet newItems = [];\nfor (let item of items) {\n    let newItem = {\n        json: Object.assign({}, item.json, { agent_end: Date.now() })\n    };\n    if (item.binary) newItem.binary = item.binary;\n    newItems.push(newItem);\n}\nreturn newItems;"
+      },
+      "id": "38c47cfb-ab9f-40ce-a528-cfa0f6b7eb14",
+      "name": "Post-Error Fixer Chain Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5504,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet newItems = [];\nfor (let item of items) {\n    let newItem = {\n        json: Object.assign({}, item.json, { agent_end: Date.now() })\n    };\n    if (item.binary) newItem.binary = item.binary;\n    newItems.push(newItem);\n}\nreturn newItems;"
+      },
+      "id": "856a9419-97f2-4b41-9260-fd09e3c9a460",
+      "name": "Post-Reporter Agent Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6768,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Source for the Part 2 'Build Action List' Code node. Kept as a real .js file\n// so it is readable and lintable; patch_v52_part2.js injects it verbatim.\n//\n// This was an LLM (chainLlm + Migrator LLM) until v5.2, which meant a model\n// re-typing old/new snippets Part 1 had already produced and verified\n// byte-exact (job 99: 16/16 matched). Every re-emission was a chance to\n// paraphrase, truncate or mis-escape a string that /api/files/replace matches\n// literally. The mapping needs no intelligence, so it does not get any.\n//\n// Emits the same two shapes 'Switch Action' routes on, so nothing downstream changes.\n\nconst body = $('Execute Webhook').first().json.body;\nconst tfm = body.target_framework || 'net8.0';\n// /api/files/read uses GetInt32: a string jobId throws, and RepoLocator then\n// serves a DIFFERENT job's workspace. Always send a number.\nconst jobId = Number(body.job_id);\n\nlet plan;\ntry {\n  plan = typeof body.migration_plan === 'string' ? JSON.parse(body.migration_plan) : body.migration_plan;\n} catch (e) {\n  throw new Error('migration_plan is not valid JSON: ' + e.message);\n}\nif (!plan || typeof plan !== 'object') throw new Error('migration_plan is empty');\n\nconst actions = [];\nconst skipped = [];\nconst rel = (p) => String(p || '').replace(/^\\/?projects\\/migration-\\d+\\//, '').replace(/^\\//, '').trim();\n\n// The plan states the same edit in more than one place: a csproj TargetFramework\n// bump appears in BOTH target_framework_updates and file_changes. Emitting both\n// means the second always fails, because the first already changed the text.\nconst seenReplace = new Set();\nfunction pushReplace(filePath, targetContent, replacementContent) {\n  const key = filePath + '::' + String(targetContent).replace(/\\s+/g, ' ').trim();\n  if (seenReplace.has(key)) return false;\n  seenReplace.add(key);\n  actions.push({ action: 'ReplaceFileContent', filePath, targetContent, replacementContent });\n  return true;\n}\n\n// ── 1. target framework ────────────────────────────────────────────────────\nfor (const t of (plan.target_framework_updates || [])) {\n  const filePath = rel(t.file || t.file_path);\n  // Verbatim, not trimmed: the plan carries the exact indented line and the\n  // backend matches literally.\n  const from = t.from !== undefined ? String(t.from) : '';\n  const to = t.to !== undefined ? String(t.to) : '';\n  if (!filePath || !from.trim() || !to.trim()) {\n    skipped.push('target_framework_updates: incomplete entry for ' + (filePath || '?'));\n    continue;\n  }\n  pushReplace(filePath, from, to);\n}\n\n// ── 2. file changes ────────────────────────────────────────────────────────\n// old/new are copied verbatim. Changing them here reintroduces the paraphrase risk.\nfor (const f of (plan.file_changes || [])) {\n  const filePath = rel(f.file || f.file_path);\n  if (!filePath) { skipped.push('file_changes: entry with no file path'); continue; }\n  for (const ch of (f.changes || [])) {\n    const targetContent = ch.old !== undefined ? ch.old : ch.old_content;\n    const replacementContent = ch.new !== undefined ? ch.new : ch.new_content;\n    if (typeof targetContent !== 'string' || !targetContent.length) {\n      skipped.push(filePath + ': change with empty targetContent (' + String(ch.reason || 'no reason given').slice(0, 60) + ')');\n      continue;\n    }\n    if (typeof replacementContent !== 'string') {\n      skipped.push(filePath + ': change with no replacement content');\n      continue;\n    }\n    pushReplace(filePath, targetContent, replacementContent);\n  }\n}\n\n// ── 3. startup changes ─────────────────────────────────────────────────────\nfor (const s of (plan.startup_changes || [])) {\n  const filePath = rel(s.file || s.file_path);\n  const targetContent = s.old !== undefined ? s.old : s.old_content;\n  const replacementContent = s.new !== undefined ? s.new : s.new_content;\n  if (!filePath || typeof targetContent !== 'string' || !targetContent.length || typeof replacementContent !== 'string') {\n    skipped.push('startup_changes: incomplete entry for ' + (filePath || '?'));\n    continue;\n  }\n  pushReplace(filePath, targetContent, replacementContent);\n}\n\n// ── 4. packages ────────────────────────────────────────────────────────────\n// Never ReplaceFileContent a csproj for packages: dotnet keeps the file\n// consistent and fails loudly on a bad version, where a string edit would not.\nconst FRAMEWORK_REFS = ['microsoft.netcore.app', 'microsoft.aspnetcore.app', 'microsoft.windowsdesktop.app'];\nconst allProjects = (plan.target_framework_updates || []).map((t) => rel(t.file || t.file_path)).filter(Boolean);\n\n// Merge the two package sources by name. They overlap - job 99 listed the same\n// five packages in package_updates AND nuget_versions_needed - and emitting both\n// produced two identical `dotnet add` commands per package per project.\nconst pkgByName = new Map();\nfunction addRow(name, version, action, project, fromUpdates) {\n  const key = String(name || '').trim().toLowerCase();\n  if (!key) return;\n  // package_updates wins: it is the list NuGet Version Lookup re-pinned.\n  if (pkgByName.has(key) && !fromUpdates) return;\n  pkgByName.set(key, { name: String(name).trim(), version, action: action || 'update', project });\n}\nfor (const u of (plan.package_updates || [])) {\n  addRow(u.name, u.resolved_version || u.to_version, u.action, u.project || u.project_path, true);\n}\nfor (const u of (plan.nuget_versions_needed || [])) {\n  addRow(u.package || u.name, u.resolved_version || u.version, u.action, u.project || u.project_path, false);\n}\n\n// Which project actually references each package? Read the csproj files rather\n// than guessing. Falling back to \"every project\" added RestSharp to LegacyWebApi,\n// which never referenced it, and that spurious dependency shows up in the PR.\nconst projectRefs = new Map();\nconst PKG_REF = /<PackageReference\\s+Include=\"([^\"]+)\"/g;\nfor (const proj of allProjects) {\n  try {\n    const res = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'http://host.docker.internal:5153/api/files/read',\n      body: { jobId: jobId, filePath: proj },\n      json: true\n    });\n    const content = String((typeof res === 'string') ? res : (res.content || res.Content || ''));\n    let m;\n    PKG_REF.lastIndex = 0;\n    while ((m = PKG_REF.exec(content)) !== null) {\n      const k = m[1].toLowerCase();\n      if (!projectRefs.has(k)) projectRefs.set(k, []);\n      projectRefs.get(k).push(proj);\n    }\n  } catch (e) {\n    skipped.push('could not read ' + proj + ' to see which packages it references (' + e.message + ')');\n  }\n}\n\n// The command TEMPLATE below is fixed code, but the package name, version and\n// project path inside it come from Part 1's plan - LLM-written, and for a\n// `remove` entry never even resolved against nuget.org. Everything here goes to\n// `sh -c` through API ExecuteCommand, so admit only plain tokens. Same\n// allowlists as the Error Fixer's manage_package tool.\nconst SAFE_ID = /^[A-Za-z0-9._-]+$/;\nconst SAFE_VERSION = /^[A-Za-z0-9.*+-]+$/;\nconst SAFE_PROJECT = /^[A-Za-z0-9._\\/ -]+\\.csproj$/i;\n\nfor (const p of pkgByName.values()) {\n  const lower = p.name.toLowerCase();\n  if (!SAFE_ID.test(p.name)) {\n    skipped.push(JSON.stringify(p.name).slice(0, 60) + ': not a valid package id, refused (it would reach a shell)');\n    continue;\n  }\n  if (FRAMEWORK_REFS.indexOf(lower) !== -1) {\n    skipped.push(p.name + ': implicit framework reference, never added as a package');\n    continue;\n  }\n  let targets = rel(p.project) ? [rel(p.project)] : (projectRefs.get(lower) || []);\n  if (!targets.length) {\n    if (p.action === 'remove') {\n      skipped.push(p.name + ': marked for removal but no project references it');\n      continue;\n    }\n    // A genuinely new package: nothing references it yet. Fall back to every\n    // project and say so, rather than picking one silently.\n    targets = allProjects;\n    if (targets.length > 1) {\n      skipped.push(p.name + ': not referenced by any project; added to all ' + targets.length + ' - check this is intended');\n    }\n  }\n  if (!targets.length) {\n    skipped.push(p.name + ': no project file known, cannot emit a dotnet command');\n    continue;\n  }\n\n  for (const t of targets) {\n    if (!SAFE_PROJECT.test(t)) {\n      skipped.push(JSON.stringify(t).slice(0, 80) + ': not a plain .csproj path, refused (it would reach a shell)');\n      continue;\n    }\n    if (p.action === 'remove') {\n      actions.push({ action: 'ExecuteCommand', command: 'dotnet remove \"' + t + '\" package ' + p.name });\n    } else {\n      let v = String(p.version || '').trim();\n      if (!v || v === 'incompatible' || v === 'lookup-failed') {\n        skipped.push(p.name + ': no resolved version (' + (v || 'empty') + '), not added');\n        continue;\n      }\n      if (/\\.x$/i.test(v)) v = v.replace(/\\.x$/i, '.*');\n      if (!SAFE_VERSION.test(v)) {\n        skipped.push(p.name + ': version ' + JSON.stringify(v).slice(0, 40) + ' is not a plain version string, refused');\n        continue;\n      }\n      actions.push({ action: 'ExecuteCommand', command: 'dotnet add \"' + t + '\" package ' + p.name + ' --version ' + v });\n    }\n  }\n}\n\n// ── report ─────────────────────────────────────────────────────────────────\nconst counts = actions.reduce((a, x) => { a[x.action] = (a[x.action] || 0) + 1; return a; }, {});\nlet msg = 'Built ' + actions.length + ' execution step(s) deterministically from the plan for ' + tfm +\n          ' (' + Object.keys(counts).map((k) => k + ': ' + counts[k]).join(', ') + ').';\nif (skipped.length) msg += ' ' + skipped.length + ' entr(y/ies) skipped or flagged.';\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/migrationjob/' + jobId + '/logs',\n    body: {\n      level: skipped.length ? 'warning' : 'info',\n      phase: 'Execute',\n      message: msg,\n      details: skipped.length ? 'Skipped or flagged:\\n- ' + skipped.join('\\n- ') : null\n    },\n    json: true\n  });\n} catch (e) {}\n\nif (!actions.length) {\n  throw new Error('The plan produced no executable steps. ' +\n    (skipped.length ? 'Skipped: ' + skipped.join(' | ') : 'The plan may be empty, or filtered to nothing.'));\n}\n\nreturn actions.map((a) => ({ json: a }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        1488
+      ],
+      "id": "dfa2ef4e-5cc6-4681-8f57-3cd6ff9862e0",
+      "name": "Build Action List"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// /api/files/replace answers 200 with { success: false } when the snippet does\n// not match - it is not an HTTP error. Until v5.2 this node's output went\n// straight back into the loop, so a failed edit was invisible: the run carried\n// on, and the only trace was a build error the Error Fixer had to rediscover\n// with no idea a planned step had been skipped.\n//\n// This does not abort. One unmatched snippet should not discard the rest of a\n// migration; the build and the Error Fixer are the recovery path. It makes the\n// failure loud instead of silent.\nconst out = [];\n// Which file each result is about: API ReplaceFileContent answers one item per\n// Switch Action item, in order. Without it the log said only that SOME edit failed.\nlet steps = [];\ntry { steps = $('Switch Action').all(); } catch (e) {}\nfor (const [idx, item] of $input.all().entries()) {\n  const j = item.json || {};\n  const ok = j.success === true || j.Success === true;\n  if (!ok) {\n    const msg = j.message || j.Message || 'unknown reason';\n    const file = String((((steps[idx] || {}).json) || {}).filePath || '');\n    try {\n      await this.helpers.httpRequest({\n        method: 'POST',\n        url: 'http://host.docker.internal:5153/api/migrationjob/' + $('Execute Webhook').first().json.body.job_id + '/logs',\n        body: { level: 'error', phase: 'Execute',\n                message: 'A planned file edit did not apply' + (file ? ' (' + file + ')' : '') + ': ' + msg,\n                details: 'The build that follows may fail for this reason. If it says the target content was not found, the plan snippet no longer matches the file - most often because an earlier step in this same run already changed those lines.' },\n        json: true\n      });\n    } catch (e) {}\n  }\n  out.push({ json: Object.assign({}, j, { replace_applied: ok }) });\n}\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3776,
+        864
+      ],
+      "id": "7d28ca20-056f-40b3-b2f2-fcdbf17aeea1",
+      "name": "Check Replace Applied"
+    },
+    {
+      "parameters": {
+        "name": "read_file",
+        "description": "Read a file from the repository. Call this before editing anything: the code has already been changed by the migration and no longer matches the original plan.",
+        "jsCode": "// Error Fixer tool: read source. Replaces the old design where 'Run Build'\n// cat'd EVERY file with an error into the prompt whether the model needed it\n// or not - the whole dump then sat in context for the rest of the run.\nconst helpers = this.helpers;\nconst filePath = String(query.filePath || '').trim();\nif (!filePath) return 'ERROR: filePath is required.';\n\nconst clean = filePath.replace(/^\\/?projects\\/migration-\\d+\\//, '').replace(/^\\//, '');\n// jobId must be a NUMBER: the backend parses it with GetInt32, and a string makes\n// it fall back to RepoLocator.GetLatestRepo(), i.e. a different job's workspace.\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\n\ntry {\n  const res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/read',\n    body: {\n      jobId: jobId,\n      filePath: clean,\n      startLine: query.startLine || 1,\n      maxLines: Math.min(query.maxLines || 250, 400)\n    },\n    json: true\n  });\n  const content = (typeof res === 'string') ? res : (res.content || res.Content || JSON.stringify(res));\n  return '--- ' + clean + ' ---\\n' + content;\n} catch (e) {\n  // v5.5: on job 100 the Error Fixer asked for a non-existent\n  // LegacyMvcApp/Utils/RestClient.cs 18 times in a row, because \"could not read\"\n  // gave it nothing else to try. Say plainly that the file does not exist and\n  // offer the real files nearby.\n  let suggestions = '';\n  try {\n    const list = await helpers.httpRequest({\n      method: 'POST',\n      url: 'http://host.docker.internal:5153/api/files/list',\n      body: { jobId: jobId },\n      json: true\n    });\n    const files = (list && (list.files || list.Files)) || [];\n    const dir = clean.indexOf('/') > -1 ? clean.slice(0, clean.lastIndexOf('/') + 1) : '';\n    const base = clean.slice(clean.lastIndexOf('/') + 1).toLowerCase().replace(/\\.[^.]+$/, '');\n    const sameDir = files.filter((f) => dir && f.indexOf(dir) === 0 && f.slice(dir.length).indexOf('/') === -1);\n    const similar = files.filter((f) => base && f.toLowerCase().indexOf(base) > -1 && sameDir.indexOf(f) === -1);\n    const pick = sameDir.concat(similar).slice(0, 25);\n    if (pick.length) suggestions = '\\nFiles that DO exist' + (dir ? ' in ' + dir + ' or with a similar name' : '') + ':\\n- ' + pick.join('\\n- ');\n  } catch (e2) {}\n  return 'NOT FOUND: ' + clean + ' does not exist in this repository (' + e.message + '). ' +\n    'Do not request this path again.' + suggestions;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"filePath\": {\n      \"type\": \"string\",\n      \"description\": \"Repo-relative path, e.g. Utils/LegacyCrypto.cs\"\n    },\n    \"startLine\": {\n      \"type\": \"number\",\n      \"description\": \"1-based first line (default 1)\"\n    },\n    \"maxLines\": {\n      \"type\": \"number\",\n      \"description\": \"How many lines (default 250, max 400)\"\n    }\n  },\n  \"required\": [\n    \"filePath\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5120,
+        1952
+      ],
+      "id": "efb0b95e-46ba-4935-b88c-b25c624dc339",
+      "name": "EF Read File"
+    },
+    {
+      "parameters": {
+        "name": "replace_in_file",
+        "description": "Replace an exact snippet in a file. oldText must be copied from what read_file returned and must appear exactly once. Reports whether it applied, so check the result before the next edit.",
+        "jsCode": "// Error Fixer tool: replace an exact snippet.\n//\n// The point of making this a tool rather than a JSON action: the model gets the\n// result of THIS edit before it decides the next one. In the v5.x design it had\n// to emit every edit blind in one array, and a failure came back as a synthetic\n// \"API REPLACE ERROR\" pushed into the next build output.\nconst helpers = this.helpers;\nconst filePath = String(query.filePath || '').trim();\nconst oldText = query.oldText;\nconst newText = query.newText;\n\nif (!filePath) return 'ERROR: filePath is required.';\nif (typeof oldText !== 'string' || !oldText.length) {\n  return 'ERROR: oldText must be a non-empty string. To insert code, include the surrounding existing lines in oldText and put both them and the new lines in newText.';\n}\nif (typeof newText !== 'string') return 'ERROR: newText is required (use an empty string to delete).';\n\nconst clean = filePath.replace(/^\\/?projects\\/migration-\\d+\\//, '').replace(/^\\//, '');\n\ntry {\n  const res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/replace',\n    body: {\n      jobId: Number($('Execute Webhook').first().json.body.job_id),\n      filePath: clean,\n      targetContent: oldText,\n      replacementContent: newText\n    },\n    json: true\n  });\n  // /api/files/replace answers 200 with success:false when the snippet does not\n  // match - it is not an HTTP error, so the body is the only signal.\n  const ok = res && (res.success === true || res.Success === true);\n  if (ok) return 'OK: replaced in ' + clean + '.';\n  const msg = (res && (res.message || res.Message)) || 'unknown reason';\n  return 'FAILED on ' + clean + ': ' + msg +\n    '\\nThe file was NOT changed. Read it again with read_file and copy the exact current text - ' +\n    'an earlier edit in this same run may already have changed these lines.';\n} catch (e) {\n  return 'FAILED on ' + clean + ': ' + e.message;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"filePath\": {\n      \"type\": \"string\",\n      \"description\": \"Repo-relative path\"\n    },\n    \"oldText\": {\n      \"type\": \"string\",\n      \"description\": \"Exact text to replace, copied from read_file. Never empty.\"\n    },\n    \"newText\": {\n      \"type\": \"string\",\n      \"description\": \"Replacement text. Empty string deletes.\"\n    }\n  },\n  \"required\": [\n    \"filePath\",\n    \"oldText\",\n    \"newText\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5248,
+        1936
+      ],
+      "id": "88519314-eab5-4169-906c-7ff3e6241961",
+      "name": "EF Replace In File"
+    },
+    {
+      "parameters": {
+        "name": "write_file",
+        "description": "Overwrite a whole file. Use only for structural damage - unbalanced braces, CS1022/CS1513/CS1002, a duplicated block - where a targeted edit would miss a trailing brace. Pass the complete file.",
+        "jsCode": "// Error Fixer tool: overwrite a whole file. The \"nuclear option\" of the v5.x\n// prompt, kept because it is the only sane fix for unbalanced brackets - a\n// targeted replace tends to miss a trailing brace at the end of the file.\nconst helpers = this.helpers;\nconst filePath = String(query.filePath || '').trim();\nconst content = query.content;\nif (!filePath) return 'ERROR: filePath is required.';\nif (typeof content !== 'string' || !content.length) {\n  return 'ERROR: content must be the COMPLETE new file, top to bottom. Refusing to write an empty file.';\n}\n\nconst clean = filePath.replace(/^\\/?projects\\/migration-\\d+\\//, '').replace(/^\\//, '');\n\ntry {\n  const res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/write',\n    body: {\n      jobId: Number($('Execute Webhook').first().json.body.job_id),\n      filePath: clean,\n      content: content\n    },\n    json: true\n  });\n  const ok = res && (res.success === true || res.Success === true);\n  return ok\n    ? 'OK: rewrote ' + clean + ' (' + content.split('\\n').length + ' lines).'\n    : 'FAILED on ' + clean + ': ' + ((res && (res.message || res.Message)) || 'unknown reason');\n} catch (e) {\n  return 'FAILED on ' + clean + ': ' + e.message;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"filePath\": {\n      \"type\": \"string\",\n      \"description\": \"Repo-relative path\"\n    },\n    \"content\": {\n      \"type\": \"string\",\n      \"description\": \"The COMPLETE new file, top to bottom\"\n    }\n  },\n  \"required\": [\n    \"filePath\",\n    \"content\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5408,
+        1920
+      ],
+      "id": "a9aed696-c93e-412c-a587-8f7233ec8db3",
+      "name": "EF Write File"
+    },
+    {
+      "parameters": {
+        "name": "manage_package",
+        "description": "Add, re-pin or remove a PackageReference in a .csproj. Use this instead of editing the csproj by hand. On NU1605 take the version from the error text.",
+        "jsCode": "// Error Fixer tool: add, re-pin or remove a PackageReference.\n//\n// Deliberately NOT a general shell tool. The v5.x design gave the model an\n// ExecuteCommand action whose string went straight into `sh -c` via\n// 'cd /projects/migration-N && ' + $json.command, so one stray quote made the\n// behaviour undefined. The only shell capability the Error Fixer actually needs\n// is add/remove/re-pin for NU1605 downgrades and missing references.\n//\n// There is no command endpoint on the backend (/api/files/{read,write,replace,grep}\n// and /api/csproj/update, which only does the TargetFramework), so this does the\n// XML edit itself and writes the whole file back. `dotnet build` runs immediately\n// after and does the restore, so a bad version still surfaces as a build error on\n// the next iteration rather than being silently accepted here.\nconst helpers = this.helpers;\nconst action = String(query.action || 'add').trim().toLowerCase();\nconst project = String(query.project || '').trim().replace(/^\\/?projects\\/migration-\\d+\\//, '').replace(/^\\//, '');\nconst name = String(query.packageId || '').trim();\nconst version = String(query.version || '').trim();\n\nif (!project || !/\\.csproj$/i.test(project)) return 'ERROR: project must be a relative path to a .csproj, e.g. src/Api/Api.csproj';\nif (!name) return 'ERROR: packageId is required.';\nif (['add', 'remove'].indexOf(action) === -1) return 'ERROR: action must be \"add\" or \"remove\".';\nif (!/^[A-Za-z0-9._-]+$/.test(name)) return 'ERROR: packageId is not a valid package id.';\nif (action === 'add' && !version) return 'ERROR: version is required when adding. Take it from the build error, do not guess.';\nif (version && !/^[A-Za-z0-9.*+-]+$/.test(version)) return 'ERROR: version is not a valid version string.';\n\nconst FRAMEWORK_REFS = ['microsoft.netcore.app', 'microsoft.aspnetcore.app', 'microsoft.windowsdesktop.app'];\nif (FRAMEWORK_REFS.indexOf(name.toLowerCase()) !== -1) {\n  return 'ERROR: ' + name + ' is an implicit framework reference, not a NuGet package. Adding it breaks the build.';\n}\n\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\n\ntry {\n  const read = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/read',\n    body: { jobId: jobId, filePath: project },\n    json: true\n  });\n  let xml = (typeof read === 'string') ? read : (read.content || read.Content || '');\n  if (!xml) return 'ERROR: could not read ' + project;\n\n  const esc = name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n  const existing = new RegExp('[ \\\\t]*<PackageReference\\\\s+Include=\"' + esc + '\"[^>]*?/>\\\\s*\\\\r?\\\\n?', 'i');\n  const hasIt = existing.test(xml);\n  let what;\n\n  if (action === 'remove') {\n    if (!hasIt) return 'No change: ' + project + ' does not reference ' + name + '.';\n    xml = xml.replace(existing, '');\n    what = 'removed ' + name;\n  } else if (hasIt) {\n    xml = xml.replace(existing, '    <PackageReference Include=\"' + name + '\" Version=\"' + version + '\" />\\n');\n    what = 're-pinned ' + name + ' to ' + version;\n  } else {\n    const line = '    <PackageReference Include=\"' + name + '\" Version=\"' + version + '\" />\\n';\n    const lastRef = xml.lastIndexOf('</PackageReference>') > -1 ? -1 : xml.search(/[ \\t]*<PackageReference\\b[^>]*\\/>\\s*\\r?\\n/);\n    if (lastRef > -1) {\n      // Put it next to the existing PackageReferences, in their ItemGroup.\n      const after = xml.indexOf('\\n', xml.indexOf('/>', lastRef)) + 1;\n      xml = xml.slice(0, after) + line + xml.slice(after);\n    } else {\n      const close = xml.lastIndexOf('</Project>');\n      if (close === -1) return 'ERROR: ' + project + ' has no </Project> element; refusing to edit it.';\n      xml = xml.slice(0, close) + '  <ItemGroup>\\n' + line + '  </ItemGroup>\\n' + xml.slice(close);\n    }\n    what = 'added ' + name + ' ' + version;\n  }\n\n  const write = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/write',\n    body: { jobId: jobId, filePath: project, content: xml },\n    json: true\n  });\n  const ok = write && (write.success === true || write.Success === true);\n  return ok\n    ? 'OK: ' + what + ' in ' + project + '. The next build will restore it.'\n    : 'FAILED writing ' + project + ': ' + ((write && (write.message || write.Message)) || 'unknown reason');\n} catch (e) {\n  return 'FAILED on ' + project + ': ' + e.message;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"project\": {\n      \"type\": \"string\",\n      \"description\": \"Repo-relative .csproj path\"\n    },\n    \"packageId\": {\n      \"type\": \"string\",\n      \"description\": \"NuGet package id\"\n    },\n    \"version\": {\n      \"type\": \"string\",\n      \"description\": \"Version, required when adding\"\n    },\n    \"action\": {\n      \"type\": \"string\",\n      \"description\": \"\\\"add\\\" or \\\"remove\\\" (default add)\"\n    }\n  },\n  \"required\": [\n    \"project\",\n    \"packageId\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5584,
+        1888
+      ],
+      "id": "e6d2ccc0-cf51-4f7b-8c75-6aa1da96c417",
+      "name": "EF Manage Package"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Source for the Part 2 'Prepare Error Fixer Context' Code node (v5.5). Runs before\n// every Error Fixer attempt and hands it three things it did not have on job 100,\n// where it failed a one-line fix three times in 20.5 minutes:\n//\n//  1. The planned edits whose intended code is NOT in the file. The failed AutoMapper\n//     edit's new code contained exactly the right call, but v5.3 had dropped the\n//     plan from the prompt. Only the edits still missing, not the whole plan.\n//  2. The previous attempts: what each said it changed and the errors that followed.\n//     Attempt 3 did not know attempt 2's `using` was the thing that had just failed.\n//     Read from the job log (GET /logs is anonymous), which already stores each\n//     summary and each build's output - deterministic and testable.\n//  3. The repository's real files, so it stops inventing paths (it asked for a\n//     non-existent RestClient.cs 18 times).\n//\n// Every source is best-effort: if one fails, that section is omitted and the\n// attempt proceeds as it would have in v5.4.\nconst helpers = this.helpers;\nconst body = $('Execute Webhook').first().json.body;\nconst jobId = Number(body.job_id);\nconst API = 'http://host.docker.internal:5153';\n\nconst clip = (s, n) => { s = String(s || ''); return s.length <= n ? s : s.slice(0, n) + '\\n...[truncated]'; };\nconst norm = (s) => String(s || '').replace(/\\r\\n/g, '\\n').split('\\n').map((l) => l.trim()).filter(Boolean).join('\\n');\nconst errorLines = (text) => {\n  const seen = new Set(), out = [];\n  for (const line of String(text || '').split('\\n')) {\n    const m = line.match(/([^\\s]*\\.(?:cs|csproj)\\(\\d+,\\d+\\))\\s*:\\s*error\\s+([A-Z]+\\d+)\\s*:\\s*([^[]*)/);\n    if (!m) continue;\n    const e = m[1].replace(/^.*\\/projects\\/migration-\\d+\\//, '') + ': error ' + m[2] + ': ' + m[3].trim();\n    if (!seen.has(e)) { seen.add(e); out.push(e); }\n  }\n  return out;\n};\nconst sections = [];\n\n// ── 1. planned edits whose intended code is not in the file ─────────────────\ntry {\n  const planned = $('Build Action List').all().map((i) => i.json)\n    // .csproj edits are excluded: TFM and packages are applied by other steps\n    // (target_framework_updates, dotnet add/remove), and a whole-file csproj\n    // rewrite from the plan would reintroduce packages the reviewer deferred.\n    .filter((a) => a.action === 'ReplaceFileContent' && !/\\.csproj$/i.test(a.filePath));\n  const files = {};\n  const missing = [];\n  for (const a of planned) {\n    if (!(a.filePath in files)) {\n      try {\n        const r = await helpers.httpRequest({ method: 'POST', url: API + '/api/files/read',\n          body: { jobId: jobId, filePath: a.filePath }, json: true });\n        files[a.filePath] = String(r.content || r.Content || '');\n      } catch (e) { files[a.filePath] = null; }\n    }\n    const current = files[a.filePath];\n    if (current === null) continue;\n    if (norm(current).indexOf(norm(a.replacementContent)) !== -1) continue;   // intent is present\n    missing.push(a);\n  }\n  if (missing.length) {\n    let s = 'PLANNED EDITS WHOSE INTENDED CODE IS NOT IN THE FILE\\n' +\n      'The migration plan wanted the files below to end up containing this code, and it is not there - ' +\n      'usually because the edit failed to apply. It is the best available reference for the correct fix: ' +\n      'bring the CURRENT file (read it first) to this intent. Do not paste it blindly over code that has since changed.\\n';\n    let budget = 14000;\n    for (const a of missing) {\n      const block = '\\n### ' + a.filePath + '\\n' + clip(a.replacementContent, 5000) + '\\n';\n      if (block.length > budget) { s += '\\n(' + (missing.length) + ' edits in total; the rest omitted for length)\\n'; break; }\n      s += block; budget -= block.length;\n    }\n    sections.push(s);\n  }\n} catch (e) {}\n\n// ── 2. previous attempts in this run, from the job log ──────────────────────\ntry {\n  const logs = await helpers.httpRequest({ method: 'GET', url: API + '/api/migrationjob/' + jobId + '/logs', json: true });\n  const all = Array.isArray(logs) ? logs : [];\n  let start = -1;\n  all.forEach((l, i) => { if (l.message === 'Started Execution Phase.') start = i; });\n  const run = start >= 0 ? all.slice(start) : [];\n  const attempts = [];\n  run.forEach((l, i) => {\n    if (!/^Error Fixer /.test(String(l.message || ''))) return;\n    const next = run.slice(i + 1).find((x) => x.message === 'Build executed.');\n    attempts.push({ summary: String(l.details || '').trim(), after: next ? errorLines(next.details) : null });\n  });\n  if (attempts.length) {\n    let s = 'PREVIOUS ATTEMPTS IN THIS RUN - they did not fix the build. Do not repeat an approach that already failed.\\n';\n    attempts.forEach((a, k) => {\n      s += '\\nAttempt ' + (k + 1) + ' said:\\n' + clip(a.summary || '(no summary was recorded)', 1500) + '\\n' +\n        'Errors after attempt ' + (k + 1) + ':\\n' +\n        (a.after === null ? '(build result not recorded)' : (a.after.length ? a.after.join('\\n') : '(no compiler errors parsed)')) + '\\n';\n    });\n    sections.push(s);\n  }\n} catch (e) {}\n\n// ── 3. the repository's real files ──────────────────────────────────────────\ntry {\n  const r = await helpers.httpRequest({ method: 'POST', url: API + '/api/files/list', body: { jobId: jobId }, json: true });\n  const files = ((r && (r.files || r.Files)) || []).filter((f) => !/\\.(png|jpe?g|gif|ico|svg|woff2?|ttf|eot|map|min\\.js|min\\.css)$/i.test(f));\n  if (files.length) {\n    sections.push('REPOSITORY FILES - these are the only files that exist. Never request a path that is not listed.\\n' +\n      clip(files.join('\\n'), 6000));\n  }\n} catch (e) {}\n\nconst ef_context = sections.length ? sections.join('\\n\\n') : '';\nreturn [{ json: Object.assign({}, $input.first().json, { ef_context: ef_context, ef_context_sections: sections.length }) }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4970,
+        1726
+      ],
+      "id": "a5d71616-8a9e-44bd-97f4-2aa9c6cc2422",
+      "name": "Prepare Error Fixer Context"
+    },
+    {
+      "parameters": {
+        "name": "docs_search",
+        "description": "Search official Microsoft Learn documentation. Use it before guessing a Microsoft API: which namespace a type is in, which constructors or methods exist. Returns titles, URLs and capped excerpts.",
+        "jsCode": "// Error Fixer tool: Microsoft Learn search. Same capped implementation as Part 1's\n// 'MS Learn Docs' node (v6.8), copied verbatim. Added because on job 100 the Error\n// Fixer guessed NullLoggerFactory's namespace (wrong) with no way to look it up -\n// one search answers it. In Part 2 the desktop-detection lookup of 'Run Roslyn\n// Upgrade Assistant' throws inside its try, so desktop results are filtered.\n\n// microsoft_docs_search over the MCP HTTP endpoint. The endpoint is stateless\n// (no initialize handshake, no session id) and SSE-framed, so parse \"data: \".\n//\n// A raw search is ~20-24k chars / 10 results. Every result lands in the ReAct\n// scratchpad and is re-sent on every later turn, so cap the bodies and keep the\n// metadata: contentUrl is the only part the brief actually cites.\nconst q = String(query.query || '').trim();\nif (!q) return 'ERROR: query is required.';\n\nconst CAP = 700;\n\n// Only drop desktop-stack hits when this repo is not itself a desktop project.\nlet isDesktop = false;\ntry {\n  const dump = $('Run Roslyn Upgrade Assistant').first().json.stdout || '';\n  isDesktop = /<UseWPF>|<UseWindowsForms>|Microsoft\\.NET\\.Sdk\\.WindowsDesktop/i.test(dump);\n} catch (e) {}\nconst DESKTOP = /\\/desktop\\/winforms|\\/wpf|\\/xamarin|\\/maui|winforms-applications|wpf-applications/i;\n\n// A toolCode node that catches its own errors can never trigger n8n's\n// retryOnFail, so the v6.4 retry policy this node used to carry as an\n// mcpClientTool has to be re-implemented here. 'fetch failed' is undici's\n// \"connection never got off the ground\" and is exactly the blip worth retrying.\nconst helpers = this.helpers;\nasync function callMcp(toolName, args) {\n  let lastErr;\n  for (let attempt = 1; attempt <= 3; attempt++) {\n    try {\n      return await helpers.httpRequest({\n        method: 'POST',\n        url: 'https://learn.microsoft.com/api/mcp',\n        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream' },\n        body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: toolName, arguments: args } },\n        json: false\n      });\n    } catch (e) {\n      lastErr = e;\n      if (attempt < 3) await new Promise(function (r) { setTimeout(r, 2000 * attempt); });\n    }\n  }\n  throw lastErr;\n}\n\ntry {\n  const res = await callMcp('microsoft_docs_search', { query: q });\n  const line = String(res).split('\\n').find(function (l) { return l.indexOf('data: ') === 0; });\n  if (!line) return 'MS Learn returned no parsable payload for \"' + q + '\".';\n  const all = JSON.parse(JSON.parse(line.slice(6)).result.content[0].text).results || [];\n  if (!all.length) return 'No Microsoft Learn results for \"' + q + '\".';\n\n  const kept = isDesktop ? all : all.filter(function (r) { return !DESKTOP.test(r.contentUrl || ''); });\n  const use = kept.length ? kept : all;\n  const dropped = all.length - use.length;\n\n  let out = use.map(function (r) {\n    return r.title + '\\n' + r.contentUrl + '\\n' + String(r.content || '').slice(0, CAP);\n  }).join('\\n---\\n');\n  if (dropped) {\n    out += '\\n---\\n(' + dropped + ' desktop-stack result(s) omitted: this is not a WinForms/WPF project)';\n  }\n  out += '\\n\\n(Excerpts are capped at ' + CAP + ' chars. If you need a type full member list to verify a replacement, call fetch_ms_learn_page on its contentUrl. Do that sparingly: it is the most expensive call available.)';\n  return out;\n} catch (e) {\n  return 'MS Learn search failed for \"' + q + '\": ' + e.message;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"query\": {\n      \"type\": \"string\",\n      \"description\": \"Search terms, e.g. \\\"breaking changes .NET 9 BinaryFormatter\\\"\"\n    }\n  },\n  \"required\": [\n    \"query\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5760,
+        1904
+      ],
+      "id": "92b8d189-1e89-4eac-8ce3-058f3893cdef",
+      "name": "EF Docs Search"
+    },
+    {
+      "parameters": {
+        "name": "grep_repo",
+        "description": "Search this repository for a regex or literal string and get file:line matches. Use it to find every caller of a method you change, and the using directives a file already has.",
+        "jsCode": "// Error Fixer tool: grep the repository. Part 1's 'Grep Repo', retargeted to Part 2's\n// 'Execute Webhook'. The v5.3 prompt already told the Error Fixer to grep for call\n// sites, but it had no grep tool until v5.5. jobId is sent as a NUMBER - see read_file.js.\n\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\nconst pattern = String(query.pattern || '').trim();\nif (!pattern) return 'ERROR: pattern is required.';\n\ntry {\n  const res = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'http://host.docker.internal:5153/api/files/grep',\n    body: {\n      jobId: jobId,\n      pattern: pattern,\n      glob: query.glob || '*.cs',\n      maxResults: Math.min(query.maxResults || 40, 100)\n    },\n    json: true\n  });\n  const matches = res.matches || res.Matches || [];\n  if (!matches.length) return `No matches for \"${pattern}\" in ${query.glob || '*.cs'}.`;\n  return matches.map(m => `${m.filePath || m.FilePath}:${m.lineNumber || m.LineNumber}: ${(m.line || m.Line || '').trim()}`).join('\\n');\n} catch (e) {\n  return `Grep failed for \"${pattern}\": ${e.message}`;\n}\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"pattern\": {\n      \"type\": \"string\",\n      \"description\": \"Regex or literal string to search for\"\n    },\n    \"glob\": {\n      \"type\": \"string\",\n      \"description\": \"File glob, default *.cs (use *.csproj for project files)\"\n    },\n    \"maxResults\": {\n      \"type\": \"number\",\n      \"description\": \"Max matches to return (default 40, max 100)\"\n    }\n  },\n  \"required\": [\n    \"pattern\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        5936,
+        1904
+      ],
+      "id": "070f7775-3eda-4678-b3c7-5c0b298b43f0",
+      "name": "EF Grep"
+    },
+    {
+      "parameters": {
+        "name": "build",
+        "description": "Build the project and return the compiler errors, or BUILD SUCCEEDED. Call it after your edits: it is the only way to know a fix works. Takes about a minute.",
+        "jsCode": "// Error Fixer tool: build the workspace and report the errors.\n//\n// v5.5. On job 100 every attempt ended \"The build error is fixed\" without having\n// built anything; the outer loop then built, failed, and started a FRESH agent.\n// With this the agent verifies inside its own attempt and sees the compiler's\n// answer to each edit.\n//\n// A toolCode node cannot run a shell, and the backend's /api/build is unusable here\n// (it builds GetLatestRepo(), not a given job, and on the host rather than the\n// container). So the build runs in n8n itself, in a small separate workflow\n// ('NET8 Migration Build Tool') behind a fixed webhook path - same container, same\n// SDKs, same /projects mount as 'Run Build'. That workflow must be imported and\n// ACTIVE; if it is not, this tool says so and the agent carries on without it.\nconst helpers = this.helpers;\nconst jobId = Number($('Execute Webhook').first().json.body.job_id);\n\nlet res;\ntry {\n  res = await helpers.httpRequest({\n    method: 'POST',\n    url: 'http://localhost:5678/webhook/migration-build-tool',\n    body: { jobId: jobId },\n    json: true,\n    timeout: 400000\n  });\n} catch (e) {\n  return 'BUILD TOOL UNAVAILABLE (' + e.message + '). The \\'NET8 Migration Build Tool\\' workflow is probably not ' +\n    'imported or not active. Continue without it; the pipeline builds again after you finish.';\n}\n\nconst out = String((res && (res.stdout || res.output)) || (typeof res === 'string' ? res : ''));\nif (!out.trim()) {\n  return 'BUILD TOOL returned nothing - it probably failed inside n8n. Continue without it.';\n}\nif (/BUILD_SUCCESS\\s*$/.test(out.trim())) {\n  return 'BUILD SUCCEEDED: 0 errors. The fix works - stop editing and write your summary.';\n}\n\n// dotnet prints each diagnostic twice (while building and in the summary), with\n// absolute container paths. Deduplicate and make paths repo-relative.\nconst seen = new Set();\nconst errors = [];\nfor (const line of out.split('\\n')) {\n  const m = line.match(/([^\\s]*\\.(?:cs|csproj|sln|props|targets)\\(\\d+,\\d+\\)|[^\\s]*\\.csproj)\\s*:\\s*error\\s+([A-Z]+\\d+)\\s*:\\s*([^[]*)/);\n  if (!m) continue;\n  const where = m[1].replace(/^.*\\/projects\\/migration-\\d+\\//, '');\n  const key = where + m[2] + m[3].trim();\n  if (seen.has(key)) continue;\n  seen.add(key);\n  errors.push(where + ': error ' + m[2] + ': ' + m[3].trim());\n}\nif (!errors.length) {\n  const tail = out.trim().split('\\n').slice(-15).join('\\n');\n  return 'BUILD FAILED, but no compiler errors could be parsed. Last lines:\\n' + tail;\n}\nreturn 'BUILD FAILED: ' + errors.length + ' error(s)\\n' + errors.slice(0, 40).join('\\n') +\n  (errors.length > 40 ? '\\n...and ' + (errors.length - 40) + ' more' : '');\n",
+        "specifyInputSchema": true,
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"reason\": {\n      \"type\": \"string\",\n      \"description\": \"Optional: what you expect this build to confirm\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.1,
+      "position": [
+        6112,
+        1904
+      ],
+      "id": "1548e854-80dc-4814-b8cd-429e748eee2f",
+      "name": "EF Build"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Source for the Part 2 'Collect Actual Changes' Code node (v5.6). Runs before the\n// Reporter and gathers what the migration actually DID, so the report stops\n// describing the plan. Job 100's v5.5 report was written from the plan and the build\n// output alone. It claimed two changes that never happened - a \"repaired corrupted\n// field name\" that existed only in the plan's deliberately broken snippet, and a\n// MailKit reference no project has - and said \"Tests: PASSED\" for a solution with\n// no tests.\n//\n// Everything here is deterministic: the workspace diff (POST /api/files/diff), this\n// run's job log, the plan's edits compared with the final files, and the outputs of\n// the test and CVE steps. It renders the report's fact sections; the Reporter now\n// writes only the summary and the risks, and Success Response puts them together.\n// It also logs one line comparing the final code with the plan, which the backend\n// quotes in the PR description.\n//\n// Every source is best-effort: a section whose source failed says so. If this node\n// produces nothing, Success Response falls back to the Reporter's text alone.\nconst helpers = this.helpers;\nconst body = $('Execute Webhook').first().json.body;\nconst jobId = Number(body.job_id);\nconst API = 'http://host.docker.internal:5153';\nconst TFM = String(body.target_framework || 'net8.0');\n\nconst norm = (s) => String(s || '').replace(/\\r\\n/g, '\\n').split('\\n').map((l) => l.trim()).filter(Boolean).join('\\n');\nconst clip = (s, n) => { s = String(s || '').trim(); return s.length <= n ? s : s.slice(0, n).trimEnd() + '…'; };\nconst code = (s) => '`' + String(s).replace(/`/g, \"'\") + '`';\nconst rel = (p) => String(p || '').replace(/^.*\\/projects\\/migration-\\d+\\//, '').replace(/^\\.\\//, '');\nconst isProj = (p) => /\\.csproj$/i.test(String(p || ''));\nconst count = (n, one, many) => n + ' ' + (n === 1 ? one : (many || one + 's'));\nconst list = (x) => (Array.isArray(x) ? x : (x ? [x] : []));\nconst text = (x) => (typeof x === 'string' ? x : JSON.stringify(x));\nconst errorLines = (s) => {\n  const seen = new Set(), found = [];\n  for (const line of String(s || '').split('\\n')) {\n    const m = line.match(/([^\\s]*\\.(?:cs|csproj)\\(\\d+,\\d+\\))\\s*:\\s*error\\s+([A-Z]+\\d+)\\s*:\\s*([^[]*)/);\n    if (!m) continue;\n    const e = { file: rel(m[1].replace(/\\(\\d+,\\d+\\)$/, '')), code: m[2], line: rel(m[1]) + ': error ' + m[2] + ': ' + m[3].trim() };\n    if (!seen.has(e.line)) { seen.add(e.line); found.push(e); }\n  }\n  return found;\n};\n// The planned code is in the file. When the replacement is empty or contained in the\n// original (a deletion), finding it proves nothing - check the original is gone instead.\nconst intentPresent = (file, a) => {\n  const f = norm(file), n = norm(a.replacementContent), o = norm(a.targetContent);\n  if (!n || (o && o.indexOf(n) !== -1)) return !o || f.indexOf(o) === -1;\n  return f.indexOf(n) !== -1;\n};\n\ntry {\n  let plan = {};\n  try { plan = typeof body.migration_plan === 'string' ? JSON.parse(body.migration_plan) : (body.migration_plan || {}); } catch (e) {}\n  const deferred = Array.isArray(body.deferred_changes) ? body.deferred_changes : [];\n\n  // ── 1. this run's job log ───────────────────────────────────────────────────\n  let run = null;\n  try {\n    const logs = await helpers.httpRequest({ method: 'GET', url: API + '/api/migrationjob/' + jobId + '/logs', json: true });\n    const all = Array.isArray(logs) ? logs : [];\n    let start = -1;\n    all.forEach((l, i) => { if (l.message === 'Started Execution Phase.') start = i; });\n    if (start >= 0) run = all.slice(start);\n  } catch (e) {}\n  const builds = (run || []).filter((l) => l.message === 'Build executed.');\n  const attempts = (run || []).filter((l) => /^Error Fixer /.test(String(l.message || '')));\n  // v5.6 names the file in brackets; v5.5 did not, and then it is null.\n  const notApplied = (run || []).filter((l) => /^A planned file edit did not apply/.test(String(l.message || '')))\n    .map((l) => { const m = String(l.message).match(/^A planned file edit did not apply \\((.+?)\\):/); return m ? rel(m[1]) : null; });\n\n  // ── 2. the workspace diff ───────────────────────────────────────────────────\n  let diff = null;\n  try {\n    const r = await helpers.httpRequest({ method: 'POST', url: API + '/api/files/diff', body: { jobId: jobId }, json: true });\n    if (r && r.success) diff = r;\n  } catch (e) {}\n\n  // ── 3. the plan's edits compared with the final files ───────────────────────\n  let actions = [];\n  try { actions = $('Build Action List').all().map((i) => i.json); } catch (e) {}\n  const plannedFiles = new Set();\n  for (const a of actions) {\n    if (a.action === 'ReplaceFileContent') plannedFiles.add(rel(a.filePath));\n    const m = a.action === 'ExecuteCommand' && String(a.command || '').match(/dotnet (?:add|remove) \"([^\"]+)\"/);\n    if (m) plannedFiles.add(rel(m[1]));\n  }\n  // .csproj edits are not compared: target framework and packages are applied by\n  // dotnet commands, not by the plan's text (section 4 reads them from the diff).\n  const edits = actions.filter((a) => a.action === 'ReplaceFileContent' && !isProj(a.filePath));\n  const current = {};\n  const missing = [];\n  let unreadable = 0;\n  for (const a of edits) {\n    const p = rel(a.filePath);\n    if (!(p in current)) {\n      try {\n        const r = await helpers.httpRequest({ method: 'POST', url: API + '/api/files/read', body: { jobId: jobId, filePath: p }, json: true });\n        current[p] = String(r.content || r.Content || '');\n      } catch (e) { current[p] = null; }\n    }\n    if (current[p] === null) { unreadable++; continue; }\n    if (!intentPresent(current[p], a)) missing.push(p);\n  }\n  const missingFiles = [...new Set(missing)];\n  // A code edit that did not apply, in a file whose planned code is now all present:\n  // the Error Fixer made it, since nothing else writes code after the planned steps.\n  const recovered = notApplied.filter((p) => p && !isProj(p) && current[p] != null && !missingFiles.includes(p)).length;\n\n  // ── 4. package and framework changes, from the .csproj diffs ────────────────\n  const projChanges = [];\n  if (diff && diff.diff) {\n    for (const part of String(diff.diff).split(/^diff --git /m).slice(1)) {\n      const m = part.split('\\n')[0].match(/^a\\/(.+?) b\\/(.+)$/);\n      const file = m ? m[2] : '';\n      if (!isProj(file)) continue;\n      const before = {}, after = {};\n      let tfFrom = null, tfTo = null;\n      for (const line of part.split('\\n')) {\n        if (!/^[-+]/.test(line) || /^(---|\\+\\+\\+) /.test(line)) continue;\n        const pr = line.match(/<PackageReference\\s+Include=\"([^\"]+)\"(?:\\s+Version=\"([^\"]*)\")?/i);\n        if (pr) (line[0] === '-' ? before : after)[pr[1].toLowerCase()] = { name: pr[1], v: pr[2] || '' };\n        const tf = line.match(/<TargetFrameworks?>\\s*([^<]+?)\\s*</i);\n        if (tf) { if (line[0] === '-') tfFrom = tf[1]; else tfTo = tf[1]; }\n      }\n      const items = [];\n      if (tfFrom || tfTo) items.push('target framework ' + code(tfFrom || '?') + ' → ' + code(tfTo || '?'));\n      for (const k of [...new Set([...Object.keys(before), ...Object.keys(after)])]) {\n        const b = before[k], a = after[k];\n        if (b && a) { if (b.v !== a.v) items.push(a.name + ' ' + b.v + ' → ' + a.v); }\n        else if (a) items.push(a.name + ' ' + a.v + ' added');\n        else items.push(b.name + ' ' + b.v + ' removed');\n      }\n      if (items.length) projChanges.push(code(file) + ': ' + items.join('; '));\n    }\n  }\n\n  // ── 5. tests and the CVE audit ──────────────────────────────────────────────\n  let testOut = '', cveOut = '';\n  try { testOut = String(($('Run Tests').first().json || {}).stdout || ''); } catch (e) {}\n  try { cveOut = String(($('Security Patch CVE Check').first().json || {}).stdout || ''); } catch (e) {}\n  const sentinel = testOut.trim().split('\\n').pop().trim();\n  const tests = sentinel === 'NO_TEST_PROJECT_FOUND' ? 'none' : sentinel === 'TESTS_PASSED' ? 'passed'\n    : sentinel === 'TESTS_FAILED' ? 'failed' : 'unknown';\n  // Display only - the gate uses the sentinel, never this wording.\n  const totalTests = [...testOut.matchAll(/Total tests:\\s*(\\d+)/gi)].reduce((s, m) => s + Number(m[1]), 0);\n  const vulnerable = [...cveOut.matchAll(/project [`'\"]?([^`'\"\\s]+)[`'\"]? has the following vulnerable packages/gi)].map((m) => m[1]);\n  const clean = [...cveOut.matchAll(/project [`'\"]?([^`'\"\\s]+)[`'\"]? has no vulnerable packages/gi)].map((m) => m[1]);\n\n  // ── 6. the fact sections ────────────────────────────────────────────────────\n  const firstErrors = attempts.length && builds.length ? errorLines(builds[0].details) : [];\n  let buildLine = '- **Build:** passes on ' + code(TFM) + ', confirmed by the pipeline\\'s final `dotnet build`.';\n  if (attempts.length) {\n    buildLine += ' The first build failed' + (firstErrors.length\n      ? ' with ' + count(firstErrors.length, 'error') + ' (' + [...new Set(firstErrors.map((e) => e.code))].map(code).join(', ') +\n        ' in ' + [...new Set(firstErrors.map((e) => e.file))].map(code).join(', ') + ')'\n      : '') + '; the Error Fixer made ' + count(attempts.length, 'attempt') + ' before it passed.';\n  }\n  const result = ['## Result', buildLine,\n    { none: '- **Tests:** none. The solution has no test project, so nothing was tested.',\n      passed: '- **Tests:** passed' + (totalTests ? ' (' + count(totalTests, 'test') + ')' : '') + '.',\n      failed: '- **Tests:** failed.',\n      unknown: '- **Tests:** the result was not recognised; see the job log.' }[tests],\n    vulnerable.length\n      ? '- **Known vulnerable packages:** reported in ' + vulnerable.map(code).join(', ') + ' by `dotnet list package --vulnerable`. Review before merging.'\n      : clean.length\n        ? '- **Known vulnerable packages:** none reported by `dotnet list package --vulnerable` (' + clean.map(code).join(', ') + ').'\n        : '- **Known vulnerable packages:** could not be determined from the audit output.',\n    '- **Scope:** only the changes required to build and run on ' + code(TFM) + ' were applied. ' + (deferred.length\n      ? count(deferred.length, '\"should\" change') + ' ' + (deferred.length === 1 ? 'was' : 'were') + ' deferred and ' +\n        (deferred.length === 1 ? 'is' : 'are') + ' still in the code; see Deferred.'\n      : 'Nothing was deferred.')];\n\n  const changes = ['## Changed files'];\n  if (!diff) {\n    changes.push('_The workspace diff could not be read, so the changed files cannot be listed here._');\n  } else {\n    changes.push('From `git diff` of the migrated workspace: the record of what actually changed.');\n    const files = diff.files || [];\n    const untracked = diff.untracked || [];\n    if (!files.length && !untracked.length) changes.push('- No file differs from the original code.');\n    for (const f of files) {\n      const p = rel(f.path);\n      let note = '';\n      if (!plannedFiles.has(p)) note = ' — not in the plan: changed by the Error Fixer';\n      else if (notApplied.includes(p) && !isProj(p) && !missingFiles.includes(p)) note = ' — its planned edit did not apply; the Error Fixer made the change';\n      changes.push('- ' + code(p) + (f.added == null ? ' (binary)' : ' (+' + f.added + ' −' + f.removed + ')') + note);\n    }\n    for (const u of untracked) changes.push('- ' + code(rel(u)) + ' (new file) — not in the plan: created by the Error Fixer');\n    changes.push('', '## Package and framework changes', 'From the `.csproj` diffs.');\n    changes.push(...(projChanges.length ? projChanges.map((l) => '- ' + l) : ['- No project file changed.']));\n  }\n\n  changes.push('', '## Planned edits');\n  if (notApplied.length) {\n    const named = [...new Set(notApplied.filter(Boolean))];\n    changes.push('- ' + count(notApplied.length, 'planned edit') + ' did not match the file when execution ran' +\n      (named.length ? ': ' + named.map(code).join(', ') + '.' : ' (see the job log).'));\n  }\n  if (edits.length && unreadable < edits.length) {\n    changes.push(missingFiles.length\n      ? '- ⚠️ The intended code of ' + count(missing.length, 'planned edit') + ' is **not** in the final code: ' + missingFiles.map(code).join(', ') +\n        '. The build passes, so the error was resolved some other way, or the change was lost. Compare these files with the plan before merging.'\n      : '- Every planned code edit is in the final code' + (recovered ? '; ' + recovered + ' of them ' + (recovered === 1 ? 'was' : 'were') +\n        ' made by the Error Fixer after the planned edit did not apply.' : '.'));\n  } else if (!edits.length) {\n    changes.push('- The plan had no code edits besides project files.');\n  }\n  if (unreadable) changes.push('- ' + count(unreadable, 'planned edit') + ' could not be checked: the file could not be read back.');\n  if (actions.some((a) => a.action === 'ReplaceFileContent' && isProj(a.filePath))) {\n    changes.push('- Project files are not compared with the plan\\'s text: their target framework and packages are applied by `dotnet` commands and shown above.');\n  }\n\n  if (attempts.length) {\n    changes.push('', '## Error Fixer',\n      'The first build failed, so the Error Fixer ran. What it reported after each attempt, in its own words (not independently checked; the changed files above are the record):');\n    attempts.forEach((a, k) => changes.push('', '**Attempt ' + (k + 1) + '**', ...clip(a.details || '(no summary recorded)', 900).split('\\n').map((l) => '> ' + l)));\n  }\n\n  const deferredMd = ['## Deferred'];\n  if (deferred.length) {\n    deferredMd.push('These \"should\" changes were in the reviewed plan and were deliberately **not** applied; the code still contains them. ' +\n      (deferred.some((d) => d.pragma_suppressed) ? '🔇 marks a change whose compiler warning is suppressed by `#pragma`, so the clean build does not show it.' : ''));\n    for (const d of deferred) deferredMd.push('- ' + (d.pragma_suppressed ? '🔇 ' : '') + code(d.target) + ' — ' + clip(d.reason, 220));\n  } else {\n    deferredMd.push('No planned change was deferred.');\n  }\n\n  // ── 7. what the Reporter gets: intent without code, and the real diff ────────\n  const digest = ['Source framework: ' + (plan.source_framework || 'unknown') + '. Target: ' + TFM + '. Plan risk level: ' + (plan.risk_level || 'unknown') + '.'];\n  const fc = list(plan.file_changes);\n  if (fc.length) {\n    digest.push('Planned code changes (intent only - the diff shows what happened):');\n    for (const f of fc) for (const c of list(f.changes)) digest.push('- ' + (f.file || f.file_path) + ': ' + clip(c.reason || c.description || '', 220));\n  }\n  for (const [title, items, n] of [['Plan risk notes:', plan.risk_notes, 500], ['NuGet warnings:', plan.nuget_warnings, 300], ['Known vulnerabilities in the original packages:', plan.nuget_vulnerabilities, 300]]) {\n    if (list(items).length) { digest.push(title); list(items).forEach((r) => digest.push('- ' + clip(text(r), n))); }\n  }\n  let diffForLlm = '(the workspace diff could not be read)';\n  if (diff) {\n    diffForLlm = clip(diff.diff || '(no changes)', 24000);\n    if ((diff.diff || '').length > 24000 || diff.truncated) diffForLlm += '\\n[diff truncated]';\n    if ((diff.untracked || []).length) diffForLlm += '\\nNew files not shown in the diff: ' + diff.untracked.join(', ');\n  }\n\n  // ── 8. one log line for the dashboard terminal and the PR description ──────\n  if (edits.length && unreadable < edits.length) {\n    const message = 'Compared the final code with the plan: ' + (missingFiles.length\n      ? count(missing.length, 'planned code edit') + ' ' + (missing.length === 1 ? 'is' : 'are') + ' NOT in the final code, in ' + missingFiles.join(', ') + '.'\n      : 'every planned code edit is in the final code' + (recovered ? ' (' + recovered + ' made by the Error Fixer after the planned edit did not apply)' : '') + '.');\n    try {\n      await helpers.httpRequest({ method: 'POST', url: API + '/api/migrationjob/' + jobId + '/logs', json: true,\n        body: { level: missingFiles.length || unreadable ? 'warning' : 'info', phase: 'Execute', message: message,\n                details: edits.map((a) => rel(a.filePath) + ': ' + (current[rel(a.filePath)] === null ? 'not readable' : missing.includes(rel(a.filePath)) ? 'NOT in the final code' : 'in the final code')).join('\\n') } });\n    } catch (e) {}\n  }\n\n  return [{ json: Object.assign({}, $input.first().json, {\n    report_header: '# Migration report — ' + (plan.source_framework || 'current framework') + ' → ' + TFM,\n    report_result_md: result.join('\\n'),\n    report_changes_md: changes.join('\\n'),\n    report_deferred_md: deferredMd.join('\\n'),\n    report_plan_digest: digest.join('\\n'),\n    report_diff: diffForLlm,\n    report_facts: { tests: tests, total_tests: totalTests, vulnerable_projects: vulnerable, changed_files: diff ? (diff.files || []).length : null,\n                    planned_code_edits: edits.length, missing_code_edits: missingFiles, edits_not_applied: notApplied.length,\n                    recovered_by_error_fixer: recovered, error_fixer_attempts: attempts.length, diff_available: !!diff, job_log_available: !!run }\n  }) }];\n} catch (e) {\n  // Never block the report: Success Response falls back to the Reporter's text.\n  return [{ json: Object.assign({}, $input.first().json, { report_error: String((e && e.message) || e) }) }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6304,
+        720
+      ],
+      "id": "4ded45ab-0a72-4ea3-97c4-9cf8528dfcc3",
+      "name": "Collect Actual Changes"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reporter Agent": {
+      "main": [
+        [
+          {
+            "node": "Post-Reporter Agent Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Log Build Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Max Retries Reached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Security Patch CVE Check": {
+      "main": [
+        [
+          {
+            "node": "Run Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Tests": {
+      "main": [
+        [
+          {
+            "node": "Test Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Gate": {
+      "main": [
+        [
+          {
+            "node": "Pre-Reporter Agent Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Test Failure Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reporter LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer Chain": {
+      "main": [
+        [
+          {
+            "node": "Post-Error Fixer Chain Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Plan Steps": {
+      "main": [
+        [
+          {
+            "node": "Run Build",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Action": {
+      "main": [
+        [
+          {
+            "node": "API ReplaceFileContent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "API ExecuteCommand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API ReplaceFileContent": {
+      "main": [
+        [
+          {
+            "node": "Check Replace Applied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API ExecuteCommand": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Build": {
+      "main": [
+        [
+          {
+            "node": "Log Build Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Build Output": {
+      "main": [
+        [
+          {
+            "node": "Build Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Max Retries Reached?": {
+      "main": [
+        [
+          {
+            "node": "Failure Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pre-Error Fixer Chain Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Fixer LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Webhook": {
+      "main": [
+        [
+          {
+            "node": "Init Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Log Generating Diffs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Failure Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failure Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Execution Start": {
+      "main": [
+        [
+          {
+            "node": "Pre-Migrator Chain Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error Fixer": {
+      "main": [
+        [
+          {
+            "node": "Run Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Build Output": {
+      "main": [
+        [
+          {
+            "node": "Store Build Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Build Success": {
+      "main": [
+        [
+          {
+            "node": "Security Patch CVE Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Generating Diffs": {
+      "main": [
+        [
+          {
+            "node": "Post Quantitative Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Quantitative Metrics": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Log Execution Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Reporter Agent Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Collect Actual Changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Migrator Chain Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Build Action List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Error Fixer Chain Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Prepare Error Fixer Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Migrator Chain Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Error Fixer Chain Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Log Error Fixer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Reporter Agent Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Action List": {
+      "main": [
+        [
+          {
+            "node": "Post-Migrator Chain Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Replace Applied": {
+      "main": [
+        [
+          {
+            "node": "Loop Plan Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Read File": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Replace In File": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Write File": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Manage Package": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Error Fixer Context": {
+      "main": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Docs Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Grep": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EF Build": {
+      "ai_tool": [
+        [
+          {
+            "node": "Error Fixer Chain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Actual Changes": {
+      "main": [
+        [
+          {
+            "node": "Reporter Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "14a4572f-a111-4f8e-92dd-721f1d2b60e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd130cdb1806a083fb7c75512fb11769e0e8b3accb989e1ed0f210f27ae63594"
+  },
+  "id": "gJ9WUoi7aQAIT7qb",
+  "tags": [
+    {
+      "updatedAt": "2026-06-04T22:19:55.580Z",
+      "createdAt": "2026-06-04T22:19:55.580Z",
+      "id": "A1UiVsO8IfUtWbLO",
+      "name": "net8-migration"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.553Z",
+      "createdAt": "2026-06-04T22:19:55.553Z",
+      "id": "jaoQ74bsy1b2wl5n",
+      "name": "langchain"
+    },
+    {
+      "updatedAt": "2026-06-04T22:19:55.538Z",
+      "createdAt": "2026-06-04T22:19:55.538Z",
+      "id": "mDIA8LNCWd2AcbR4",
+      "name": "v4"
+    }
+  ]
+}
