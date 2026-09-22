@@ -1,0 +1,102 @@
+{
+  "name": "DotNet Migration Package API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "migration-package-api",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "733cfb6b-9807-410d-9e12-ac2ff63cdbde",
+      "name": "Package API Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5a7a0fbf-256f-4050-b2d9-9ed88c24bf74"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b = $input.first().json.body || {};\nconst id = Number(b.jobId !== undefined ? b.jobId : b.job_id);\nif (!Number.isInteger(id) || id <= 0) throw new Error('jobId must be a positive integer');\nconst pkg = String(b.package || '').trim();\nconst type = String(b.type || '').trim();\nconst member = String(b.member || '').trim();\nconst tfm = String(b.tfm || 'net8.0').trim().toLowerCase();\nif (!/^[A-Za-z0-9._-]{1,100}$/.test(pkg)) throw new Error('package must be a NuGet id, got ' + JSON.stringify(pkg).slice(0, 60));\nif (!/^[A-Za-z0-9_.`]{1,200}$/.test(type)) throw new Error('type must be a type or method name, got ' + JSON.stringify(type).slice(0, 60));\nif (!/^[A-Za-z0-9_.`]{0,100}$/.test(member)) throw new Error('member must be a member name, got ' + JSON.stringify(member).slice(0, 60));\nif (!/^(net\\d+\\.\\d+|netstandard\\d\\.\\d|netcoreapp\\d\\.\\d)$/.test(tfm)) throw new Error('tfm must be a target framework moniker, got ' + JSON.stringify(tfm).slice(0, 30));\nreturn [{ json: { jobId: id, package: pkg, type: type, member: member, tfm: tfm } }];\n"
+      },
+      "id": "b7200f85-c4f3-4f53-9d37-51f80460fd70",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=TOOL=/projects/migration_backend/tools/apiprobe\nOUT=/tmp/apiprobe-bin\nif command -v flock >/dev/null 2>&1; then exec 9>/tmp/apiprobe.lock; flock 9; fi\nif [ ! -f \"$OUT/apiprobe.dll\" ] || [ \"$TOOL/Program.cs\" -nt \"$OUT/apiprobe.dll\" ]; then\n  if ! dotnet publish \"$TOOL/apiprobe.csproj\" -c Release -o \"$OUT\" -nologo -v q > /tmp/apiprobe-build.log 2>&1; then\n    echo \"PACKAGE API TOOL could not be built:\"; tail -15 /tmp/apiprobe-build.log; exit 0\n  fi\nfi\ndotnet \"$OUT/apiprobe.dll\" --workspace /projects/migration-{{ $json.jobId }} --package '{{ $json.package }}' --type '{{ $json.type }}' --member '{{ $json.member }}' --tfm '{{ $json.tfm }}' 2>&1 | head -c 14000\nexit 0"
+      },
+      "id": "af15bd19-a77f-4149-b90e-f144166fa427",
+      "name": "Probe Package",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "dbc1aad2-60a7-442f-8976-4b4c65a79a12",
+      "name": "Respond With API",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Package API Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Probe Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Probe Package": {
+      "main": [
+        [
+          {
+            "node": "Respond With API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52f7f1ef-6046-4d5d-b7d5-d18ae62f3f58",
+  "pinData": {}
+}
