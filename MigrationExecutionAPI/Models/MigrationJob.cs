@@ -42,6 +42,12 @@ public class MigrationJob
     public string? RevertPrUrl { get; set; }
     
     // Quantitative Metrics
+    // n8n's own execution ids for this job's two pipeline runs. They are what lets the backend
+    // pull the provider's real token counts and per-node timings back out of n8n's API; the
+    // workflows report them in their webhook response.
+    public string? N8nExecutionIdPhase1 { get; set; }
+    public string? N8nExecutionIdPhase2 { get; set; }
+
     public long? ExecutionTimeMs { get; set; }
     public long? Phase1ExecutionTimeMs { get; set; }
     public long? Phase2ExecutionTimeMs { get; set; }

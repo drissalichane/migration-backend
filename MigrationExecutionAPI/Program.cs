@@ -51,6 +51,13 @@ builder.Services.AddScoped<IBuildService, BuildService>();
 builder.Services.AddScoped<IGitService, GitService>();
 builder.Services.AddScoped<GitHubService>();
 
+// Real pipeline telemetry: n8n records the provider's own token counts and per-node timings for
+// every execution, and its REST API hands them back. Singletons so the OpenRouter price
+// catalogue is fetched once and cached rather than per request.
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<MigrationExecutionAPI.Services.OpenRouterPricing>();
+builder.Services.AddSingleton<MigrationExecutionAPI.Services.N8nTelemetryService>();
+
 builder.Services.AddDbContext<MigrationDbContext>(options => {
     options.UseSqlite("Data Source=migration.db", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
     options.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));

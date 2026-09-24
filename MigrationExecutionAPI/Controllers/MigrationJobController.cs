@@ -19,51 +19,15 @@ public class MigrationJobController : ControllerBase
     private readonly IFileService _fileService;
     
     private readonly GitHubService _githubService;
-    private static Dictionary<string, (decimal Prompt, decimal Completion)>? _modelPricingCache = null;
-    private static DateTime _cacheLastUpdated = DateTime.MinValue;
-
+    private readonly N8nTelemetryService _n8nTelemetry;
+    private readonly OpenRouterPricing _pricing;
+    // Costs come from OpenRouter's live catalogue via OpenRouterPricing, which also handles
+    // variant suffixes (":floor" on the Error Fixer's model) and models whose rate changes by
+    // time of day. Still an estimate - OpenRouter's activity tab is what was actually billed.
     private async Task<decimal> GetCostUsdAsync(string modelName, int promptTokens, int completionTokens)
     {
-        try
-        {
-            if (_modelPricingCache == null || (DateTime.UtcNow - _cacheLastUpdated).TotalHours > 24)
-            {
-                var response = await _httpClient.GetAsync("https://openrouter.ai/api/v1/models");
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonStr = await response.Content.ReadAsStringAsync();
-                    using var json = JsonDocument.Parse(jsonStr);
-                    var cache = new Dictionary<string, (decimal, decimal)>();
-                    foreach (var model in json.RootElement.GetProperty("data").EnumerateArray())
-                    {
-                        var id = model.GetProperty("id").GetString();
-                        var pricing = model.GetProperty("pricing");
-                        var promptStr = pricing.GetProperty("prompt").GetString();
-                        var compStr = pricing.GetProperty("completion").GetString();
-                        
-                        if (id != null && 
-                            decimal.TryParse(promptStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var p) && 
-                            decimal.TryParse(compStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var c))
-                        {
-                            cache[id] = (p, c);
-                        }
-                    }
-                    _modelPricingCache = cache;
-                    _cacheLastUpdated = DateTime.UtcNow;
-                }
-            }
-
-            if (_modelPricingCache != null && _modelPricingCache.TryGetValue(modelName, out var rates))
-            {
-                return (promptTokens * rates.Prompt) + (completionTokens * rates.Completion);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching OpenRouter pricing: {ex.Message}");
-        }
-        
-        return 0; // Fallback
+        var price = await _pricing.GetAsync(modelName);
+        return price is null ? 0m : OpenRouterPricing.CostOf(price, promptTokens, completionTokens, DateTime.UtcNow);
     }
 
     private readonly HttpClient _httpClient;
@@ -79,11 +43,14 @@ public class MigrationJobController : ControllerBase
             ? $" - n8n has no active workflow on /webhook/{path}. Import and activate the current {part} workflow."
             : "";
 
-    public MigrationJobController(MigrationDbContext context, IFileService fileService, GitHubService githubService)
+    public MigrationJobController(MigrationDbContext context, IFileService fileService, GitHubService githubService,
+        N8nTelemetryService n8nTelemetry, OpenRouterPricing pricing)
     {
         _context = context;
         _fileService = fileService;
         _githubService = githubService;
+        _n8nTelemetry = n8nTelemetry;
+        _pricing = pricing;
         _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(60) };
     }
 
@@ -245,6 +212,13 @@ public class MigrationJobController : ControllerBase
                     return;
                 }
 
+                // n8n reports its own execution id so the backend can pull this run's real token
+                // counts and per-node timings back out of n8n's API once the run is over. An
+                // export that does not send it simply leaves telemetry unpopulated.
+                var n8nExecutionId = jsonNode?["n8n_execution_id"]?.ToString();
+                if (N8nTelemetryService.IsUsableExecutionId(n8nExecutionId))
+                    currentJob.N8nExecutionIdPhase1 = n8nExecutionId;
+
                 var planJson = jsonNode?["migration_plan"]?.ToString();
                 
                 if (string.IsNullOrEmpty(planJson))
@@ -302,6 +276,21 @@ public class MigrationJobController : ControllerBase
                     }
                 }
                 await db.SaveChangesAsync();
+
+                if (N8nTelemetryService.IsUsableExecutionId(n8nExecutionId))
+                {
+                    var telemetry = scope.ServiceProvider.GetRequiredService<N8nTelemetryService>();
+                    var ingest = await telemetry.IngestAsync(db, jobId, n8nExecutionId, "Analyze");
+                    if (!ingest.Ok)
+                    {
+                        db.JobLogs.Add(new JobLog {
+                            MigrationJobId = jobId, Level = "warning", Phase = "Analyze",
+                            Message = "Could not read this run's telemetry from n8n: " + ingest.Message,
+                            Timestamp = DateTime.UtcNow
+                        });
+                        await db.SaveChangesAsync();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -553,6 +542,20 @@ public class MigrationJobController : ControllerBase
                 var result = MigrationExecutionAPI.Utilities.Part2Outcome.Decide(responseBody);
                 currentJob.ExecutionReport = result.Report;
 
+                // Same handover as Part 1: the workflow names its own execution so its real token
+                // counts can be read back. Parsed defensively - Part 2's body may be array-wrapped,
+                // and a non-JSON body is a case Part2Outcome.Decide already absorbs on its own.
+                string? n8nExecutionIdP2 = null;
+                try
+                {
+                    var parsedBody = JsonNode.Parse(responseBody);
+                    var holder = parsedBody is JsonArray bodyArr ? bodyArr.FirstOrDefault() : parsedBody;
+                    n8nExecutionIdP2 = holder?["n8n_execution_id"]?.ToString();
+                }
+                catch { }
+                if (N8nTelemetryService.IsUsableExecutionId(n8nExecutionIdP2))
+                    currentJob.N8nExecutionIdPhase2 = n8nExecutionIdP2;
+
                 // Parse tasks from Reporter LLM if present
                 if (!string.IsNullOrEmpty(currentJob.ExecutionReport))
                 {
@@ -627,6 +630,21 @@ public class MigrationJobController : ControllerBase
                 }
                 
                 await db.SaveChangesAsync();
+
+                if (N8nTelemetryService.IsUsableExecutionId(n8nExecutionIdP2))
+                {
+                    var telemetry = scope.ServiceProvider.GetRequiredService<N8nTelemetryService>();
+                    var ingest = await telemetry.IngestAsync(db, jobId, n8nExecutionIdP2, "Execute");
+                    if (!ingest.Ok)
+                    {
+                        db.JobLogs.Add(new JobLog {
+                            MigrationJobId = jobId, Level = "warning", Phase = "Execute",
+                            Message = "Could not read this run's telemetry from n8n: " + ingest.Message,
+                            Timestamp = DateTime.UtcNow
+                        });
+                        await db.SaveChangesAsync();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1251,6 +1269,57 @@ public class MigrationJobController : ControllerBase
 
         await _context.SaveChangesAsync();
         return Ok(new { Message = "Metrics updated successfully" });
+    }
+
+    public class RefreshTelemetryRequest
+    {
+        // Only needed to backfill a job that ran before the workflows reported their own
+        // execution id. Find it in n8n's execution list, or via the API:
+        //   GET /api/v1/executions?limit=20   (header X-N8N-API-KEY)
+        public string? Phase1ExecutionId { get; set; }
+        public string? Phase2ExecutionId { get; set; }
+    }
+
+    /// <summary>
+    /// Re-reads this job's telemetry from n8n: the provider's real token counts per model and
+    /// wall-clock per node. Safe to call repeatedly - each phase's rows are replaced, not stacked.
+    /// </summary>
+    [HttpPost("{id}/telemetry/refresh")]
+    public async Task<IActionResult> RefreshTelemetry(int id, [FromBody] RefreshTelemetryRequest? request)
+    {
+        var job = await _context.MigrationJobs.FindAsync(id);
+        if (job == null) return NotFound(new { Message = "Job not found" });
+
+        if (!_n8nTelemetry.IsConfigured)
+            return BadRequest(new { Message = "No n8n API key is configured. Set it with: dotnet user-secrets set \"N8n:ApiKey\" \"<key>\"" });
+
+        // A supplied id is only written onto the job once it has actually produced telemetry.
+        // Storing a typo would leave the job pointing at an execution that 404s on every later
+        // refresh, with nothing to say why.
+        var p1 = request?.Phase1ExecutionId?.Trim();
+        var p2 = request?.Phase2ExecutionId?.Trim();
+        if (string.IsNullOrWhiteSpace(p1)) p1 = job.N8nExecutionIdPhase1;
+        if (string.IsNullOrWhiteSpace(p2)) p2 = job.N8nExecutionIdPhase2;
+
+        if (string.IsNullOrWhiteSpace(p1) && string.IsNullOrWhiteSpace(p2))
+            return BadRequest(new { Message = "This job has no n8n execution id. Pass phase1ExecutionId / phase2ExecutionId to backfill it from n8n's execution list." });
+
+        var results = new List<object>();
+        if (!string.IsNullOrWhiteSpace(p1))
+        {
+            var r = await _n8nTelemetry.IngestAsync(_context, id, p1, "Analyze");
+            if (r.Ok) job.N8nExecutionIdPhase1 = p1;
+            results.Add(new { Phase = "Analyze", ExecutionId = p1, r.Ok, r.Message, r.TotalTokens, r.CostUsd, r.WallClockMs });
+        }
+        if (!string.IsNullOrWhiteSpace(p2))
+        {
+            var r = await _n8nTelemetry.IngestAsync(_context, id, p2, "Execute");
+            if (r.Ok) job.N8nExecutionIdPhase2 = p2;
+            results.Add(new { Phase = "Execute", ExecutionId = p2, r.Ok, r.Message, r.TotalTokens, r.CostUsd, r.WallClockMs });
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { JobId = id, Results = results });
     }
 
     [HttpPost("{id}/llm-usage")]
