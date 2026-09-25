@@ -1,0 +1,93 @@
+# The whole platform on one machine: dashboard, API and n8n (the agent pipeline).
+# Setup and walkthrough: README.md. Settings: copy .env.example to .env and fill it in.
+#
+#   docker compose up -d --build     first start (builds the images, ~15-25 min once)
+#   docker compose up -d             later starts
+#   docker compose down              stop (data is kept in Docker volumes)
+#
+# Expects the dashboard repository cloned next to this one, as ../migration_dashboard
+# (override with DASHBOARD_DIR in .env).
+
+name: dotnet-migration
+
+services:
+  # React dashboard, served as static files. http://localhost:5173
+  dashboard:
+    build: ${DASHBOARD_DIR:-../migration_dashboard}
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # .NET API: database, GitHub operations, and the file tools the agents call. http://localhost:5153
+  api:
+    build: ./MigrationExecutionAPI
+    ports:
+      - "5153:5153"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Workspaces__Root: /projects                         # the same volume n8n clones into
+      ConnectionStrings__Default: Data Source=/data/migration.db
+      N8n__BaseUrl: http://n8n:5678                       # API -> n8n, inside the Compose network
+      N8n__ApiKey: ${N8N_API_KEY:-}                       # optional: measured token counts
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env - any long random text}
+      Authentication__GitHub__ClientId: ${GITHUB_CLIENT_ID:?Set GITHUB_CLIENT_ID in .env - see README}
+      Authentication__GitHub__ClientSecret: ${GITHUB_CLIENT_SECRET:?Set GITHUB_CLIENT_SECRET in .env - see README}
+    volumes:
+      - workspaces:/projects
+      - api-data:/data
+    depends_on:
+      n8n-setup:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # One-shot: creates the OpenRouter credential and imports + activates the four workflows,
+  # then exits. Runs on every `up`, and updates what it created the time before.
+  n8n-setup:
+    build: ./docker
+    image: dotnet-migration-n8n:2.8.4
+    user: root
+    entrypoint: ["/bin/sh", "/setup/setup.sh"]
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?Set OPENROUTER_API_KEY in .env - see README}
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - workspaces:/projects
+      - nuget-cache:/home/node/.nuget
+      - ./docker/n8n-setup:/setup:ro
+      - ./new_workflows:/workflows:ro
+
+  # n8n with the .NET 8/9/10 SDKs and the Upgrade Assistant. http://localhost:5678
+  n8n:
+    build: ./docker
+    image: dotnet-migration-n8n:2.8.4
+    ports:
+      - "5678:5678"
+    environment:
+      NODES_EXCLUDE: "[]"             # n8n 2.x disables Execute Command by default; the pipeline needs it
+      WEBHOOK_URL: http://localhost:5678/
+      N8N_SECURE_COOKIE: "false"      # plain http on localhost; Safari otherwise refuses the login
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    # The workflows call the API at host.docker.internal:5153 (the spelling they use outside
+    # Compose too). This makes that name resolve on Linux as well, where it does not by default.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - workspaces:/projects
+      - nuget-cache:/home/node/.nuget   # NuGet downloads survive restarts (~370 MB on the test repo)
+      # Part 1 and the package-API tool run these from the backend repository by path.
+      - ./scripts:/projects/migration_backend/scripts:ro
+      - ./tools:/projects/migration_backend/tools
+    depends_on:
+      n8n-setup:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  n8n-data: {}      # n8n's database: owner account, credential, workflows, execution history
+  workspaces: {}    # one cloned repository per migration job
+  nuget-cache: {}
+  api-data: {}      # the API's SQLite database

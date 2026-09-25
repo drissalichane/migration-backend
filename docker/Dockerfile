@@ -36,13 +36,18 @@ ENV DOTNET_ROOT="/usr/local/dotnet"
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV DOTNET_NOLOGO=1
 
-RUN npm install -g n8n
+# Pinned: the workflows are built and tested against 2.8.4. Unpinned, a fresh build on another
+# machine installs whatever n8n is newest, and node behaviour changes between majors (2.x already
+# switched off Execute Command by default - see NODES_EXCLUDE in docker-compose.yml).
+RUN npm install -g n8n@2.8.4
 
 # Bake the Upgrade Assistant in rather than installing it on first workflow run.
 # The container runs with --rm, so a runtime install is repeated on every start
 # and silently costs the first job several minutes.
 USER node
-RUN /usr/local/dotnet/dotnet tool install -g upgrade-assistant
+# Pinned to the version whose flags Part 1 uses (--report/--serializer; 1.0.518 has no
+# --format sarif), for the same reason.
+RUN /usr/local/dotnet/dotnet tool install -g upgrade-assistant --version 1.0.518
 
 WORKDIR /home/node
 EXPOSE 5678

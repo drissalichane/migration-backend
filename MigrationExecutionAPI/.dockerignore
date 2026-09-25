@@ -1,0 +1,10 @@
+# Build output
+bin/
+obj/
+# Local databases: migration.db holds users' GitHub tokens in plain text. They must never be
+# copied into an image; the container keeps its own database on a volume (/data).
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.log
