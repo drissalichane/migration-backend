@@ -43,7 +43,7 @@ public class FilesController : ControllerBase
     private string ResolveRepositoryPath(int? jobId)
     {
         return jobId.HasValue
-            ? $"C:/Users/grandy/projects/migration-{jobId.Value}"
+            ? MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(jobId.Value)
             : MigrationExecutionAPI.Utilities.RepoLocator.GetLatestRepo();
     }
 
@@ -538,7 +538,7 @@ public class FilesController : ControllerBase
             if (parsed.TryGetValue("CONTENT", out var cParsed)) content = cParsed;
 
             string repositoryPath = jobId.HasValue 
-                ? $"C:/Users/grandy/projects/migration-{jobId.Value}" 
+                ? MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(jobId.Value) 
                 : MigrationExecutionAPI.Utilities.RepoLocator.GetLatestRepo();
 
             // Allow empty content, but not empty filePath
@@ -635,7 +635,7 @@ public class FilesController : ControllerBase
             if (parsed.TryGetValue("REPLACEMENTCONTENT", out var rcParsed)) replacementContent = rcParsed;
 
             string repositoryPath = jobId.HasValue 
-                ? $"C:/Users/grandy/projects/migration-{jobId.Value}" 
+                ? MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(jobId.Value) 
                 : MigrationExecutionAPI.Utilities.RepoLocator.GetLatestRepo();
 
             if (string.IsNullOrEmpty(filePath))

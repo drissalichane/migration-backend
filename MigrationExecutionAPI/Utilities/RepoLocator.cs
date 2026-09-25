@@ -8,7 +8,7 @@ namespace MigrationExecutionAPI.Utilities
     {
         public static string GetLatestRepo()
         {
-            var baseDir = "C:/Users/grandy/projects/";
+            var baseDir = WorkspacePaths.Root;
             var dirs = Directory.GetDirectories(baseDir, "migration-*");
             if (dirs.Length == 0) throw new Exception("No migration repository found.");
             

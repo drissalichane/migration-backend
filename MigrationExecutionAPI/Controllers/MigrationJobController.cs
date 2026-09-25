@@ -21,6 +21,7 @@ public class MigrationJobController : ControllerBase
     private readonly GitHubService _githubService;
     private readonly N8nTelemetryService _n8nTelemetry;
     private readonly OpenRouterPricing _pricing;
+    private readonly string _n8nBaseUrl;
     // Costs come from OpenRouter's live catalogue via OpenRouterPricing, which also handles
     // variant suffixes (":floor" on the Error Fixer's model) and models whose rate changes by
     // time of day. Still an estimate - OpenRouter's activity tab is what was actually billed.
@@ -44,8 +45,12 @@ public class MigrationJobController : ControllerBase
             : "";
 
     public MigrationJobController(MigrationDbContext context, IFileService fileService, GitHubService githubService,
-        N8nTelemetryService n8nTelemetry, OpenRouterPricing pricing)
+        N8nTelemetryService n8nTelemetry, OpenRouterPricing pricing, IConfiguration configuration)
     {
+        // Where the backend reaches n8n: localhost:5678 when n8n is a container on this machine,
+        // http://n8n:5678 inside Docker Compose. (The other direction, n8n -> backend, is spelled
+        // host.docker.internal:5153 inside the workflows and stays that way.)
+        _n8nBaseUrl = (configuration["N8n:BaseUrl"] ?? "http://localhost:5678").TrimEnd('/');
         _context = context;
         _fileService = fileService;
         _githubService = githubService;
@@ -162,7 +167,7 @@ public class MigrationJobController : ControllerBase
                 
                 // Was /webhook/net8-migration-analyze: the pipeline targets any framework, and
                 // the path said otherwise. Renamed together with the workflow (2026-09-21).
-                var response = await httpClient.PostAsync($"http://localhost:5678/webhook/{AnalyzeWebhookPath}", content);
+                var response = await httpClient.PostAsync($"{_n8nBaseUrl}/webhook/{AnalyzeWebhookPath}", content);
 
                 var currentJob = await db.MigrationJobs.FindAsync(jobId);
                 if (currentJob == null) return;
@@ -393,7 +398,7 @@ public class MigrationJobController : ControllerBase
                 var currentJob = await db.MigrationJobs.FindAsync(jobId);
                 if (currentJob == null) return;
 
-                var repositoryPath = $"C:/Users/grandy/projects/migration-{jobId}";
+                var repositoryPath = MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(jobId);
                 if (System.IO.Directory.Exists(repositoryPath))
                 {
                     try {
@@ -519,7 +524,7 @@ public class MigrationJobController : ControllerBase
                 };
                 var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
                 
-                var response = await httpClient.PostAsync($"http://localhost:5678/webhook/{ExecuteWebhookPath}", content);
+                var response = await httpClient.PostAsync($"{_n8nBaseUrl}/webhook/{ExecuteWebhookPath}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -706,7 +711,7 @@ public class MigrationJobController : ControllerBase
         var githubToken = User.FindFirst("github_token")?.Value;
         if (string.IsNullOrEmpty(githubToken)) return Unauthorized("User has no GitHub token. Please re-login with GitHub.");
 
-        var jobWorkspace = $"C:/Users/grandy/projects/migration-{job.Id}";
+        var jobWorkspace = MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(job.Id);
 
         // 1. The reviewer's choices go into the workspace first. They used to be stored on
         //    the rows only, and the commit read the files from disk: a hand edit never
@@ -727,7 +732,7 @@ public class MigrationJobController : ControllerBase
 
         // 3. The pipeline built this code before the review. If the reviewer changed it, build
         //    again - the PR says whether it still compiles; the reviewer's choice stands.
-        (bool? Builds, string Detail)? rebuilt = reviewSteps.Count > 0 ? await BuildAfterReviewAsync(job.Id) : null;
+        (bool? Builds, string Detail)? rebuilt = reviewSteps.Count > 0 ? await BuildAfterReviewAsync(job.Id, _n8nBaseUrl) : null;
         var reviewSummary = DescribeReview(reviewSteps);
         if (reviewSteps.Count > 0)
         {
@@ -981,7 +986,7 @@ public class MigrationJobController : ControllerBase
         // The draft's choices go into the workspace, as in /approve, so the rows keep
         // describing it. They used to be saved on the rows only - overwriting the text the
         // pipeline had written, after which that edit could no longer be found or undone.
-        var (reviewError, reviewSteps) = await ApplyReviewAsync(job, request, $"C:/Users/grandy/projects/migration-{job.Id}");
+        var (reviewError, reviewSteps) = await ApplyReviewAsync(job, request, MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(job.Id));
         if (reviewError != null) return Conflict(new { Message = reviewError });
         if (reviewSteps.Count > 0)
         {
@@ -1047,12 +1052,12 @@ public class MigrationJobController : ControllerBase
     /// Tool' workflow - the same build the Error Fixer's `build` tool uses, with the
     /// container's SDKs. Never throws: an unavailable build tool is reported, not fatal.
     /// </summary>
-    private static async Task<(bool? Builds, string Detail)> BuildAfterReviewAsync(int jobId)
+    private static async Task<(bool? Builds, string Detail)> BuildAfterReviewAsync(int jobId, string n8nBaseUrl)
     {
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(6) };
-            using var res = await http.PostAsync("http://localhost:5678/webhook/migration-build-tool",
+            using var res = await http.PostAsync($"{n8nBaseUrl}/webhook/migration-build-tool",
                 new StringContent(System.Text.Json.JsonSerializer.Serialize(new { jobId }), System.Text.Encoding.UTF8, "application/json"));
             if (!res.IsSuccessStatusCode)
                 return (null, $"the build tool answered HTTP {(int)res.StatusCode}; is the 'DotNet Migration Build Tool' workflow active?");

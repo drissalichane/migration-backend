@@ -68,7 +68,7 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "ThisIsASuperSecretKeyForJwtAuthentication123!");
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured."));
         
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -99,8 +99,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials");
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        // In a real app, use a secret from appsettings.json. Hardcoded here for the MVP.
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "ThisIsASuperSecretKeyForJwtAuthentication123!");
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured."));
         
         var tokenDescriptor = new SecurityTokenDescriptor
         {

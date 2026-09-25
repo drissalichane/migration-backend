@@ -9,3 +9,6 @@ scripts/
 workaround_scripts/
 *.pdb
 *.cache
+# Local settings with secrets, and local databases
+.env
+*.sqlite
