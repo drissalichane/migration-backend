@@ -18,7 +18,7 @@ for the pipeline.
 | **Docker Desktop** | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/). Give it at least 8 GB of memory (Settings → Resources) and keep about **12 GB of free disk space** — the pipeline's image carries three .NET SDKs. |
 | **git** | [git-scm.com](https://git-scm.com/downloads) |
 | **A GitHub account** | You sign in to the app with it, and the app opens pull requests with it. |
-| **An OpenRouter account with a little credit** | [openrouter.ai](https://openrouter.ai). The pipeline's AI models are called through it. A migration of the test application costs roughly **$0.05 – $0.25**; $5 of credit is plenty. |
+| **An OpenRouter account** | [openrouter.ai](https://openrouter.ai). The pipeline's AI models are called through it. New accounts get a small free allowance (reported as about $1), which may cover a few test runs: a migration of the test application costs roughly **$0.05 – $0.25**. For more, add credit — $5 is plenty. |
 
 > **Public repositories only, for now.** The pipeline clones the repository without credentials, so a
 > private repository cannot be migrated yet — even when you are signed in with GitHub. The test
@@ -56,7 +56,9 @@ This is what lets you sign in with GitHub and lets the app open pull requests fo
 
 ## 3. Create an OpenRouter key
 
-1. Sign in at [openrouter.ai](https://openrouter.ai) and add some credit (**Credits**).
+1. Sign up at [openrouter.ai](https://openrouter.ai). Your account starts with a small free allowance;
+   the **Credits** page shows your balance, and is where you add more if it runs out. (The pipeline
+   uses paid models, not OpenRouter's `:free` ones, so it runs on this balance.)
 2. Go to **Keys → Create Key** and copy the key (it starts with `sk-or-`).
 
 ## 4. Fill in the settings file
