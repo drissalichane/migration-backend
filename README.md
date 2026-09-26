@@ -1,3 +1,8 @@
+<!-- Two language versions: README.md (English) and README.fr.md (French). Any change to one must be
+     made in the other. -->
+
+**English** | [Français](README.fr.md)
+
 # .NET Migration Platform
 
 Upgrades a .NET repository to a newer .NET version with an AI agent pipeline, and hands the result
