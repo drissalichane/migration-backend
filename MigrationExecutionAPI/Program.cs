@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MigrationExecutionAPI.Data;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,14 @@ builder.Services.AddScoped<GitHubService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<MigrationExecutionAPI.Services.OpenRouterPricing>();
 builder.Services.AddSingleton<MigrationExecutionAPI.Services.N8nTelemetryService>();
+
+// Encrypts GitHub tokens saved in Settings. The keys must survive restarts or saved tokens become
+// unreadable: Docker Compose keeps them on the data volume; a dev run uses the Windows profile default.
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName("MigrationExecutionAPI");
+var keysDirectory = builder.Configuration["DataProtection:KeysDirectory"];
+if (!string.IsNullOrWhiteSpace(keysDirectory))
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keysDirectory));
+builder.Services.AddScoped<MigrationExecutionAPI.Services.GitHubTokenStore>();
 
 builder.Services.AddDbContext<MigrationDbContext>(options => {
     // Docker Compose points this at a volume (ConnectionStrings__Default); a dev run keeps the

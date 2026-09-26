@@ -708,8 +708,8 @@ public class MigrationJobController : ControllerBase
         // "Create PR". This used to answer 400, so a draft could never become a PR.
         if (job.Status != "Pending PR Review" && job.Status != "Rejected") return BadRequest("Job is not pending PR review.");
 
-        var githubToken = User.FindFirst("github_token")?.Value;
-        if (string.IsNullOrEmpty(githubToken)) return Unauthorized("User has no GitHub token. Please re-login with GitHub.");
+        var githubToken = await HttpContext.RequestServices.GetRequiredService<GitHubTokenStore>().ResolveAsync(User);
+        if (string.IsNullOrEmpty(githubToken)) return Unauthorized("No GitHub access: log in with GitHub, or save a GitHub personal access token in Settings.");
 
         var jobWorkspace = MigrationExecutionAPI.Utilities.WorkspacePaths.ForJob(job.Id);
 
@@ -1084,8 +1084,8 @@ public class MigrationJobController : ControllerBase
         if (job == null) return NotFound("Job not found");
         if (string.IsNullOrEmpty(job.PrUrl)) return Ok(new { Status = job.Status, Message = "Job has no PR to sync." });
 
-        var githubToken = User.FindFirst("github_token")?.Value;
-        if (string.IsNullOrEmpty(githubToken)) return Unauthorized("No GitHub token found.");
+        var githubToken = await HttpContext.RequestServices.GetRequiredService<GitHubTokenStore>().ResolveAsync(User);
+        if (string.IsNullOrEmpty(githubToken)) return Unauthorized("No GitHub access: log in with GitHub, or save a GitHub personal access token in Settings.");
 
         try
         {

@@ -21,21 +21,22 @@ public class GitHubController : ControllerBase
     private readonly GitHubService _gitHubService;
     private readonly MigrationDbContext _context;
 
-    public GitHubController(GitHubService gitHubService, MigrationDbContext context)
+    private readonly GitHubTokenStore _tokens;
+
+    public GitHubController(GitHubService gitHubService, MigrationDbContext context, GitHubTokenStore tokens)
     {
         _gitHubService = gitHubService;
         _context = context;
+        _tokens = tokens;
     }
 
-    private string? GetToken()
-    {
-        return User.FindFirst("github_token")?.Value;
-    }
+    // The GitHub sign-in's token, else the personal access token saved in Settings.
+    private Task<string?> GetToken() => _tokens.ResolveAsync(User);
 
     [HttpGet("repos")]
     public async Task<IActionResult> GetRepositories()
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
 
         try 
@@ -65,7 +66,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/branches")]
     public async Task<IActionResult> GetBranches(string owner, string repo)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
 
         try
@@ -89,7 +90,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/commits")]
     public async Task<IActionResult> GetCommits(string owner, string repo, [FromQuery] string? branch = null)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
 
         try
@@ -116,7 +117,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/commits/{sha}")]
     public async Task<IActionResult> GetCommit(string owner, string repo, string sha)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
 
         try
@@ -151,7 +152,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/contents")]
     public async Task<IActionResult> GetFileContent(string owner, string repo, [FromQuery] string path, [FromQuery] string refBranch)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
         try {
             var content = await _gitHubService.GetFileContentAsync(token, owner, repo, path, refBranch);
@@ -166,7 +167,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/commits/{sha}/status")]
     public async Task<IActionResult> GetCommitStatus(string owner, string repo, string sha)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
         try {
             var status = await _gitHubService.GetCombinedCommitStatusAsync(token, owner, repo, sha);
@@ -190,7 +191,7 @@ public class GitHubController : ControllerBase
     [HttpGet("repos/{owner}/{repo}/pulls/{pullNumber}")]
     public async Task<IActionResult> GetPullRequest(string owner, string repo, int pullNumber)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
         try {
             var pr = await _gitHubService.GetPullRequestStatusAsync(token, owner, repo, pullNumber);
@@ -210,7 +211,7 @@ public class GitHubController : ControllerBase
     [HttpPost("repos/{owner}/{repo}/pulls/{pullNumber}/merge")]
     public async Task<IActionResult> MergePullRequest(string owner, string repo, int pullNumber, [FromBody] MergeRequestModel req)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
         try {
             var result = await _gitHubService.MergePullRequestAsync(token, owner, repo, pullNumber, req.MergeMethod ?? "squash", req.CommitTitle);
@@ -251,7 +252,7 @@ public class GitHubController : ControllerBase
     [HttpPost("repos/{owner}/{repo}/pulls/{pullNumber}/revert")]
     public async Task<IActionResult> RevertPullRequest(string owner, string repo, int pullNumber, [FromBody] RevertRequestModel req)
     {
-        var token = GetToken();
+        var token = await GetToken();
         if (string.IsNullOrEmpty(token)) return Unauthorized("No GitHub token found.");
         
         try {

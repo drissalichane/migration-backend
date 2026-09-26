@@ -29,6 +29,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Workspaces__Root: /projects                         # the same volume n8n clones into
       ConnectionStrings__Default: Data Source=/data/migration.db
+      DataProtection__KeysDirectory: /data/keys          # encrypts saved GitHub tokens; must survive restarts
       N8n__BaseUrl: http://n8n:5678                       # API -> n8n, inside the Compose network
       N8n__ApiKey: ${N8N_API_KEY:-}                       # optional: measured token counts
       Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env - any long random text}
